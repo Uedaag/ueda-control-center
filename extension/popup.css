@@ -1933,3 +1933,22 @@ body:has(#loginView[hidden]) .app-shell {
 body:has(#loginView[hidden]) .home-view-replacement {
   display: flex !important;
 }
+
+/* --- Layout overrides: rounded body + centered login --- */
+html, body {
+  border-radius: 18px;
+  overflow: hidden;
+}
+.app-shell {
+  border-radius: 18px;
+  min-height: 420px;
+}
+#loginView.new-login-wrapper {
+  min-height: 380px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+.home-view-replacement {
+  border-radius: 18px;
+}
