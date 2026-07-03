@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import widgetCss from "../../extension/widget.css?raw";
+import popupCss from "../../extension/popup.css?raw";
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 
 export type ExtensionPreviewState = "collapsed" | "login" | "labels" | "account";
