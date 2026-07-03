@@ -143,6 +143,7 @@
     document.documentElement.style.setProperty('--ueda-accent', accent);
     document.body.style.setProperty('--ueda-accent', accent);
     if (container) container.style.setProperty('--ueda-accent', accent);
+    currentAccent = accent;
     setManagedStyle('ueda-runtime-chat-css', buildRuntimeChatCss(accent));
     setManagedStyle('ueda-remote-custom-css', settings.chat_custom_css || settings.custom_css || cfg.custom_css || '');
     const helpLink = document.getElementById('ueda-menu-help');
@@ -151,6 +152,7 @@
     renderRemoteSkills(Array.isArray(cfg.skills) ? cfg.skills : []);
     attachChatListeners();
     startChatHighlighter();
+    applyDirectGlow(accent);
   }
 
   async function fetchUpdateConfig({ announce = false } = {}) {
@@ -164,7 +166,7 @@
     const cfg = await response.json();
     applyRemoteConfig(cfg);
     chrome.storage.local.set({ uedaRemoteConfig: cfg, uedaLastSyncAt: Date.now() });
-    if (announce) markLovableChat();
+    if (announce) applyDirectGlow(currentAccent);
     return cfg;
   }
 
