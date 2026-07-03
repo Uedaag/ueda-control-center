@@ -48,7 +48,7 @@ function Page() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [saving, setSaving] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const [previewState, setPreviewState] = useState<ExtensionPreviewState>("login");
+  
 
   useEffect(() => {
     Promise.all([
