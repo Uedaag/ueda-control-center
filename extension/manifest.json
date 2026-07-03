@@ -54,7 +54,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["inject.js", "logo.png"],
+      "resources": ["inject.js", "icon.png"],
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://uedaagency.lovable.app/*"]
     }
   ]
