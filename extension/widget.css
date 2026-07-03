@@ -1,64 +1,78 @@
-/* UEDA EX 5.0 floating widget — isolated namespace */
+/* UEDA EX 5.0 — minimalist black theme */
 #ueda-root, #ueda-root * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 #ueda-root {
   position: fixed; bottom: 24px; right: 24px; z-index: 2147483647;
   display: flex; align-items: flex-end; gap: 10px;
 }
 .ueda-fab {
-  position: relative; width: 60px; height: 60px; border-radius: 50%;
-  background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  position: relative; width: 56px; height: 56px; border-radius: 50%;
+  background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.35);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; border: none; padding: 0;
 }
-.ueda-fab img { width: 40px; height: 40px; object-fit: contain; border-radius: 50%; }
+.ueda-fab img { width: 38px; height: 38px; object-fit: contain; border-radius: 50%; }
 .ueda-fab::before, .ueda-fab::after {
   content: ""; position: absolute; inset: 0; border-radius: 50%;
-  border: 2px solid var(--ueda-accent, #4fa1c9); opacity: 0.7;
+  border: 2px solid var(--ueda-accent, #4fa1c9); opacity: 0.55;
   animation: ueda-pulse 2s ease-out infinite;
 }
 .ueda-fab::after { animation-delay: 1s; }
 @keyframes ueda-pulse {
-  0% { transform: scale(1); opacity: 0.7; }
-  100% { transform: scale(1.8); opacity: 0; }
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(1.75); opacity: 0; }
 }
 
 .ueda-panel {
-  background: #111827; color: #f3f4f6; border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4); overflow: hidden;
-  display: flex; flex-direction: column;
+  background: #0b0b0d; color: #e5e7eb; border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.55); overflow: hidden;
+  display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.06);
 }
-.ueda-panel.icons { width: 64px; }
 .ueda-panel.labels { width: 260px; }
-.ueda-panel.login, .ueda-panel.chat { width: 340px; }
+.ueda-panel.login, .ueda-panel.account { width: 320px; }
 
 .ueda-header {
   display: flex; align-items: center; gap: 10px;
-  padding: 12px 14px; background: var(--ueda-accent, #4fa1c9); color: #fff;
+  padding: 12px 14px; background: #000; color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
-.ueda-header img { width: 28px; height: 28px; border-radius: 50%; background: #fff; padding: 2px; }
-.ueda-header .title { font-weight: 700; font-size: 13px; flex: 1; }
-.ueda-header button { background: transparent; border: none; color: #fff; cursor: pointer; font-size: 18px; line-height: 1; }
+.ueda-header img { width: 26px; height: 26px; border-radius: 50%; background: #fff; padding: 2px; }
+.ueda-header .title { font-weight: 700; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; flex: 1; }
+.ueda-header button { background: transparent; border: none; color: #9ca3af; cursor: pointer; font-size: 16px; line-height: 1; }
+.ueda-header button:hover { color: #fff; }
 
-.ueda-body { padding: 14px; }
+.ueda-body { padding: 12px; }
 .ueda-menu-item {
-  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
-  cursor: pointer; font-size: 13px; color: #e5e7eb; border-radius: 8px;
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  cursor: pointer; font-size: 13px; color: #d1d5db; border-radius: 8px;
+  transition: background 0.15s;
 }
-.ueda-menu-item:hover { background: rgba(255,255,255,0.06); color: var(--ueda-accent, #4fa1c9); }
-.ueda-menu-item .ico { width: 20px; text-align: center; font-size: 16px; }
+.ueda-menu-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.ueda-menu-item .ico { width: 18px; text-align: center; font-size: 14px; color: var(--ueda-accent, #4fa1c9); }
 
 .ueda-input {
-  width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  width: 100%; background: #111114; border: 1px solid rgba(255,255,255,0.08);
   border-radius: 10px; padding: 10px 12px; color: #f3f4f6; font-size: 13px; margin-bottom: 10px;
 }
+.ueda-input:focus { outline: none; border-color: var(--ueda-accent, #4fa1c9); }
 .ueda-btn {
   width: 100%; background: var(--ueda-accent, #4fa1c9); color: #fff; border: none;
-  border-radius: 10px; padding: 11px; font-weight: 700; font-size: 13px; cursor: pointer;
+  border-radius: 10px; padding: 11px; font-weight: 700; font-size: 12px; letter-spacing: 0.05em; cursor: pointer;
 }
 .ueda-btn:disabled { opacity: 0.6; cursor: wait; }
-.ueda-btn.secondary { background: transparent; border: 1px solid rgba(255,255,255,0.15); }
-.ueda-footer { text-align: center; font-size: 10px; color: #6b7280; padding: 8px; }
+.ueda-btn.secondary { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #e5e7eb; }
+.ueda-footer { text-align: center; font-size: 10px; color: #4b5563; padding: 8px; border-top: 1px solid rgba(255,255,255,0.04); }
 .ueda-msg { font-size: 12px; padding: 8px 10px; border-radius: 8px; margin-bottom: 8px; }
-.ueda-msg.err { background: rgba(239,68,68,0.15); color: #fca5a5; }
-.ueda-msg.ok { background: rgba(34,197,94,0.15); color: #86efac; }
-.ueda-welcome { font-size: 13px; line-height: 1.5; margin-bottom: 12px; color: #d1d5db; }
+.ueda-msg.err { background: rgba(239,68,68,0.12); color: #fca5a5; }
+.ueda-msg.ok { background: rgba(34,197,94,0.12); color: #86efac; }
+.ueda-welcome { font-size: 12px; line-height: 1.5; margin-bottom: 10px; color: #9ca3af; }
+
+/* Account card */
+.ueda-account-card {
+  background: #111114; border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 12px; margin-bottom: 10px;
+}
+.ueda-account-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #6b7280; margin-bottom: 6px; }
+.ueda-account-value { font-size: 20px; font-weight: 700; color: var(--ueda-accent, #4fa1c9); }
+.ueda-account-sub { font-size: 10px; color: #6b7280; margin-top: 4px; text-align: right; }
+.ueda-progress { height: 4px; background: rgba(255,255,255,0.06); border-radius: 999px; margin-top: 8px; overflow: hidden; }
+.ueda-progress > div { height: 100%; background: var(--ueda-accent, #4fa1c9); border-radius: 999px; }
