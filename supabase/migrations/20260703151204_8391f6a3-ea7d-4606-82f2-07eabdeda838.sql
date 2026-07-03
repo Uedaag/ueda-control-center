@@ -1,0 +1,1 @@
+UPDATE public.skills SET name='Logoff', description='Encerra a sessão e desativa a extensão', icon='LogOut', status=false WHERE id='1e0c4367-5df5-41e0-a038-57bf3abd43df';

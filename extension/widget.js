@@ -101,10 +101,11 @@
           <span class="ueda-text">Ajuda & Suporte</span>
         </a>
 
-        <div class="ueda-menu-item ueda-text-green" id="ueda-menu-status">
+        <div class="ueda-menu-item ueda-text-red" id="ueda-menu-status">
           <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg> 
-          <span class="ueda-text" id="ueda-status-text">Monitor ON</span>
+          <span class="ueda-text" id="ueda-status-text">Logoff</span>
         </div>
+
       </div>
       <button class="ueda-widget-btn" id="ueda-fab" aria-label="Abrir opções UEDA EX" title="Abrir opções UEDA EX">
         <img src="${logoUrl}" alt="U" class="ueda-widget-logo">
@@ -193,21 +194,12 @@
   });
 
   function updateUI() {
-    // Mode
     modeText.textContent = currentMode === "2" ? "Modo Avançado" : "Modo Padrão";
-    
-    // Status
-    if (isEnabled) {
-      statusText.textContent = "Monitor ON";
-      statusBtn.classList.add("ueda-text-green");
-      statusBtn.classList.remove("ueda-text-red");
-      document.body.classList.add("ueda-monitor-on");
-    } else {
-      statusText.textContent = "Monitor OFF";
-      statusBtn.classList.add("ueda-text-red");
-      statusBtn.classList.remove("ueda-text-green");
-      document.body.classList.remove("ueda-monitor-on");
-    }
+    statusText.textContent = "Logoff";
+    statusBtn.classList.add("ueda-text-red");
+    statusBtn.classList.remove("ueda-text-green");
+    // Monitor visual sempre ativo enquanto a sessão existir
+    document.body.classList.add("ueda-monitor-on");
   }
 
   modeBtn.addEventListener('click', () => {
@@ -216,9 +208,19 @@
   });
 
   statusBtn.addEventListener('click', () => {
-    isEnabled = !isEnabled;
-    chrome.storage.local.set({ enabled: isEnabled }, updateUI);
+    if (!confirm('Encerrar sessão da extensão UEDA EX?')) return;
+    try {
+      chrome.storage.local.clear(() => {
+        document.body.classList.remove('ueda-monitor-on');
+        const el = document.getElementById('ueda-widget-container');
+        if (el) el.remove();
+        try { chrome.runtime.sendMessage({ action: 'logoff' }); } catch(e) {}
+      });
+    } catch(e) {
+      document.getElementById('ueda-widget-container')?.remove();
+    }
   });
+
 
   // Chat glow is now handled purely in CSS via body.ueda-monitor-on
 
