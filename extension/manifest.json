@@ -3,7 +3,7 @@
   "name": "UEDA EX 5.0",
   "version": "5.1.0",
   "description": "Extensão UEDA EX 5.0 — assistente com marca personalizada.",
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": ["<all_urls>"],
   "action": { "default_title": "UEDA EX 5.0" },
   "background": { "service_worker": "background.js" },
