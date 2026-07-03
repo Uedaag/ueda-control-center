@@ -14,6 +14,7 @@ import {
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 import {
   ExtensionLivePreview,
+  type ExtensionPreviewSettings,
   type ExtensionPreviewSkill,
   type ExtensionPreviewState,
 } from "@/components/extension-live-preview";

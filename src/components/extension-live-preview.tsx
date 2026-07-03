@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { LogIn, RefreshCw, User, X } from "lucide-react";
 import widgetCss from "../../extension/widget.css?raw";
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 
@@ -191,5 +190,3 @@ function escapeHtml(value: string) {
 function escapeAttr(value: string) {
   return escapeHtml(value).replace(/`/g, "&#96;");
 }
-
-export const extensionPreviewIcons = { LogIn, RefreshCw, User, X };
