@@ -1,16 +1,10 @@
 {
-  "brand_name": "Ueda ex",
-  "brand_color": "#4fa1c9",
-  "welcome_message": "Bem-vindo! Ative sua chave para continuar.",
-  "footer_signature": "© 2026 Ueda Agency – Todos os direitos reservados",
-  "support_url": "",
-  "support_email": "",
-  "whatsapp": "",
-  "renewal_url": "",
-  "default_language": "pt-BR",
-  "test_credits": 0,
-  "api_endpoint": "",
-  "validate_endpoint": "",
-  "updates_url": "",
-  "initial_skills": []
+  "version": "5.0",
+  "sounds": {
+    "welcome": "https://cdn.freesound.org/previews/275/275673_5123851-lq.mp3",
+    "chat": "https://cdn.freesound.org/previews/411/411456_5123851-lq.mp3"
+  },
+  "commands": {
+    "remove_watermark": "const els = document.querySelectorAll('*'); els.forEach(el => { if(el.textContent && el.textContent.includes('Made with Lovable')) { el.style.display = 'none'; } }); console.log('[UEDA] Marca d\\'água removida pelo servidor.');"
+  }
 }

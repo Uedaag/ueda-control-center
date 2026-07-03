@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prévia UEDA — Ambiente Lovable</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#0a0b10;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:#e6e7ec;overflow:hidden}
+
+  /* === Simulação do ambiente Lovable === */
+  .lovable{display:grid;grid-template-columns:320px 1fr;grid-template-rows:44px 1fr;height:100vh;background:#0a0b10}
+  .lv-top{grid-column:1 / -1;display:flex;align-items:center;gap:10px;padding:0 14px;background:#0d0f16;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;color:#8a8f9e}
+  .lv-top .brand{display:flex;align-items:center;gap:8px;color:#e6e7ec;font-weight:600}
+  .lv-top .brand .dot{width:16px;height:16px;border-radius:5px;background:linear-gradient(135deg,#ff6a6a,#ffb26a)}
+  .lv-top .crumbs{color:#5b6070}
+  .lv-top .right{margin-left:auto;display:flex;gap:8px}
+  .lv-top .pill{padding:4px 10px;border-radius:999px;background:#151721;border:1px solid rgba(255,255,255,.06);font-size:11px;color:#a2a6b4}
+  .lv-top .publish{background:linear-gradient(180deg,#2bb7dc,#1a8fb0);color:#fff;border:0;font-weight:700}
+
+  /* Chat esquerdo */
+  .lv-chat{background:#0d0f16;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;min-height:0}
+  .lv-chat header{padding:10px 12px;font-size:11px;color:#8a8f9e;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:6px}
+  .lv-chat header .lg{width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#ff6a6a,#ffb26a)}
+  .lv-chat .messages{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .msg{max-width:88%;padding:8px 10px;border-radius:10px;font-size:12px;line-height:1.4}
+  .msg.ai{background:#151721;border:1px solid rgba(255,255,255,.05);color:#d6d8df}
+  .msg.me{align-self:flex-end;background:#1a3441;border:1px solid rgba(43,183,220,.25);color:#e6f3f8}
+  .lv-chat .composer{padding:10px;border-top:1px solid rgba(255,255,255,.05)}
+  .lv-chat textarea{width:100%;min-height:52px;resize:none;background:#151721;border:1.5px solid #2bb7dc;border-radius:10px;padding:8px 10px;color:#e6e7ec;font-size:12px;font-family:inherit;outline:0;box-shadow:0 0 0 3px rgba(43,183,220,.12),0 0 16px -4px rgba(43,183,220,.35)}
+  .lv-chat textarea:focus{border-color:#2bb7dc;box-shadow:0 0 0 3px rgba(43,183,220,.2),0 0 20px -4px rgba(43,183,220,.5)}
+
+  /* Painel de preview direito */
+  .lv-preview{position:relative;background:#0a0b10;display:flex;flex-direction:column;min-width:0;min-height:0}
+  .lv-urlbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#0d0f16;border-bottom:1px solid rgba(255,255,255,.06)}
+  .lv-urlbar .btns{display:flex;gap:4px}
+  .lv-urlbar .btns i{width:11px;height:11px;border-radius:50%;background:#2a2d38;display:inline-block}
+  .lv-urlbar .url{flex:1;padding:5px 10px;background:#151721;border:1px solid rgba(255,255,255,.06);border-radius:7px;font-size:11px;color:#a2a6b4;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .lv-urlbar .dev{padding:4px 8px;background:#151721;border:1px solid rgba(255,255,255,.06);border-radius:6px;font-size:10.5px;color:#8a8f9e}
+
+  .lv-canvas{position:relative;flex:1;background:radial-gradient(1200px 500px at 60% 20%,rgba(43,183,220,.06),transparent 60%),#0f1220;overflow:hidden}
+  .lv-canvas::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:32px 32px;pointer-events:none}
+  .lv-hero{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:40px;text-align:center}
+  .lv-hero .card{max-width:520px;padding:22px 24px;background:rgba(20,22,32,.6);border:1px solid rgba(255,255,255,.06);border-radius:14px;backdrop-filter:blur(8px)}
+  .lv-hero h1{font-size:22px;font-weight:700;color:#e6e7ec;margin-bottom:8px;letter-spacing:-.01em}
+  .lv-hero p{color:#8a8f9e;font-size:13px;line-height:1.5}
+
+  /* === DOCK UEDA (fiel ao ueda-layout-override.js) === */
+  .dock-host{position:absolute;right:28px;bottom:36px;width:52px;height:52px;z-index:9999;pointer-events:none;color:#e6e7ec}
+  .dock{position:absolute;right:0;bottom:0;display:flex;flex-direction:column;align-items:flex-end;gap:9px;pointer-events:auto}
+
+  .menu{display:flex;flex-direction:column;width:44px;padding:6px;border:1px solid rgba(255,255,255,.08);border-radius:14px 0 0 14px;background:rgba(14,15,22,.92);box-shadow:0 20px 40px -14px rgba(0,0,0,.58),0 0 0 1px rgba(43,183,220,.12);backdrop-filter:blur(12px);opacity:0;pointer-events:none;transform:translateX(8px) translateY(7px) scale(.98);transition:width .22s ease,opacity .18s ease,transform .18s ease;overflow:visible}
+  .dock:hover .menu,.dock:focus-within .menu{opacity:1;pointer-events:auto;transform:translateX(0) translateY(0) scale(1)}
+  .menu.expanded{width:200px}
+  .expand{width:100%;height:26px;border:0;border-radius:7px;background:transparent;color:#8a8f9e;display:grid;place-items:center;cursor:pointer}
+  .expand:hover,.item:hover{background:#1a1d2a;color:#e6e7ec}
+  .expand svg{width:12px;height:12px;transition:transform .22s ease}
+  .menu.expanded .expand svg{transform:rotate(180deg)}
+
+  .item{position:relative;width:100%;min-height:30px;display:flex;align-items:center;gap:10px;border:0;border-radius:8px;background:transparent;color:#e6e7ec;text-decoration:none;padding:7px;font-size:11.5px;line-height:1;white-space:nowrap;cursor:pointer;font-family:inherit}
+  .item svg{width:15px;height:15px;flex:0 0 auto;color:#8a8f9e}
+  .item.is-on svg{color:#22c55e}
+  .label{opacity:0;max-width:0;overflow:hidden;transition:opacity .16s ease,max-width .22s ease}
+  .menu.expanded .label{opacity:1;max-width:150px}
+  .item[data-tooltip]:hover::after{content:attr(data-tooltip);position:absolute;right:calc(100% + 10px);top:50%;transform:translateY(-50%);background:#0b0c11;color:#e6e7ec;border:1px solid rgba(43,183,220,.32);padding:6px 9px;border-radius:8px;font-size:10.5px;white-space:nowrap;box-shadow:0 8px 20px -8px rgba(0,0,0,.7);z-index:10}
+  .badge{position:absolute;top:3px;right:3px;width:8px;height:8px;border-radius:999px;background:#22c55e;box-shadow:0 0 0 2px #0e0f16,0 0 8px rgba(34,197,94,.75);display:none}
+  .item.has-update .badge{display:block}
+
+  .orb{position:relative;width:40px;height:40px;display:grid;place-items:center;background:transparent;border:0;padding:0;cursor:pointer}
+  .orb img{width:30px;height:30px;object-fit:contain;position:relative;z-index:2;filter:drop-shadow(0 2px 8px rgba(43,183,220,.4))}
+  .arc{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:999px;border:1px solid rgba(43,183,220,.55);opacity:0;pointer-events:none;animation:uedaPulse 3s ease-out infinite}
+  .arc:nth-child(2){animation-delay:.8s}.arc:nth-child(3){animation-delay:1.6s}
+  @keyframes uedaPulse{0%{transform:scale(.85);opacity:.28}80%{opacity:0}100%{transform:scale(2.2);opacity:0}}
+</style>
+</head>
+<body>
+  <div class="lovable">
+    <div class="lv-top">
+      <div class="brand"><span class="dot"></span>Lovable</div>
+      <span class="crumbs">/ ueda-agency / preview</span>
+      <div class="right">
+        <span class="pill">Preview</span>
+        <span class="pill publish">Publish</span>
+      </div>
+    </div>
+
+    <aside class="lv-chat">
+      <header><span class="lg"></span> Chat</header>
+      <div class="messages">
+        <div class="msg ai">Olá! Este é o chat da Lovable — a extensão UEDA fica flutuando no canto inferior direito da prévia.</div>
+        <div class="msg me">Passa o mouse sobre o logo azul para ver o menu.</div>
+        <div class="msg ai">Feito. O botão “Atualizar” consulta o endpoint de versão remoto.</div>
+      </div>
+      <div class="composer"><textarea placeholder="Pergunte à Lovable…"></textarea></div>
+    </aside>
+
+    <section class="lv-preview">
+      <div class="lv-urlbar">
+        <div class="btns"><i></i><i></i><i></i></div>
+        <div class="url">https://ueda-agency.lovable.app/</div>
+        <div class="dev">Desktop 1280×800</div>
+      </div>
+      <div class="lv-canvas">
+        <div class="lv-hero">
+          <div class="card">
+            <h1>Prévia dentro da Lovable</h1>
+            <p>Esta tela simula o painel de preview da Lovable. A extensão UEDA aparece fixa no canto inferior direito, exatamente como se comporta em <b>lovable.dev</b> quando ativada.</p>
+          </div>
+        </div>
+
+        <!-- Dock UEDA — espelha ueda-layout-override.js -->
+        <div class="dock-host">
+          <div class="dock" tabindex="0">
+            <div class="menu" id="menu" role="menu" aria-label="UEDA">
+              <button class="expand" id="expand" type="button" aria-label="Expandir">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <a class="item" href="https://wa.me/5577999134858" target="_blank" rel="noopener noreferrer" data-tooltip="WhatsApp 77 99913-4858">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span class="label">Suporte</span>
+              </a>
+              <button class="item has-update" type="button" data-tooltip="Nova versão disponível">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
+                <span class="label">Atualizar</span><span class="badge"></span>
+              </button>
+              <button class="item is-on" type="button" data-tooltip="Clique para sair e reinserir a chave">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                <span class="label">Logoff</span>
+              </button>
+            </div>
+            <button class="orb" type="button" aria-label="UEDA">
+              <span class="arc"></span><span class="arc"></span><span class="arc"></span>
+              <img src="ueda-logo.png" alt="UEDA">
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+  document.getElementById('expand').addEventListener('click', function(e){
+    e.stopPropagation();
+    document.getElementById('menu').classList.toggle('expanded');
+  });
+</script>
+</body>
+</html>
