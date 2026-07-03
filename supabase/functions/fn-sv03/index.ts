@@ -46,6 +46,20 @@ Deno.serve(async (req) => {
     const settings: Record<string, string> = {};
     (settingsRows || []).forEach((r: any) => (settings[r.key] = r.value));
 
+    // Public updates check — no license required. Extension calls this to refresh brand config.
+    const url = new URL(req.url);
+    if (url.searchParams.get("check") === "updates") {
+      return json({
+        ok: true,
+        version: settings.min_version || "5.1.0",
+        settings: {
+          widget_accent_color: settings.widget_accent_color || "#4fa1c9",
+          widget_title: settings.widget_title || "UEDA EX 5.0",
+          widget_subtitle: settings.widget_subtitle || "",
+        },
+      });
+    }
+
     const minVersion = settings.min_version || "0.0.0";
     const updateUrl = settings.update_url || "";
     const forceUpdate = (settings.force_update || "false") === "true";
