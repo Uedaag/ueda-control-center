@@ -53,6 +53,112 @@
     }, true);
   }
 
+  function setManagedStyle(id, cssText) {
+    let style = document.getElementById(id);
+    if (!cssText) {
+      if (style) style.remove();
+      return;
+    }
+    if (!style) {
+      style = document.createElement('style');
+      style.id = id;
+      document.documentElement.appendChild(style);
+    }
+    style.textContent = cssText;
+  }
+
+  function buildRuntimeChatCss(accent) {
+    return `
+      :root, body { --ueda-accent: ${accent}; }
+      @keyframes ueda-chat-glow {
+        0%, 100% { box-shadow: 0 0 0 1px var(--ueda-accent), 0 0 16px color-mix(in srgb, var(--ueda-accent) 34%, transparent); }
+        50% { box-shadow: 0 0 0 2px var(--ueda-accent), 0 0 30px color-mix(in srgb, var(--ueda-accent) 58%, transparent); }
+      }
+      body.ueda-monitor-on .ueda-chat-active,
+      body.ueda-monitor-on form:has(textarea[placeholder*="Lovable"]),
+      body.ueda-monitor-on form:has(textarea[placeholder*="Pergunte"]),
+      body.ueda-monitor-on div:has(> textarea[placeholder*="Lovable"]),
+      body.ueda-monitor-on div:has(> textarea[placeholder*="Pergunte"]),
+      body.ueda-monitor-on div:has(textarea[aria-label*="Lovable"]),
+      body.ueda-monitor-on div:has(textarea[aria-label*="Pergunte"]) {
+        border: 1px solid var(--ueda-accent) !important;
+        border-radius: 18px !important;
+        animation: ueda-chat-glow 2.4s ease-in-out infinite !important;
+        transition: border-color .25s ease, box-shadow .25s ease !important;
+      }
+      body.ueda-monitor-on .ueda-prompt-enhance,
+      body.ueda-monitor-on button:has(> svg.lucide-wand),
+      body.ueda-monitor-on button:has(> svg.lucide-wand-sparkles),
+      body.ueda-monitor-on button:has(> svg[class*="wand"]) {
+        font-size: 0 !important;
+        gap: 0 !important;
+        width: 34px !important;
+        min-width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+        border-radius: 999px !important;
+        color: var(--ueda-accent) !important;
+        background: radial-gradient(circle at 50% 42%, #111418 0%, #050506 70%) !important;
+        border: 1px solid color-mix(in srgb, var(--ueda-accent) 50%, transparent) !important;
+        box-shadow: 0 0 14px color-mix(in srgb, var(--ueda-accent) 42%, transparent) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        body.ueda-monitor-on .ueda-chat-active { animation: none !important; }
+      }
+    `;
+  }
+
+  function isLovableTextArea(textarea) {
+    const hint = [
+      textarea.getAttribute('placeholder') || '',
+      textarea.getAttribute('aria-label') || '',
+      textarea.closest('form')?.textContent || '',
+    ].join(' ').toLowerCase();
+    return hint.includes('lovable') || hint.includes('pergunte');
+  }
+
+  function markLovableChat() {
+    try {
+      document.querySelectorAll('textarea').forEach((textarea) => {
+        if (!isLovableTextArea(textarea)) return;
+        const form = textarea.closest('form');
+        const primary = form || textarea.parentElement;
+        if (primary) primary.classList.add('ueda-chat-active');
+
+        let parent = textarea.parentElement;
+        for (let i = 0; parent && i < 3; i += 1) {
+          const style = window.getComputedStyle(parent);
+          const hasSurface = style.borderRadius !== '0px' || style.backgroundColor !== 'rgba(0, 0, 0, 0)';
+          if (hasSurface && parent.offsetWidth > textarea.offsetWidth * 0.8) {
+            parent.classList.add('ueda-chat-active');
+            break;
+          }
+          parent = parent.parentElement;
+        }
+      });
+
+      document.querySelectorAll('button').forEach((button) => {
+        const label = `${button.textContent || ''} ${button.getAttribute('aria-label') || ''}`.toLowerCase();
+        const hasWand = !!button.querySelector('svg[class*="wand"], svg.lucide-wand, svg.lucide-wand-sparkles');
+        if (hasWand || label.includes('melhorar prompt')) button.classList.add('ueda-prompt-enhance');
+      });
+    } catch (e) {}
+  }
+
+  function startChatHighlighter() {
+    if (document.__uedaChatHighlighterStarted) return;
+    document.__uedaChatHighlighterStarted = true;
+    markLovableChat();
+    setInterval(markLovableChat, 1500);
+    try {
+      const observer = new MutationObserver(markLovableChat);
+      observer.observe(document.body, { childList: true, subtree: true });
+    } catch (e) {}
+  }
+
   function applyRemoteConfig(cfg) {
     if (!cfg) return;
     const sounds = (cfg.config && cfg.config.sounds) || cfg.sounds || {};
@@ -66,11 +172,14 @@
     document.documentElement.style.setProperty('--ueda-accent', accent);
     document.body.style.setProperty('--ueda-accent', accent);
     if (container) container.style.setProperty('--ueda-accent', accent);
+    setManagedStyle('ueda-runtime-chat-css', buildRuntimeChatCss(accent));
+    setManagedStyle('ueda-remote-custom-css', settings.chat_custom_css || settings.custom_css || cfg.custom_css || '');
     const helpLink = document.getElementById('ueda-menu-help');
     const supportUrl = settings.support_url || (settings.whatsapp ? `https://wa.me/${settings.whatsapp}` : '');
     if (helpLink && supportUrl) helpLink.href = supportUrl;
     renderRemoteSkills(Array.isArray(cfg.skills) ? cfg.skills : []);
     attachChatListeners();
+    startChatHighlighter();
   }
 
   async function fetchUpdateConfig({ announce = false } = {}) {
@@ -84,14 +193,7 @@
     const cfg = await response.json();
     applyRemoteConfig(cfg);
     chrome.storage.local.set({ uedaRemoteConfig: cfg, uedaLastSyncAt: Date.now() });
-    if (cfg.update_required || cfg.force_update) {
-      const release = cfg.release || {};
-      const label = release.version ? `Nova versão ${release.version} disponível.` : 'Nova atualização disponível.';
-      const prefix = announce ? 'Dados sincronizados. ' : '';
-      await uedaConfirm(`${prefix}${label}\nAtualize o arquivo da extensão para aplicar esta versão.`, { okText: 'Entendi', cancelText: '' });
-    } else if (announce) {
-      await uedaConfirm('Extensão atualizada com sucesso. As skills e cores ativas já foram sincronizadas.', { okText: 'OK', cancelText: '' });
-    }
+    if (announce) markLovableChat();
     return cfg;
   }
 
@@ -160,12 +262,15 @@
       const label = updateBtn.querySelector('.ueda-text');
       const originalLabel = label ? label.textContent : '';
       if (label) label.textContent = 'Atualizando...';
+      let updated = false;
       try {
         await fetchUpdateConfig({ announce: true });
+        updated = true;
+        if (label) label.textContent = 'Atualizado';
       } catch (e) {
         await uedaConfirm(e && e.message ? e.message : 'Não foi possível sincronizar a extensão agora.', { okText: 'OK', cancelText: '' });
       } finally {
-        if (label) label.textContent = originalLabel || 'Atualizar extensão';
+        if (label) setTimeout(() => { label.textContent = originalLabel || 'Atualizar extensão'; }, updated ? 1200 : 0);
       }
     });
   }
@@ -258,6 +363,7 @@
     statusBtn.classList.remove("ueda-text-green");
     // Monitor visual sempre ativo enquanto a sessão existir
     document.body.classList.add("ueda-monitor-on");
+    startChatHighlighter();
   }
 
   modeBtn.addEventListener('click', () => {
