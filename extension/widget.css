@@ -84,8 +84,8 @@
   transform: translateY(0);
 }
 
-#ueda-widget-container:hover .ueda-widget-menu,
 #ueda-widget-container.ueda-expanded .ueda-widget-menu { width: 248px; }
+
 
 .ueda-menu-header,
 .ueda-menu-item {
