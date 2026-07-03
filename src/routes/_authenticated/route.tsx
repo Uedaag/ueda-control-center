@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useNavigate, useRouterState } 
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LayoutDashboard, KeyRound, Sparkles, Rocket, Eye, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Sparkles, Rocket, Eye, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 
@@ -24,7 +24,6 @@ export const Route = createFileRoute("/_authenticated")({
 
 const items = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/licencas", label: "Licenças", icon: KeyRound },
   { to: "/skills", label: "Skills", icon: Sparkles },
   { to: "/releases", label: "Releases", icon: Rocket },
   { to: "/preview", label: "Preview", icon: Eye },
@@ -45,9 +44,9 @@ function Layout() {
       <TooltipProvider delayDuration={150}>
         <div className="min-h-screen flex w-full">
           <Sidebar collapsible="icon" className="border-r border-white/5">
-            <SidebarHeader className="p-3">
-              <div className="flex items-center gap-2">
-                <img src={logoAsset.url} alt="UEDA" className="w-8 h-8 shrink-0" />
+            <SidebarHeader className="p-3 group-data-[collapsible=icon]:p-2">
+              <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
+                <img src={logoAsset.url} alt="UEDA" width={32} height={32} className="w-8 h-8 shrink-0 object-contain" style={{ aspectRatio: "1 / 1" }} />
                 <span className="font-bold gradient-text truncate group-data-[collapsible=icon]:hidden">UEDA EX</span>
               </div>
             </SidebarHeader>
