@@ -35,6 +35,7 @@ const DEFAULTS = {
   welcome_message: "Bem-vindo! Ative sua chave para continuar.",
   footer_signature: "© 2026 Ueda Agency – Todos os direitos reservados",
   widget_title: "Ueda ex",
+  chat_custom_css: "",
 };
 
 type Vals = Record<string, string>;
@@ -197,6 +198,17 @@ function Page() {
             </Field>
             <Field label="Assinatura de Rodapé" hint="Aparece discretamente na base de todas as telas.">
               <LightInput value={vals.footer_signature} onChange={(e) => set("footer_signature", e.target.value)} />
+            </Field>
+          </Section>
+
+          <Section icon={<MessageSquare className="w-4 h-4" style={{ color: accent }} />} title="CSS DO CHAT">
+            <Field label="Ajustes visuais do chat" hint="Esse CSS é aplicado quando o cliente clicar em Atualizar na extensão, sem mostrar alerta.">
+              <Textarea
+                value={vals.chat_custom_css}
+                onChange={(e) => set("chat_custom_css", e.target.value)}
+                placeholder={'body.ueda-monitor-on .ueda-chat-active { border-color: #40d9ed !important; }'}
+                className="min-h-[150px] bg-background border-input font-mono text-xs text-foreground focus-visible:border-ring focus-visible:ring-ring/20"
+              />
             </Field>
           </Section>
         </div>

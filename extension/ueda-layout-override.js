@@ -27,8 +27,8 @@
       chrome.storage.local.set({
         uedaRemoteVersion: data.version || null,
         uedaLastUpdateCheck: Date.now(),
-        uedaUpdateNotes: data.notes || "",
-        uedaRemoteConfig: data.config || null,
+        uedaUpdateNotes: data.release?.changelog || data.notes || "",
+        uedaRemoteConfig: data || null,
       });
       return data;
     } catch (err) {
@@ -38,7 +38,7 @@
   }
 
   function hasPendingUpdate(config) {
-    return config?.uedaRemoteVersion && cmpVer(config.uedaRemoteVersion, CURRENT_VERSION) > 0;
+    return Boolean(config?.uedaRemoteConfig?.update_required || config?.uedaRemoteConfig?.force_update);
   }
 
   // === CONFIG ===================================================
@@ -267,10 +267,8 @@
         btn?.classList.remove("spinning");
         if (!data) { show("Falha ao consultar atualizações."); return; }
         // Config nova já salva pelo checkForUpdate → onChanged dispara re-render.
-        if (cmpVer(data.version, CURRENT_VERSION) > 0) {
-          show(`Layout v${data.version} aplicado.`);
-        } else if (data.config) {
-          show("Layout sincronizado.");
+        if (data.ok) {
+          show("Extensão sincronizada.");
         } else {
           show(`Sem novidades (v${CURRENT_VERSION}).`);
         }

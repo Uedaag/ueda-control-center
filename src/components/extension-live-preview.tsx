@@ -10,6 +10,7 @@ export type ExtensionPreviewSettings = {
   brand_color: string;
   welcome_message: string;
   footer_signature: string;
+  chat_custom_css?: string;
 };
 
 export type ExtensionPreviewSkill = {
@@ -115,6 +116,7 @@ function buildChatDocument(settings: ExtensionPreviewSettings) {
       .lovable-build { border: 0; background: transparent; color: #f5f5f2; font-size: 13px; font-weight: 700; }
       .lovable-send { background: #9a9a96; color: #111; }
       svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; }
+      ${settings.chat_custom_css || ""}
     </style>
   </head>
   <body class="ueda-monitor-on" style="--ueda-accent:${accent}">

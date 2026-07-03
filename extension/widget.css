@@ -163,6 +163,11 @@
 .ueda-text-red,
 .ueda-text-red svg { color: #ff8b8b !important; stroke: #ff8b8b !important; }
 
+@keyframes ueda-chat-glow {
+  0%, 100% { box-shadow: 0 0 0 1px var(--ueda-accent, #1DAFD8), 0 0 16px color-mix(in srgb, var(--ueda-accent, #1DAFD8) 34%, transparent); }
+  50% { box-shadow: 0 0 0 2px var(--ueda-accent, #1DAFD8), 0 0 30px color-mix(in srgb, var(--ueda-accent, #1DAFD8) 58%, transparent); }
+}
+
 body.ueda-monitor-on .ueda-chat-active,
 body.ueda-monitor-on form:has(textarea[placeholder*="Lovable"]),
 body.ueda-monitor-on form:has(textarea[placeholder*="Pergunte"]),
@@ -171,14 +176,21 @@ body.ueda-monitor-on div:has(> textarea[placeholder*="Pergunte"]),
 body.ueda-monitor-on div:has(> div > textarea[placeholder*="Lovable"]),
 body.ueda-monitor-on div:has(> div > textarea[placeholder*="Pergunte"]),
 body.ueda-monitor-on div:has(> div > div > textarea[placeholder*="Lovable"]),
-body.ueda-monitor-on div:has(> div > div > textarea[placeholder*="Pergunte"]) {
+body.ueda-monitor-on div:has(> div > div > textarea[placeholder*="Pergunte"]),
+body.ueda-monitor-on div:has(textarea[aria-label*="Lovable"]),
+body.ueda-monitor-on div:has(textarea[aria-label*="Pergunte"]) {
   border: 1px solid var(--ueda-accent, #1DAFD8) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 0 0 1px var(--ueda-accent, #1DAFD8), 0 0 22px color-mix(in srgb, var(--ueda-accent, #1DAFD8) 42%, transparent) !important;
-  transition: all 0.3s ease-in-out !important;
+  border-radius: 18px !important;
+  animation: ueda-chat-glow 2.4s ease-in-out infinite !important;
+  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ueda-monitor-on .ueda-chat-active { animation: none !important; }
 }
 
 /* "melhorar prompt" -> icon-only pincel button in UEDA colors */
+body.ueda-monitor-on .ueda-prompt-enhance,
 body.ueda-monitor-on button:has(> svg.lucide-wand),
 body.ueda-monitor-on button:has(> svg.lucide-wand-sparkles),
 body.ueda-monitor-on button:has(> svg[class*="wand"]) {
