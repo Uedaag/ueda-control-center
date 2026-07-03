@@ -23,62 +23,45 @@ export type ExtensionPreviewSkill = {
 type ExtensionLivePreviewProps = {
   settings: ExtensionPreviewSettings;
   skills: ExtensionPreviewSkill[];
-  state: ExtensionPreviewState;
-  onStateChange: (state: ExtensionPreviewState) => void;
+  state?: ExtensionPreviewState;
+  onStateChange?: (state: ExtensionPreviewState) => void;
 };
 
-const stateLabels: Record<ExtensionPreviewState, string> = {
-  collapsed: "Logo",
-  login: "Ícones",
-  labels: "Menu",
-  account: "Conta",
-};
-
-export function ExtensionLivePreview({ settings, skills, state, onStateChange }: ExtensionLivePreviewProps) {
-  const srcDoc = useMemo(() => buildPreviewDocument(settings, skills, state), [settings, skills, state]);
+export function ExtensionLivePreview({ settings, skills }: ExtensionLivePreviewProps) {
+  const srcDoc = useMemo(() => buildPreviewDocument(settings, skills), [settings, skills]);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
           <span className="h-2 w-2 rounded-full bg-emerald-500" />
-          Pré-visualização sincronizada
+          Prévia interativa
         </div>
-        <div className="inline-flex rounded-lg border border-border bg-background p-1 text-xs font-semibold">
-          {(Object.keys(stateLabels) as ExtensionPreviewState[]).map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => onStateChange(item)}
-              className={`rounded-md px-3 py-1.5 transition-colors ${state === item ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
-            >
-              {stateLabels[item]}
-            </button>
-          ))}
-        </div>
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+          Clique na logo · depois na seta
+        </span>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-muted">
+      <div className="overflow-hidden rounded-2xl border border-border bg-muted">
         <iframe
           title="Prévia real da extensão"
           srcDoc={srcDoc}
-          className="h-[520px] w-full border-0"
-          sandbox="allow-same-origin"
+          className="h-[680px] w-full border-0"
+          sandbox="allow-same-origin allow-scripts"
         />
       </div>
 
-      <p className="mt-4 text-center text-xs leading-relaxed text-muted-foreground">
-        A prévia acima usa o mesmo CSS, estrutura e dados gravados no pacote da extensão.
+      <p className="mt-3 text-center text-[11px] leading-relaxed text-muted-foreground">
+        Mesmo CSS, estrutura e comportamento que a extensão baixada.
       </p>
     </div>
   );
 }
 
-function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: ExtensionPreviewSkill[], state: ExtensionPreviewState) {
+function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: ExtensionPreviewSkill[]) {
   const accent = normalizeHexColor(settings.brand_color);
   const brand = escapeHtml(settings.brand_name || "UEDA EX 5.0");
   const logo = escapeAttr(logoAsset.url);
-  const modeClass = state === "collapsed" ? "" : state === "labels" || state === "account" ? "ueda-visible ueda-expanded" : "ueda-visible ueda-collapsed";
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -92,17 +75,41 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
     </style>
   </head>
   <body>
-    <div id="ueda-widget-container" class="ueda-collapsed ${modeClass}" style="--ueda-accent:${accent}">
-      ${widgetMenu({ brand, skills, state })}
-      <button class="ueda-widget-btn" title="${escapeAttr(brand)}"><img src="${logo}" alt="U" class="ueda-widget-logo" /></button>
+    <div id="ueda-widget-container" style="--ueda-accent:${accent}">
+      ${widgetMenu({ brand, skills })}
+      <button class="ueda-widget-btn" id="ueda-fab" title="${escapeAttr(brand)}"><img src="${logo}" alt="U" class="ueda-widget-logo" /></button>
     </div>
+    <script>
+      (function(){
+        var c = document.getElementById('ueda-widget-container');
+        var fab = document.getElementById('ueda-fab');
+        var toggle = document.getElementById('ueda-menu-toggle');
+        fab.addEventListener('click', function(){
+          if (!c.classList.contains('ueda-visible')) {
+            c.classList.add('ueda-visible','ueda-collapsed');
+            c.classList.remove('ueda-expanded');
+          } else {
+            c.classList.remove('ueda-visible','ueda-collapsed','ueda-expanded');
+          }
+        });
+        toggle && toggle.addEventListener('click', function(){
+          if (c.classList.contains('ueda-expanded')) {
+            c.classList.remove('ueda-expanded');
+            c.classList.add('ueda-collapsed');
+          } else {
+            c.classList.add('ueda-expanded');
+            c.classList.remove('ueda-collapsed');
+          }
+        });
+      })();
+    </script>
   </body>
 </html>`;
 }
 
-function widgetMenu({ brand, skills, state }: { brand: string; skills: ExtensionPreviewSkill[]; state: ExtensionPreviewState }) {
+function widgetMenu({ brand, skills }: { brand: string; skills: ExtensionPreviewSkill[] }) {
   const skillRows = skills.slice(0, 2).map((skill) => menuItem(iconSparkles(), escapeHtml(skill.name), skill.description || skill.name)).join("");
-  const accountStatus = state === "account" ? `<span id="ueda-time-value" style="font-size:11px;color:#1DAFD8;font-weight:700;margin-top:2px;">Ativada · 7d 12h</span>` : `<span id="ueda-time-value" style="font-size:11px;color:#70f0c1;font-weight:700;margin-top:2px;">Ativada</span>`;
+  const accountStatus = `<span id="ueda-time-value" style="font-size:11px;color:#70f0c1;font-weight:700;margin-top:2px;">Ativada</span>`;
   return `
     <div class="ueda-widget-menu">
       <div class="ueda-menu-header" id="ueda-menu-toggle">
