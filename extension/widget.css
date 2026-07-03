@@ -203,3 +203,75 @@ body.ueda-monitor-on button:has(> svg[class*="wand"]) > svg {
   color: #1DAFD8 !important;
 }
 
+
+/* --- UEDA custom modal (replaces native confirm/alert) --- */
+.ueda-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ueda-fade 0.18s ease;
+}
+@keyframes ueda-fade { from { opacity: 0 } to { opacity: 1 } }
+.ueda-modal {
+  width: min(340px, 92vw);
+  background: #16181f;
+  color: #f4f7fb;
+  border: 1px solid #1DAFD8;
+  border-radius: 24px;
+  padding: 28px 24px 22px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(29, 175, 216, 0.25), inset 0 0 20px rgba(29, 175, 216, 0.05);
+  font-family: Inter, system-ui, sans-serif;
+}
+.ueda-modal-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+.ueda-modal-title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #1DAFD8;
+  margin-bottom: 10px;
+}
+.ueda-modal-msg {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d9dde7;
+  margin-bottom: 20px;
+}
+.ueda-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.ueda-modal-btn {
+  flex: 1;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: #aeb7c8;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.ueda-modal-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.ueda-modal-ok {
+  background: #1DAFD8;
+  color: #050506;
+  border-color: #1DAFD8;
+}
+.ueda-modal-ok:hover { background: #148cb0; color: #fff; }
+.ueda-modal-cancel:empty { display: none; }

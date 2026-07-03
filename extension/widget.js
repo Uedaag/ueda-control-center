@@ -207,8 +207,36 @@
     chrome.storage.local.set({ mode: currentMode }, updateUI);
   });
 
-  statusBtn.addEventListener('click', () => {
-    if (!confirm('Encerrar sessão da extensão UEDA EX?')) return;
+  function uedaConfirm(message, { okText = 'Confirmar', cancelText = 'Cancelar' } = {}) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'ueda-modal-overlay';
+      overlay.innerHTML = `
+        <div class="ueda-modal" role="dialog" aria-modal="true">
+          <img src="${logoUrl}" alt="" class="ueda-modal-logo" />
+          <div class="ueda-modal-title">UEDA EX</div>
+          <div class="ueda-modal-msg"></div>
+          <div class="ueda-modal-actions">
+            <button type="button" class="ueda-modal-btn ueda-modal-cancel"></button>
+            <button type="button" class="ueda-modal-btn ueda-modal-ok"></button>
+          </div>
+        </div>`;
+      overlay.querySelector('.ueda-modal-msg').textContent = message;
+      overlay.querySelector('.ueda-modal-ok').textContent = okText;
+      overlay.querySelector('.ueda-modal-cancel').textContent = cancelText;
+      const close = (val) => { overlay.remove(); resolve(val); };
+      overlay.querySelector('.ueda-modal-ok').addEventListener('click', () => close(true));
+      overlay.querySelector('.ueda-modal-cancel').addEventListener('click', () => close(false));
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+      document.body.appendChild(overlay);
+    });
+  }
+  // Expose so any extension alert can use it
+  window.uedaAlert = (msg) => uedaConfirm(msg, { okText: 'OK', cancelText: '' });
+
+  statusBtn.addEventListener('click', async () => {
+    const ok = await uedaConfirm('Encerrar sessão da extensão UEDA EX?');
+    if (!ok) return;
     try {
       chrome.storage.local.clear(() => {
         document.body.classList.remove('ueda-monitor-on');

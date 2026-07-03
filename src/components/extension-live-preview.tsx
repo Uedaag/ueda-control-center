@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import widgetCss from "../../extension/widget.css?raw";
+import popupCss from "../../extension/popup.css?raw";
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 
 export type ExtensionPreviewState = "collapsed" | "login" | "labels" | "account";
@@ -86,64 +87,44 @@ export function ExtensionLivePreview({ settings, skills }: ExtensionLivePreviewP
 }
 
 function buildLoginDocument(settings: ExtensionPreviewSettings, activated: boolean) {
-  const accent = normalizeHexColor(settings.brand_color);
   const brand = escapeHtml(settings.brand_name || "UEDA EX 5.0");
-  const welcome = escapeHtml(settings.welcome_message || "Bem-vindo! Ative sua chave para continuar.");
-  const footer = escapeHtml(settings.footer_signature || "");
+  const welcome = escapeHtml(settings.welcome_message || "Insira sua chave para ativar a extensão.");
   const logo = escapeAttr(logoAsset.url);
 
-  const body = activated
-    ? `
-      <div class="badge ok">✓ Chave ativada</div>
-      <h1>Olá, Usuário</h1>
-      <p class="sub">Sua licença está ativa e sincronizada.</p>
-      <div class="stat">
-        <span class="lbl">Tempo restante</span>
-        <span class="val">7d 12h 34m</span>
+  const loginHtml = `
+    <section id="loginView" class="login-wrapper new-login-wrapper">
+      <div class="login-centered-box">
+        <div class="login-top-icons">
+          <div class="login-logo-container">
+            <img src="${logo}" class="login-logo-img" alt="Logo" />
+          </div>
+        </div>
+        <p class="login-subtitle">${welcome}</p>
+        <form class="login-form-new" onsubmit="return false">
+          <input type="text" class="login-input-new" placeholder="Sua chave de licença..." />
+          <button class="login-button-new" type="button">Ativar Licença</button>
+        </form>
+        <a class="login-support-new">Suporte</a>
+        <p class="login-footer-text">${brand} - v5.0</p>
       </div>
-      <div class="stat">
-        <span class="lbl">Créditos</span>
-        <span class="val">Ilimitado</span>
+    </section>`;
+
+  const activatedHtml = `
+    <div class="home-view-replacement" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:420px;text-align:center;padding:32px 24px;">
+      <div class="login-logo-container" style="width:56px;height:56px;margin-bottom:18px;">
+        <img src="${logo}" style="width:100%;height:100%;object-fit:contain;" alt="Logo" />
       </div>
-      <button class="btn ghost">Sair da conta</button>
-    `
-    : `
-      <div class="badge">Ativação necessária</div>
-      <h1>${brand}</h1>
-      <p class="sub">${welcome}</p>
-      <label class="lbl">Chave de ativação</label>
-      <input class="key" placeholder="XXXX-XXXX-XXXX-XXXX" />
-      <button class="btn primary">Ativar agora</button>
-      <a class="link">Não tenho uma chave</a>
-    `;
+      <h3 style="color:#fff;font-size:16px;margin:0 0 10px;font-weight:700;">${brand} Ativo</h3>
+      <p style="margin:0;color:#a8b2c8;font-size:13px;line-height:1.5;">O painel de controle foi movido.<br/><br/>Use o ícone flutuante <b style="color:#1DAFD8;">na tela do site</b> para gerenciar.</p>
+    </div>`;
 
   return `<!doctype html><html><head><meta charset="utf-8"/><style>
-    *{box-sizing:border-box;font-family:Inter,system-ui,sans-serif}
-    html,body{margin:0;min-height:100%;background:#0a0a0b;color:#f4f7fb;display:flex;align-items:center;justify-content:center;padding:24px}
-    .card{width:340px;background:#111114;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px 24px;box-shadow:0 30px 80px rgba(0,0,0,.5);display:flex;flex-direction:column;align-items:center;gap:12px}
-    .logo{width:64px;height:64px;border-radius:16px;background:#050506;border:1px solid ${accent}55;display:grid;place-items:center;padding:10px;margin-bottom:4px}
-    .logo img{width:100%;height:100%;object-fit:contain}
-    .badge{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:${accent};background:${accent}18;padding:6px 12px;border-radius:999px;border:1px solid ${accent}44}
-    .badge.ok{color:#70f0c1;background:#70f0c118;border-color:#70f0c144}
-    h1{margin:6px 0 0;font-size:22px;font-weight:800;letter-spacing:-.01em;text-align:center}
-    .sub{margin:0;font-size:12px;color:#8b93a5;text-align:center;line-height:1.5}
-    .lbl{align-self:flex-start;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#8b93a5;margin-top:8px}
-    .key{width:100%;height:44px;background:#050506;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;padding:0 14px;font-size:13px;letter-spacing:.05em;outline:none}
-    .key:focus{border-color:${accent}}
-    .btn{width:100%;height:44px;border-radius:10px;border:0;font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;margin-top:6px}
-    .btn.primary{background:${accent};color:#050506}
-    .btn.ghost{background:transparent;color:#aeb7c8;border:1px solid rgba(255,255,255,.12)}
-    .link{font-size:11px;color:#8b93a5;text-decoration:underline;cursor:pointer;margin-top:4px}
-    .stat{width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#050506;border:1px solid rgba(255,255,255,.06);border-radius:10px}
-    .stat .lbl{margin:0;align-self:auto}
-    .stat .val{font-size:13px;font-weight:700;color:${accent}}
-    footer{position:fixed;bottom:12px;left:0;right:0;text-align:center;font-size:10px;color:#4a5060;letter-spacing:.1em}
+    ${popupCss}
+    html, body { width: 100%; height: 100%; }
+    body { display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .app-shell { width: 320px; }
   </style></head><body>
-    <div class="card">
-      <div class="logo"><img src="${logo}" alt=""/></div>
-      ${body}
-    </div>
-    ${footer ? `<footer>${footer}</footer>` : ""}
+    <main class="app-shell">${activated ? activatedHtml : loginHtml}</main>
   </body></html>`;
 }
 
