@@ -381,4 +381,4 @@ function FloatingWidget({ accent, logo, brand }: { accent: string; logo: string;
     </div>
   );
 }
-}
+
