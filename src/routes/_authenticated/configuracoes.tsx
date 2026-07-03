@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 import {
   Palette, Save, RotateCcw, Type, MessageSquare, FileText, Image as ImageIcon,
-  Globe, Mail, Phone, RefreshCw, Upload, HelpCircle, Volume2, Move, Moon, Settings as Gear,
-  LogOut, Send, Paperclip, Mic, Target, Download, BadgeCheck, Clock,
+  Globe, Mail, Phone, RefreshCw, Upload, HelpCircle, Volume2, Pencil,
+  Download, ChevronLeft, ChevronRight, User, Power,
 } from "lucide-react";
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 
