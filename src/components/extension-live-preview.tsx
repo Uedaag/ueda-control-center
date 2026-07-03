@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import widgetCss from "../../extension/widget.css?raw";
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 
@@ -27,23 +27,46 @@ type ExtensionLivePreviewProps = {
   onStateChange?: (state: ExtensionPreviewState) => void;
 };
 
+type View = "widget" | "login" | "account";
+
+const VIEW_LABELS: Record<View, string> = {
+  widget: "Widget",
+  login: "Ativação",
+  account: "Conta ativa",
+};
+
 export function ExtensionLivePreview({ settings, skills }: ExtensionLivePreviewProps) {
-  const srcDoc = useMemo(() => buildPreviewDocument(settings, skills), [settings, skills]);
+  const [view, setView] = useState<View>("widget");
+  const srcDoc = useMemo(() => {
+    if (view === "login") return buildLoginDocument(settings, false);
+    if (view === "account") return buildLoginDocument(settings, true);
+    return buildPreviewDocument(settings, skills);
+  }, [settings, skills, view]);
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-      <div className="flex items-center justify-between gap-3 mb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
           <span className="h-2 w-2 rounded-full bg-emerald-500" />
-          Prévia interativa
+          Prévia sincronizada
         </div>
-        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-          Clique na logo · depois na seta
-        </span>
+        <div className="inline-flex rounded-lg border border-border bg-background p-1 text-xs font-semibold">
+          {(Object.keys(VIEW_LABELS) as View[]).map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => setView(item)}
+              className={`rounded-md px-3 py-1.5 transition-colors ${view === item ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+            >
+              {VIEW_LABELS[item]}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-border bg-muted">
         <iframe
+          key={view}
           title="Prévia real da extensão"
           srcDoc={srcDoc}
           className="h-[680px] w-full border-0"
@@ -52,11 +75,79 @@ export function ExtensionLivePreview({ settings, skills }: ExtensionLivePreviewP
       </div>
 
       <p className="mt-3 text-center text-[11px] leading-relaxed text-muted-foreground">
-        Mesmo CSS, estrutura e comportamento que a extensão baixada.
+        {view === "widget"
+          ? "Clique na logo flutuante e depois na seta para expandir o menu."
+          : view === "login"
+            ? "Painel de ativação exibido ao usuário antes de inserir a chave."
+            : "Painel exibido após ativação — dados da conta e tempo restante."}
       </p>
     </div>
   );
 }
+
+function buildLoginDocument(settings: ExtensionPreviewSettings, activated: boolean) {
+  const accent = normalizeHexColor(settings.brand_color);
+  const brand = escapeHtml(settings.brand_name || "UEDA EX 5.0");
+  const welcome = escapeHtml(settings.welcome_message || "Bem-vindo! Ative sua chave para continuar.");
+  const footer = escapeHtml(settings.footer_signature || "");
+  const logo = escapeAttr(logoAsset.url);
+
+  const body = activated
+    ? `
+      <div class="badge ok">✓ Chave ativada</div>
+      <h1>Olá, Usuário</h1>
+      <p class="sub">Sua licença está ativa e sincronizada.</p>
+      <div class="stat">
+        <span class="lbl">Tempo restante</span>
+        <span class="val">7d 12h 34m</span>
+      </div>
+      <div class="stat">
+        <span class="lbl">Créditos</span>
+        <span class="val">Ilimitado</span>
+      </div>
+      <button class="btn ghost">Sair da conta</button>
+    `
+    : `
+      <div class="badge">Ativação necessária</div>
+      <h1>${brand}</h1>
+      <p class="sub">${welcome}</p>
+      <label class="lbl">Chave de ativação</label>
+      <input class="key" placeholder="XXXX-XXXX-XXXX-XXXX" />
+      <button class="btn primary">Ativar agora</button>
+      <a class="link">Não tenho uma chave</a>
+    `;
+
+  return `<!doctype html><html><head><meta charset="utf-8"/><style>
+    *{box-sizing:border-box;font-family:Inter,system-ui,sans-serif}
+    html,body{margin:0;min-height:100%;background:#0a0a0b;color:#f4f7fb;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:340px;background:#111114;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px 24px;box-shadow:0 30px 80px rgba(0,0,0,.5);display:flex;flex-direction:column;align-items:center;gap:12px}
+    .logo{width:64px;height:64px;border-radius:16px;background:#050506;border:1px solid ${accent}55;display:grid;place-items:center;padding:10px;margin-bottom:4px}
+    .logo img{width:100%;height:100%;object-fit:contain}
+    .badge{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:${accent};background:${accent}18;padding:6px 12px;border-radius:999px;border:1px solid ${accent}44}
+    .badge.ok{color:#70f0c1;background:#70f0c118;border-color:#70f0c144}
+    h1{margin:6px 0 0;font-size:22px;font-weight:800;letter-spacing:-.01em;text-align:center}
+    .sub{margin:0;font-size:12px;color:#8b93a5;text-align:center;line-height:1.5}
+    .lbl{align-self:flex-start;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#8b93a5;margin-top:8px}
+    .key{width:100%;height:44px;background:#050506;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;padding:0 14px;font-size:13px;letter-spacing:.05em;outline:none}
+    .key:focus{border-color:${accent}}
+    .btn{width:100%;height:44px;border-radius:10px;border:0;font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;margin-top:6px}
+    .btn.primary{background:${accent};color:#050506}
+    .btn.ghost{background:transparent;color:#aeb7c8;border:1px solid rgba(255,255,255,.12)}
+    .link{font-size:11px;color:#8b93a5;text-decoration:underline;cursor:pointer;margin-top:4px}
+    .stat{width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#050506;border:1px solid rgba(255,255,255,.06);border-radius:10px}
+    .stat .lbl{margin:0;align-self:auto}
+    .stat .val{font-size:13px;font-weight:700;color:${accent}}
+    footer{position:fixed;bottom:12px;left:0;right:0;text-align:center;font-size:10px;color:#4a5060;letter-spacing:.1em}
+  </style></head><body>
+    <div class="card">
+      <div class="logo"><img src="${logo}" alt=""/></div>
+      ${body}
+    </div>
+    ${footer ? `<footer>${footer}</footer>` : ""}
+  </body></html>`;
+}
+
+
 
 function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: ExtensionPreviewSkill[]) {
   const accent = normalizeHexColor(settings.brand_color);
