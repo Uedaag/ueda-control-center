@@ -1,1 +1,7 @@
 project_id = "keqgzvcahsvseowfowwu"
+
+[functions.fn-sv03]
+verify_jwt = false
+
+[functions.fn-vl04]
+verify_jwt = false
