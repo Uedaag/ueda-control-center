@@ -24,6 +24,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 const items = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/licencas", label: "Licenças", icon: KeyRound },
   { to: "/skills", label: "Skills", icon: Sparkles },
   { to: "/releases", label: "Releases", icon: Rocket },
   { to: "/preview", label: "Preview", icon: Eye },
