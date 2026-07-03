@@ -89,6 +89,8 @@ Deno.serve(async (req) => {
           brand_name: settings.brand_name || "UEDA EX 5.0",
           brand_color: brandColor,
           widget_accent_color: brandColor,
+          chat_custom_css: settings.chat_custom_css || settings.custom_css || "",
+          custom_css: settings.custom_css || settings.chat_custom_css || "",
           welcome_message: settings.welcome_message || "Ative sua chave para continuar.",
           footer_signature: settings.footer_signature || "",
           support_url: settings.support_url || "",

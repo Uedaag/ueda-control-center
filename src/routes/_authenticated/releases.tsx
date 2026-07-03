@@ -2,13 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2 } from "lucide-react";
+import { Rocket, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/releases")({
@@ -18,9 +16,11 @@ export const Route = createFileRoute("/_authenticated/releases")({
 
 type Release = { id: string; version: string; min_version: string; download_url: string; changelog: string; force_update: boolean; is_active: boolean; created_at: string; };
 
+const CURRENT_EXTENSION_VERSION = "5.0";
+
 function Page() {
   const [rows, setRows] = useState<Release[]>([]);
-  const [form, setForm] = useState({ version: "", min_version: "", download_url: "", changelog: "", force_update: false });
+  const [changelog, setChangelog] = useState("");
 
   const load = async () => {
     const { data } = await supabase.from("releases").select("*").order("created_at", { ascending: false });
@@ -29,17 +29,23 @@ function Page() {
   useEffect(() => { load(); }, []);
 
   const create = async () => {
-    if (!form.version || !form.min_version) return toast.error("Versão obrigatória");
     // deactivate previous
     await supabase.from("releases").update({ is_active: false }).neq("id", "00000000-0000-0000-0000-000000000000");
-    const { error } = await supabase.from("releases").insert({ ...form, is_active: true });
+    const { error } = await supabase.from("releases").insert({
+      version: CURRENT_EXTENSION_VERSION,
+      min_version: CURRENT_EXTENSION_VERSION,
+      download_url: "",
+      changelog,
+      force_update: false,
+      is_active: true,
+    });
     if (error) return toast.error(error.message);
     // update settings mirror
-    await supabase.from("settings").upsert({ key: "ext_version", value: form.version }, { onConflict: "key" });
-    await supabase.from("settings").upsert({ key: "min_version", value: form.min_version }, { onConflict: "key" });
-    await supabase.from("settings").upsert({ key: "force_update", value: form.force_update ? "true" : "false" }, { onConflict: "key" });
-    toast.success("Release publicada");
-    setForm({ version: "", min_version: "", download_url: "", changelog: "", force_update: false });
+    await supabase.from("settings").upsert({ key: "ext_version", value: CURRENT_EXTENSION_VERSION }, { onConflict: "key" });
+    await supabase.from("settings").upsert({ key: "min_version", value: CURRENT_EXTENSION_VERSION }, { onConflict: "key" });
+    await supabase.from("settings").upsert({ key: "force_update", value: "false" }, { onConflict: "key" });
+    toast.success("Atualização liberada para sincronização manual");
+    setChangelog("");
     load();
   };
 
@@ -52,23 +58,17 @@ function Page() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold gradient-text">Releases</h1>
-        <p className="text-muted-foreground text-sm">Publique novas versões e force atualizações</p>
+        <h1 className="text-3xl font-bold gradient-text">Atualizações</h1>
+        <p className="text-muted-foreground text-sm">Libere ajustes para o cliente aplicar pelo botão Atualizar da extensão</p>
       </div>
 
       <Card className="glass-card border-0 p-6 space-y-4">
-        <h2 className="font-semibold">Nova release</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div><Label>Versão</Label><Input value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} placeholder="15.4.0" /></div>
-          <div><Label>Versão mínima</Label><Input value={form.min_version} onChange={(e) => setForm({ ...form, min_version: e.target.value })} placeholder="15.3.0" /></div>
+        <div>
+          <h2 className="font-semibold">Liberar nova atualização</h2>
+          <p className="text-sm text-muted-foreground">Use depois de salvar cores, skills ou CSS. O cliente só precisa clicar em Atualizar.</p>
         </div>
-        <div><Label>URL do .zip</Label><Input value={form.download_url} onChange={(e) => setForm({ ...form, download_url: e.target.value })} placeholder="https://..." /></div>
-        <div><Label>Changelog</Label><Textarea value={form.changelog} onChange={(e) => setForm({ ...form, changelog: e.target.value })} rows={4} /></div>
-        <div className="flex items-center gap-2">
-          <Switch checked={form.force_update} onCheckedChange={(v) => setForm({ ...form, force_update: v })} />
-          <Label>Forçar atualização</Label>
-        </div>
-        <Button onClick={create} className="gradient-accent border-0 text-white"><Plus className="h-4 w-4 mr-1" />Publicar</Button>
+        <div><Label>Observações internas</Label><Textarea value={changelog} onChange={(e) => setChangelog(e.target.value)} rows={4} /></div>
+        <Button onClick={create} className="gradient-accent border-0 text-white"><Rocket className="h-4 w-4 mr-1" />Liberar nova atualização</Button>
       </Card>
 
       <Card className="glass-card border-0 p-4 space-y-2">
