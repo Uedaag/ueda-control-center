@@ -26,13 +26,9 @@ body {
   padding: 0;
   font-family: "Bahnschrift", "Franklin Gothic Medium", "Trebuchet MS", Arial, Helvetica, sans-serif;
   color: var(--text-main);
-  background:
-    -webkit-radial-gradient(140% 80% at 80% -10%, rgba(29, 175, 216, 0.25), transparent 42%),
-    -webkit-radial-gradient(120% 70% at -10% 100%, rgba(29, 175, 216, 0.22), transparent 45%),
-    -webkit-linear-gradient(180deg, #000000 0%, var(--bg-page) 100%),
-    radial-gradient(140% 80% at 80% -10%, rgba(29, 175, 216, 0.25), transparent 42%),
-    radial-gradient(120% 70% at -10% 100%, rgba(29, 175, 216, 0.22), transparent 45%),
-    linear-gradient(180deg, #000000 0%, var(--bg-page) 100%);
+  background: transparent;
+  border-radius: 16px;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -44,16 +40,17 @@ body {
   flex-direction: column;
   gap: 8px;
   padding: 10px;
-  background: linear-gradient(180deg, #111111 0%, var(--surface) 100%);
+  background:
+    radial-gradient(140% 80% at 80% -10%, rgba(29, 175, 216, 0.18), transparent 42%),
+    radial-gradient(120% 70% at -10% 100%, rgba(29, 175, 216, 0.16), transparent 45%),
+    linear-gradient(180deg, #111111 0%, var(--surface) 100%);
   box-shadow: var(--shadow-soft);
+  border-radius: 16px;
   position: relative;
   overflow: hidden;
 }
 
-.app-shell::after {
-  display: none !important;
-}
-}
+
 
 .header { display: flex; justify-content: space-between; align-items: center; }
 .brand { display: flex; align-items: center; gap: 9px; }
