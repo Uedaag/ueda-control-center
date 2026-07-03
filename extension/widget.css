@@ -1,0 +1,64 @@
+/* UEDA EX 5.0 floating widget — isolated namespace */
+#ueda-root, #ueda-root * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+#ueda-root {
+  position: fixed; bottom: 24px; right: 24px; z-index: 2147483647;
+  display: flex; align-items: flex-end; gap: 10px;
+}
+.ueda-fab {
+  position: relative; width: 60px; height: 60px; border-radius: 50%;
+  background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none; padding: 0;
+}
+.ueda-fab img { width: 40px; height: 40px; object-fit: contain; border-radius: 50%; }
+.ueda-fab::before, .ueda-fab::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid var(--ueda-accent, #4fa1c9); opacity: 0.7;
+  animation: ueda-pulse 2s ease-out infinite;
+}
+.ueda-fab::after { animation-delay: 1s; }
+@keyframes ueda-pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.ueda-panel {
+  background: #111827; color: #f3f4f6; border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4); overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.ueda-panel.icons { width: 64px; }
+.ueda-panel.labels { width: 260px; }
+.ueda-panel.login, .ueda-panel.chat { width: 340px; }
+
+.ueda-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; background: var(--ueda-accent, #4fa1c9); color: #fff;
+}
+.ueda-header img { width: 28px; height: 28px; border-radius: 50%; background: #fff; padding: 2px; }
+.ueda-header .title { font-weight: 700; font-size: 13px; flex: 1; }
+.ueda-header button { background: transparent; border: none; color: #fff; cursor: pointer; font-size: 18px; line-height: 1; }
+
+.ueda-body { padding: 14px; }
+.ueda-menu-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+  cursor: pointer; font-size: 13px; color: #e5e7eb; border-radius: 8px;
+}
+.ueda-menu-item:hover { background: rgba(255,255,255,0.06); color: var(--ueda-accent, #4fa1c9); }
+.ueda-menu-item .ico { width: 20px; text-align: center; font-size: 16px; }
+
+.ueda-input {
+  width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 10px 12px; color: #f3f4f6; font-size: 13px; margin-bottom: 10px;
+}
+.ueda-btn {
+  width: 100%; background: var(--ueda-accent, #4fa1c9); color: #fff; border: none;
+  border-radius: 10px; padding: 11px; font-weight: 700; font-size: 13px; cursor: pointer;
+}
+.ueda-btn:disabled { opacity: 0.6; cursor: wait; }
+.ueda-btn.secondary { background: transparent; border: 1px solid rgba(255,255,255,0.15); }
+.ueda-footer { text-align: center; font-size: 10px; color: #6b7280; padding: 8px; }
+.ueda-msg { font-size: 12px; padding: 8px 10px; border-radius: 8px; margin-bottom: 8px; }
+.ueda-msg.err { background: rgba(239,68,68,0.15); color: #fca5a5; }
+.ueda-msg.ok { background: rgba(34,197,94,0.15); color: #86efac; }
+.ueda-welcome { font-size: 13px; line-height: 1.5; margin-bottom: 12px; color: #d1d5db; }
