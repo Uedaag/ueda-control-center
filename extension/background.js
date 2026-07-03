@@ -5,9 +5,13 @@
 chrome.runtime.onInstalled.addListener(async () => {
   try {
     const res = await fetch(chrome.runtime.getURL("config.json"));
-    const config = await res.json();
-    const existing = await chrome.storage.local.get("ueda_config");
+    const rawConfig = await res.json();
+    const { initial_skills, ...config } = rawConfig || {};
+    const existing = await chrome.storage.local.get(["ueda_config", "ueda_skills"]);
     if (!existing.ueda_config) await chrome.storage.local.set({ ueda_config: config });
+    if (!existing.ueda_skills && Array.isArray(initial_skills)) {
+      await chrome.storage.local.set({ ueda_skills: initial_skills });
+    }
   } catch (e) {
     console.warn("[UEDA] Falha ao carregar config inicial", e);
   }

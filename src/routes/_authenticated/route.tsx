@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useNavigate, useRouterState } 
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LayoutDashboard, Sparkles, Rocket, Eye, Settings, LogOut, KeyRound, Sun, Moon } from "lucide-react";
+import { LayoutDashboard, Sparkles, Rocket, Settings, LogOut, KeyRound, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
 
@@ -29,7 +29,6 @@ const items = [
   { to: "/licencas", label: "Licenças", icon: KeyRound },
   { to: "/skills", label: "Skills", icon: Sparkles },
   { to: "/releases", label: "Releases", icon: Rocket },
-  { to: "/preview", label: "Preview", icon: Eye },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
