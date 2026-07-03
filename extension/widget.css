@@ -169,3 +169,37 @@ body.ueda-monitor-on div:has(> div > textarea[placeholder*="Lovable"]) {
   box-shadow: 0 0 0 2px #1DAFD8, 0 0 20px rgba(29, 175, 216, 0.4) !important;
   transition: all 0.3s ease-in-out !important;
 }
+
+/* "melhorar prompt" -> icon-only pincel button in UEDA colors */
+body.ueda-monitor-on button:has(> svg.lucide-wand),
+body.ueda-monitor-on button:has(> svg.lucide-wand-sparkles),
+body.ueda-monitor-on button:has(> svg[class*="wand"]) {
+  font-size: 0 !important;
+  gap: 0 !important;
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  color: #1DAFD8 !important;
+  background: radial-gradient(circle at 50% 42%, #111418 0%, #050506 70%) !important;
+  border: 1px solid rgba(29, 175, 216, 0.5) !important;
+  box-shadow: 0 0 12px rgba(29, 175, 216, 0.35) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+body.ueda-monitor-on button:has(> svg[class*="wand"]):hover {
+  box-shadow: 0 0 18px rgba(29, 175, 216, 0.6) !important;
+  transform: translateY(-1px);
+}
+
+body.ueda-monitor-on button:has(> svg[class*="wand"]) > svg {
+  width: 16px !important;
+  height: 16px !important;
+  stroke: #1DAFD8 !important;
+  color: #1DAFD8 !important;
+}
+
