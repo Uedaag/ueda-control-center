@@ -1,7 +1,7 @@
 (function() {
   if (document.getElementById('ueda-widget-container')) return;
 
-  const logoUrl = chrome.runtime.getURL('logo.png');
+  const logoUrl = chrome.runtime.getURL('icon.png');
   const UPDATE_ENDPOINT = 'https://keqgzvcahsvseowfowwu.supabase.co/functions/v1/fn-sv03?check=updates';
 
   // ---- Remote config: greeting audio + chat SFX ----
