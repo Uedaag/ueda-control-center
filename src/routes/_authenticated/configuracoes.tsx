@@ -97,7 +97,7 @@ function Page() {
 
   return (
     <div className="-m-6 min-h-full bg-background p-6 text-foreground">
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_560px]">
         {/* MAIN */}
         <div className="space-y-6 min-w-0">
           {/* HERO CARD */}
