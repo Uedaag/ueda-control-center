@@ -1,126 +1,123 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Zap, StickyNote, Download, Eraser, Monitor, Sparkles } from "lucide-react";
+import { LogIn, RefreshCw, LogOut, Play } from "lucide-react";
+import logoAsset from "@/assets/ueda-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated/preview")({
   component: Page,
   head: () => ({ meta: [{ title: "Preview — UEDA EX 5.0" }] }),
 });
 
-const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  Zap, StickyNote, Download, Eraser, Monitor, Sparkles,
-};
+type Skill = { id: string; name: string; description: string | null; icon: string; status: boolean };
 
-type Skill = { id: string; name: string; icon: string; status: boolean; display_order: number; };
+const KEYS = ["brand_name", "brand_color", "welcome_message", "footer_signature"] as const;
 
 function Page() {
-  const [layout, setLayout] = useState<"floating" | "sidebar">("floating");
-  const [dark, setDark] = useState(true);
-  const [logged, setLogged] = useState(false);
-  const [skills, setSkills] = useState<Skill[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [state, setState] = useState<"collapsed" | "login" | "labels">("collapsed");
+  const [session, setSession] = useState<{ key: string } | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      const [{ data: sk }, { data: st }] = await Promise.all([
-        supabase.from("skills").select("id,name,icon,status,display_order").eq("status", true).order("display_order"),
-        supabase.from("settings").select("key,value"),
-      ]);
-      setSkills((sk as Skill[]) || []);
-      const s: Record<string, string> = {};
-      (st || []).forEach((r: any) => (s[r.key] = r.value));
-      setSettings(s);
-    })();
-  }, []);
+  const load = async () => {
+    const [{ data: st }, { data: sk }] = await Promise.all([
+      supabase.from("settings").select("key,value").in("key", KEYS as unknown as string[]),
+      supabase.from("skills").select("id,name,description,icon,status").eq("status", true).order("display_order"),
+    ]);
+    const s: Record<string, string> = {};
+    (st || []).forEach((r: any) => (s[r.key] = r.value));
+    setSettings(s);
+    setSkills((sk as Skill[]) || []);
+  };
+  useEffect(() => { load(); }, []);
 
-  const accent = settings.widget_accent_color || "#7c3aed";
-  const bg = dark ? "hsl(222,20%,10%)" : "#ffffff";
-  const fg = dark ? "#f3f4f6" : "#111827";
-  const cardBg = dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)";
-
-  const widget = (
-    <div style={{
-      background: bg, color: fg, borderRadius: 14, padding: 20,
-      boxShadow: "0 20px 60px -20px rgba(0,0,0,0.5)", fontFamily: "system-ui, sans-serif",
-      width: layout === "floating" ? 360 : "100%", height: layout === "sidebar" ? "100%" : "auto",
-    }}>
-      <div className="flex items-center gap-2 mb-4">
-        <div style={{ width: 32, height: 32, borderRadius: 8, background: accent }} className="flex items-center justify-center">
-          <Sparkles className="w-4 h-4 text-white" />
-        </div>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 14 }}>{settings.widget_title || "UEDA EX 5.0"}</div>
-          <div style={{ fontSize: 11, opacity: 0.6 }}>{settings.widget_subtitle || ""}</div>
-        </div>
-      </div>
-
-      {!logged ? (
-        <>
-          <input placeholder="Chave de licença" style={{
-            width: "100%", background: cardBg, border: "none", borderRadius: 10,
-            padding: "10px 12px", color: fg, fontSize: 13, marginBottom: 10,
-          }} />
-          <button style={{
-            width: "100%", background: "hsl(234,89%,56%)", color: "white", border: "none",
-            borderRadius: 10, padding: "10px", fontWeight: 600, fontSize: 13, cursor: "pointer",
-          }}>Entrar</button>
-        </>
-      ) : (
-        <div className="space-y-2">
-          {skills.map((s) => {
-            const Icon = ICONS[s.icon] ?? Zap;
-            return (
-              <div key={s.id} style={{ background: cardBg, borderRadius: 10, padding: "10px 12px" }} className="flex items-center gap-2">
-                <div style={{ width: 28, height: 28, borderRadius: 6, background: accent }} className="flex items-center justify-center">
-                  <Icon className="w-3.5 h-3.5 text-white" />
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 500 }}>{s.name}</span>
-              </div>
-            );
-          })}
-          {skills.length === 0 && <div style={{ fontSize: 12, opacity: 0.6 }}>Nenhuma skill ativa</div>}
-        </div>
-      )}
-    </div>
-  );
+  const accent = settings.brand_color || "#4fa1c9";
+  const brand = settings.brand_name || "UEDA EX 5.0";
+  const welcome = settings.welcome_message || "Ative sua chave para continuar.";
+  const footer = settings.footer_signature || "";
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold gradient-text">Preview</h1>
-        <p className="text-muted-foreground text-sm">Simulação em tempo real do widget</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold gradient-text">Preview</h1>
+          <p className="text-muted-foreground text-sm">Espelho fiel da extensão — usa os mesmos dados de Configurações + Skills.</p>
+        </div>
+        <button onClick={load} className="text-xs px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 flex items-center gap-1.5">
+          <RefreshCw className="w-3.5 h-3.5" /> Atualizar dados
+        </button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
-        <Card className="glass-card border-0 p-4 space-y-4 h-fit">
-          <div className="flex items-center justify-between">
-            <Label>Modo</Label>
-            <div className="flex gap-1">
-              <Button size="sm" variant={layout === "floating" ? "default" : "outline"} onClick={() => setLayout("floating")}>Flutuante</Button>
-              <Button size="sm" variant={layout === "sidebar" ? "default" : "outline"} onClick={() => setLayout("sidebar")}>Sidebar</Button>
-            </div>
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <div className="rounded-xl bg-white/5 border border-white/5 p-4 space-y-3 h-fit">
+          <div className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Estado do widget</div>
+          <div className="grid grid-cols-3 gap-1">
+            {(["collapsed", "login", "labels"] as const).map((s) => (
+              <button key={s} onClick={() => setState(s)}
+                className={`px-2 py-1.5 rounded text-xs font-semibold ${state === s ? "bg-white/15 text-white" : "bg-transparent text-muted-foreground hover:bg-white/5"}`}>
+                {s}
+              </button>
+            ))}
           </div>
-          <div className="flex items-center justify-between">
-            <Label>Tema escuro</Label>
-            <Switch checked={dark} onCheckedChange={setDark} />
+          <div className="text-[11px] text-muted-foreground pt-2 border-t border-white/5">
+            Sessão: <span className="text-white">{session ? "ativa" : "sem chave"}</span>
           </div>
-          <div className="flex items-center justify-between">
-            <Label>Logado</Label>
-            <Switch checked={logged} onCheckedChange={setLogged} />
-          </div>
-        </Card>
+          {session && (
+            <button onClick={() => { setSession(null); setState("login"); }} className="w-full text-xs px-2 py-1.5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center gap-1.5">
+              <LogOut className="w-3 h-3" /> Simular logout
+            </button>
+          )}
+        </div>
 
         <div className="relative rounded-xl border border-white/5 bg-gradient-to-br from-slate-800 to-slate-950 min-h-[600px] p-6 overflow-hidden">
-          {layout === "floating" ? (
-            <div className="absolute bottom-6 right-6">{widget}</div>
-          ) : (
-            <div className="absolute inset-y-0 right-0 w-[360px]">{widget}</div>
+          {/* Right-side panel */}
+          {state !== "collapsed" && (
+            <div className="absolute bottom-24 right-24 w-[300px] rounded-2xl overflow-hidden shadow-2xl" style={{ background: "#111827", color: "#f3f4f6" }}>
+              <div className="flex items-center gap-2 px-3 py-2.5" style={{ background: accent, color: "#fff" }}>
+                <img src={logoAsset.url} className="w-6 h-6 rounded-full bg-white p-0.5" alt="" />
+                <div className="text-xs font-bold flex-1">{brand}</div>
+                <button onClick={() => setState("collapsed")} className="text-white/90">✕</button>
+              </div>
+              <div className="p-3 space-y-1.5">
+                {state === "login" ? (
+                  <>
+                    <div className="text-xs text-slate-300 mb-2">{welcome}</div>
+                    <input placeholder="Chave de licença" className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500" />
+                    <button onClick={() => { setSession({ key: "demo" }); setState("labels"); }}
+                      className="w-full py-2 rounded-lg text-white text-xs font-bold flex items-center justify-center gap-1.5" style={{ background: accent }}>
+                      <LogIn className="w-3.5 h-3.5" /> Ativar licença
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {skills.length === 0 && <div className="text-xs text-slate-400 py-2">Nenhuma skill ativa.</div>}
+                    {skills.map((s) => (
+                      <div key={s.id} className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-white/5 cursor-pointer text-xs" title={s.description || ""}>
+                        <Play className="w-3 h-3" style={{ color: accent }} />
+                        <span className="flex-1 truncate">{s.name}</span>
+                      </div>
+                    ))}
+                    <div className="border-t border-white/5 mt-2 pt-2 space-y-1">
+                      <div className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-white/5 cursor-pointer text-xs">
+                        <RefreshCw className="w-3 h-3" /> Atualizar extensão
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="text-center text-[10px] text-slate-500 py-2 border-t border-white/5">{footer}</div>
+            </div>
           )}
+
+          {/* Floating pulsing FAB */}
+          <button
+            onClick={() => setState(state === "collapsed" ? (session ? "labels" : "login") : "collapsed")}
+            className="absolute bottom-6 right-6 w-[60px] h-[60px] rounded-full bg-white shadow-2xl flex items-center justify-center"
+            style={{ boxShadow: `0 0 0 0 ${accent}66` }}
+          >
+            <span className="absolute inset-0 rounded-full animate-ping" style={{ border: `2px solid ${accent}`, opacity: 0.5 }} />
+            <img src={logoAsset.url} className="w-10 h-10 object-contain rounded-full" alt="logo" />
+          </button>
         </div>
       </div>
     </div>
