@@ -12,6 +12,7 @@
   right: 28px;
   bottom: 28px;
   z-index: 9999999;
+  --ueda-accent: #1DAFD8;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -23,10 +24,10 @@
   width: 62px;
   height: 62px;
   padding: 0;
-  border: 1px solid rgba(29, 175, 216, 0.38);
+  border: 1px solid color-mix(in srgb, var(--ueda-accent, #1DAFD8) 38%, transparent);
   border-radius: 999px;
   background: radial-gradient(circle at 50% 42%, #111418 0%, #050506 70%);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32), 0 0 0 10px rgba(29, 175, 216, 0.12), 0 0 26px rgba(29, 175, 216, 0.22);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32), 0 0 0 10px color-mix(in srgb, var(--ueda-accent, #1DAFD8) 12%, transparent), 0 0 26px color-mix(in srgb, var(--ueda-accent, #1DAFD8) 22%, transparent);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -39,7 +40,7 @@
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  border: 2px solid rgba(29, 175, 216, 0.38);
+  border: 2px solid color-mix(in srgb, var(--ueda-accent, #1DAFD8) 38%, transparent);
   animation: ueda-pulse 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
   pointer-events: none;
 }
@@ -57,7 +58,7 @@
   width: 36px;
   height: 36px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 10px rgba(29, 175, 216, 0.28));
+  filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--ueda-accent, #1DAFD8) 28%, transparent));
 }
 
 .ueda-widget-menu {
@@ -107,7 +108,7 @@
 
 .ueda-menu-header {
   margin: 0 0 4px;
-  border: 1px solid rgba(29, 175, 216, 0.55);
+  border: 1px solid color-mix(in srgb, var(--ueda-accent, #1DAFD8) 55%, transparent);
   color: #f4f7fb;
 }
 
@@ -136,7 +137,7 @@
 }
 
 .ueda-menu-header:hover svg,
-.ueda-menu-item:hover svg { stroke: #1DAFD8; }
+.ueda-menu-item:hover svg { stroke: var(--ueda-accent, #1DAFD8); }
 
 #ueda-widget-container.ueda-collapsed .ueda-menu-header svg { transform: rotate(180deg); }
 
@@ -162,11 +163,18 @@
 .ueda-text-red,
 .ueda-text-red svg { color: #ff8b8b !important; stroke: #ff8b8b !important; }
 
+body.ueda-monitor-on .ueda-chat-active,
+body.ueda-monitor-on form:has(textarea[placeholder*="Lovable"]),
+body.ueda-monitor-on form:has(textarea[placeholder*="Pergunte"]),
 body.ueda-monitor-on div:has(> textarea[placeholder*="Lovable"]),
-body.ueda-monitor-on div:has(> div > textarea[placeholder*="Lovable"]) {
-  border-color: #1DAFD8 !important;
+body.ueda-monitor-on div:has(> textarea[placeholder*="Pergunte"]),
+body.ueda-monitor-on div:has(> div > textarea[placeholder*="Lovable"]),
+body.ueda-monitor-on div:has(> div > textarea[placeholder*="Pergunte"]),
+body.ueda-monitor-on div:has(> div > div > textarea[placeholder*="Lovable"]),
+body.ueda-monitor-on div:has(> div > div > textarea[placeholder*="Pergunte"]) {
+  border: 1px solid var(--ueda-accent, #1DAFD8) !important;
   border-radius: 16px !important;
-  box-shadow: 0 0 0 2px #1DAFD8, 0 0 20px rgba(29, 175, 216, 0.4) !important;
+  box-shadow: 0 0 0 1px var(--ueda-accent, #1DAFD8), 0 0 22px color-mix(in srgb, var(--ueda-accent, #1DAFD8) 42%, transparent) !important;
   transition: all 0.3s ease-in-out !important;
 }
 
@@ -181,10 +189,10 @@ body.ueda-monitor-on button:has(> svg[class*="wand"]) {
   height: 34px !important;
   padding: 0 !important;
   border-radius: 999px !important;
-  color: #1DAFD8 !important;
+  color: var(--ueda-accent, #1DAFD8) !important;
   background: radial-gradient(circle at 50% 42%, #111418 0%, #050506 70%) !important;
-  border: 1px solid rgba(29, 175, 216, 0.5) !important;
-  box-shadow: 0 0 12px rgba(29, 175, 216, 0.35) !important;
+  border: 1px solid color-mix(in srgb, var(--ueda-accent, #1DAFD8) 50%, transparent) !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--ueda-accent, #1DAFD8) 35%, transparent) !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -192,15 +200,15 @@ body.ueda-monitor-on button:has(> svg[class*="wand"]) {
 }
 
 body.ueda-monitor-on button:has(> svg[class*="wand"]):hover {
-  box-shadow: 0 0 18px rgba(29, 175, 216, 0.6) !important;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--ueda-accent, #1DAFD8) 60%, transparent) !important;
   transform: translateY(-1px);
 }
 
 body.ueda-monitor-on button:has(> svg[class*="wand"]) > svg {
   width: 16px !important;
   height: 16px !important;
-  stroke: #1DAFD8 !important;
-  color: #1DAFD8 !important;
+  stroke: var(--ueda-accent, #1DAFD8) !important;
+  color: var(--ueda-accent, #1DAFD8) !important;
 }
 
 
@@ -221,11 +229,11 @@ body.ueda-monitor-on button:has(> svg[class*="wand"]) > svg {
   width: min(340px, 92vw);
   background: #16181f;
   color: #f4f7fb;
-  border: 1px solid #1DAFD8;
+  border: 1px solid var(--ueda-accent, #1DAFD8);
   border-radius: 24px;
   padding: 28px 24px 22px;
   text-align: center;
-  box-shadow: 0 0 30px rgba(29, 175, 216, 0.25), inset 0 0 20px rgba(29, 175, 216, 0.05);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--ueda-accent, #1DAFD8) 25%, transparent), inset 0 0 20px color-mix(in srgb, var(--ueda-accent, #1DAFD8) 5%, transparent);
   font-family: Inter, system-ui, sans-serif;
 }
 .ueda-modal-logo {
@@ -238,7 +246,7 @@ body.ueda-monitor-on button:has(> svg[class*="wand"]) > svg {
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.04em;
-  color: #1DAFD8;
+  color: var(--ueda-accent, #1DAFD8);
   margin-bottom: 10px;
 }
 .ueda-modal-msg {
@@ -269,9 +277,9 @@ body.ueda-monitor-on button:has(> svg[class*="wand"]) > svg {
 }
 .ueda-modal-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
 .ueda-modal-ok {
-  background: #1DAFD8;
+  background: var(--ueda-accent, #1DAFD8);
   color: #050506;
-  border-color: #1DAFD8;
+  border-color: var(--ueda-accent, #1DAFD8);
 }
 .ueda-modal-ok:hover { background: #148cb0; color: #fff; }
 .ueda-modal-cancel:empty { display: none; }
