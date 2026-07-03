@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { KeyRound, Activity, Sparkles, Package } from "lucide-react";
+import { Activity, Sparkles, Package } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -10,19 +10,17 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function Dashboard() {
-  const [stats, setStats] = useState({ activeLicenses: 0, requests24h: 0, activeSkills: 0, version: "-" });
+  const [stats, setStats] = useState({ requests24h: 0, activeSkills: 0, version: "-" });
 
   useEffect(() => {
     (async () => {
-      const [lic, req, sk, ver] = await Promise.all([
-        supabase.from("licenses").select("id", { count: "exact", head: true }).eq("status", "active"),
+      const [req, sk, ver] = await Promise.all([
         supabase.from("request_log").select("id", { count: "exact", head: true })
           .gte("created_at", new Date(Date.now() - 86400000).toISOString()),
         supabase.from("skills").select("id", { count: "exact", head: true }).eq("status", true),
         supabase.from("settings").select("value").eq("key", "ext_version").maybeSingle(),
       ]);
       setStats({
-        activeLicenses: lic.count ?? 0,
         requests24h: req.count ?? 0,
         activeSkills: sk.count ?? 0,
         version: ver.data?.value ?? "-",
@@ -31,7 +29,6 @@ function Dashboard() {
   }, []);
 
   const cards = [
-    { label: "Licenças ativas", value: stats.activeLicenses, icon: KeyRound },
     { label: "Requisições 24h", value: stats.requests24h, icon: Activity },
     { label: "Skills ativas", value: stats.activeSkills, icon: Sparkles },
     { label: "Versão atual", value: stats.version, icon: Package },
@@ -43,7 +40,7 @@ function Dashboard() {
         <h1 className="text-3xl font-bold gradient-text">Dashboard</h1>
         <p className="text-muted-foreground text-sm mt-1">Visão geral em tempo real</p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         {cards.map((c) => (
           <Card key={c.label} className="glass-card border-0">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
