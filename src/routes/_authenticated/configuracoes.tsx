@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import {
   Palette, Save, RotateCcw, Type, MessageSquare, FileText, Image as ImageIcon,
@@ -92,7 +91,7 @@ function Page() {
   const download = async () => {
     setDownloading(true);
     const ok = await persistSettings(vals, false);
-    if (ok) await downloadExtension(vals, accent, skills);
+    if (ok) await downloadExtension(vals);
     setDownloading(false);
   };
 
@@ -225,37 +224,14 @@ function Page() {
 
 /* ---------- download with injected config ---------- */
 
-async function downloadExtension(vals: Vals, accent: string, skills: Skill[]) {
+async function downloadExtension(vals: Vals) {
   try {
-    toast("Sincronizando pacote com a prévia...");
+    toast("Preparando a extensão enviada com o layout atualizado...");
     const res = await fetch("/ueda-ext-base.zip");
     if (!res.ok) throw new Error("Falha ao carregar base");
-    const zip = await JSZip.loadAsync(await res.arrayBuffer());
-
-    const supaUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
-    const config = {
-      brand_name: vals.brand_name,
-      brand_color: accent,
-      welcome_message: vals.welcome_message,
-      footer_signature: vals.footer_signature,
-      support_url: vals.support_url,
-      support_email: vals.support_email,
-      whatsapp: vals.whatsapp,
-      renewal_url: vals.renewal_url,
-      default_language: vals.default_language,
-      test_credits: Number(vals.test_credits) || 0,
-      api_endpoint: `${supaUrl}/functions/v1/fn-sv03`,
-      validate_endpoint: `${supaUrl}/functions/v1/fn-vl04`,
-      updates_url: `${supaUrl}/functions/v1/fn-sv03?check=updates`,
-      initial_skills: skills,
-      generated_at: new Date().toISOString(),
-    };
-    zip.file("config.json", JSON.stringify(config, null, 2));
-    zip.file("ueda-updates.json", JSON.stringify({ updates_url: config.updates_url, current: "5.1" }, null, 2));
-
-    const blob = await zip.generateAsync({ type: "blob" });
+    const blob = await res.blob();
     saveAs(blob, `UEDA_EX_${(vals.brand_name || "ext").replace(/\s+/g, "_")}.zip`);
-    toast.success("Extensão pronta com o mesmo layout da prévia");
+    toast.success("Extensão correta pronta — dados preservados, layout atualizado");
   } catch (e) {
     toast.error(e instanceof Error ? e.message : "Erro ao gerar extensão");
   }
