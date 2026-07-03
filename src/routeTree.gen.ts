@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSkillsRouteImport } from './routes/_authenticated/skills'
 import { Route as AuthenticatedReleasesRouteImport } from './routes/_authenticated/releases'
 import { Route as AuthenticatedPreviewRouteImport } from './routes/_authenticated/preview'
+import { Route as AuthenticatedLicencasRouteImport } from './routes/_authenticated/licencas'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 
@@ -47,6 +48,11 @@ const AuthenticatedPreviewRoute = AuthenticatedPreviewRouteImport.update({
   path: '/preview',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLicencasRoute = AuthenticatedLicencasRouteImport.update({
+  id: '/licencas',
+  path: '/licencas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/licencas': typeof AuthenticatedLicencasRoute
   '/preview': typeof AuthenticatedPreviewRoute
   '/releases': typeof AuthenticatedReleasesRoute
   '/skills': typeof AuthenticatedSkillsRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/licencas': typeof AuthenticatedLicencasRoute
   '/preview': typeof AuthenticatedPreviewRoute
   '/releases': typeof AuthenticatedReleasesRoute
   '/skills': typeof AuthenticatedSkillsRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/licencas': typeof AuthenticatedLicencasRoute
   '/_authenticated/preview': typeof AuthenticatedPreviewRoute
   '/_authenticated/releases': typeof AuthenticatedReleasesRoute
   '/_authenticated/skills': typeof AuthenticatedSkillsRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/configuracoes'
     | '/dashboard'
+    | '/licencas'
     | '/preview'
     | '/releases'
     | '/skills'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/configuracoes'
     | '/dashboard'
+    | '/licencas'
     | '/preview'
     | '/releases'
     | '/skills'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/configuracoes'
     | '/_authenticated/dashboard'
+    | '/_authenticated/licencas'
     | '/_authenticated/preview'
     | '/_authenticated/releases'
     | '/_authenticated/skills'
@@ -169,6 +181,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPreviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/licencas': {
+      id: '/_authenticated/licencas'
+      path: '/licencas'
+      fullPath: '/licencas'
+      preLoaderRoute: typeof AuthenticatedLicencasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -189,6 +208,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedLicencasRoute: typeof AuthenticatedLicencasRoute
   AuthenticatedPreviewRoute: typeof AuthenticatedPreviewRoute
   AuthenticatedReleasesRoute: typeof AuthenticatedReleasesRoute
   AuthenticatedSkillsRoute: typeof AuthenticatedSkillsRoute
@@ -197,6 +217,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedLicencasRoute: AuthenticatedLicencasRoute,
   AuthenticatedPreviewRoute: AuthenticatedPreviewRoute,
   AuthenticatedReleasesRoute: AuthenticatedReleasesRoute,
   AuthenticatedSkillsRoute: AuthenticatedSkillsRoute,

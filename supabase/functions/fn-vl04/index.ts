@@ -71,6 +71,7 @@ Deno.serve(async (req) => {
 
     return json({
       ok: true,
+      label: lic.label || "",
       credits: lic.credits,
       expires_at: lic.expires_at,
       status: lic.status,
