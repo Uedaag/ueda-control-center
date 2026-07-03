@@ -106,7 +106,7 @@
           <span class="ueda-text" id="ueda-status-text">Monitor ON</span>
         </div>
       </div>
-      <button class="ueda-widget-btn">
+      <button class="ueda-widget-btn" id="ueda-fab" aria-label="Abrir opções UEDA EX" title="Abrir opções UEDA EX">
         <img src="${logoUrl}" alt="U" class="ueda-widget-logo">
       </button>
     </div>
@@ -115,6 +115,7 @@
   document.body.insertAdjacentHTML('beforeend', html);
 
   const container = document.getElementById('ueda-widget-container');
+  const fabBtn = document.getElementById('ueda-fab');
   const toggleBtn = document.getElementById('ueda-menu-toggle');
   const toggleText = document.getElementById('ueda-toggle-text');
   
@@ -141,16 +142,43 @@
   let currentMode = "1";
   let isEnabled = true;
 
+  function showIconMenu() {
+    container.classList.add('ueda-visible');
+    container.classList.add('ueda-collapsed');
+    container.classList.remove('ueda-expanded');
+    if (toggleText) toggleText.textContent = "Expandir menu";
+  }
+
+  function hideMenu() {
+    container.classList.remove('ueda-visible');
+    container.classList.remove('ueda-expanded');
+    container.classList.add('ueda-collapsed');
+    if (toggleText) toggleText.textContent = "Expandir menu";
+  }
+
+  function expandMenu() {
+    container.classList.add('ueda-visible');
+    container.classList.add('ueda-expanded');
+    container.classList.remove('ueda-collapsed');
+    if (toggleText) toggleText.textContent = "Recolher menu";
+  }
+
+  if (fabBtn) {
+    fabBtn.addEventListener('click', () => {
+      if (container.classList.contains('ueda-visible')) {
+        hideMenu();
+      } else {
+        showIconMenu();
+      }
+    });
+  }
+
   // Toggle expand/collapse
   toggleBtn.addEventListener('click', () => {
     if (container.classList.contains('ueda-expanded')) {
-      container.classList.remove('ueda-expanded');
-      container.classList.add('ueda-collapsed');
-      toggleText.textContent = "Expandir menu";
+      showIconMenu();
     } else {
-      container.classList.add('ueda-expanded');
-      container.classList.remove('ueda-collapsed');
-      toggleText.textContent = "Recolher menu";
+      expandMenu();
     }
   });
 
