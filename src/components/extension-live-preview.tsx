@@ -29,16 +29,9 @@ type ExtensionLivePreviewProps = {
 
 const stateLabels: Record<ExtensionPreviewState, string> = {
   collapsed: "Logo",
-  login: "Login",
+  login: "Ícones",
   labels: "Menu",
   account: "Conta",
-};
-
-const demoSession = {
-  label: "Cliente UEDA",
-  expiresAtText: "7d 12h 30m",
-  expiresAtLabel: "Expira em 10/07/2026 18:30",
-  credits: 5,
 };
 
 export function ExtensionLivePreview({ settings, skills, state, onStateChange }: ExtensionLivePreviewProps) {
@@ -84,9 +77,8 @@ export function ExtensionLivePreview({ settings, skills, state, onStateChange }:
 function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: ExtensionPreviewSkill[], state: ExtensionPreviewState) {
   const accent = normalizeHexColor(settings.brand_color);
   const brand = escapeHtml(settings.brand_name || "UEDA EX 5.0");
-  const welcome = escapeHtml(settings.welcome_message || "Ative sua chave para continuar.");
-  const footer = escapeHtml(settings.footer_signature || "");
   const logo = escapeAttr(logoAsset.url);
+  const modeClass = state === "collapsed" ? "" : state === "labels" || state === "account" ? "ueda-visible ueda-expanded" : "ueda-visible ueda-collapsed";
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -94,90 +86,62 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-      html, body { margin: 0; min-height: 100%; background: #0f172a; overflow: hidden; }
-      body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(circle at 78% 74%, ${accent}1f, transparent 28%), linear-gradient(135deg, #162033, #07101f 64%); }
+      html, body { margin: 0; min-height: 100%; background: #eef3f7; overflow: hidden; }
+      body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(circle at 86% 88%, ${accent}24, transparent 24%), linear-gradient(135deg, #f7fafc, #e9f1f6); }
       ${widgetCss}
     </style>
   </head>
   <body>
-    <div id="ueda-root" style="--ueda-accent:${accent}">
-      ${state === "login" ? loginPanel({ brand: "Entrar", welcome, footer, logo }) : ""}
-      ${state === "labels" ? labelsPanel({ brand, footer, logo, skills }) : ""}
-      ${state === "account" ? accountPanel({ footer, logo }) : ""}
-      ${fab({ logo, brand })}
+    <div id="ueda-widget-container" class="ueda-collapsed ${modeClass}" style="--ueda-accent:${accent}">
+      ${widgetMenu({ brand, skills, state })}
+      <button class="ueda-widget-btn" title="${escapeAttr(brand)}"><img src="${logo}" alt="U" class="ueda-widget-logo" /></button>
     </div>
   </body>
 </html>`;
 }
 
-function loginPanel({ brand, welcome, footer, logo }: { brand: string; welcome: string; footer: string; logo: string }) {
+function widgetMenu({ brand, skills, state }: { brand: string; skills: ExtensionPreviewSkill[]; state: ExtensionPreviewState }) {
+  const skillRows = skills.slice(0, 2).map((skill) => menuItem(iconSparkles(), escapeHtml(skill.name), skill.description || skill.name)).join("");
+  const accountStatus = state === "account" ? `<span id="ueda-time-value" style="font-size:11px;color:#1DAFD8;font-weight:700;margin-top:2px;">Ativada · 7d 12h</span>` : `<span id="ueda-time-value" style="font-size:11px;color:#70f0c1;font-weight:700;margin-top:2px;">Ativada</span>`;
   return `
-    <div class="ueda-panel login">
-      ${header(brand, logo)}
-      <div class="ueda-body">
-        <div class="ueda-welcome">${welcome}</div>
-        <input class="ueda-input" placeholder="Chave de licença" />
-        <button class="ueda-btn">Ativar licença</button>
+    <div class="ueda-widget-menu">
+      <div class="ueda-menu-header" id="ueda-menu-toggle">
+        ${iconChevron()}
+        <span class="ueda-text" id="ueda-toggle-text">Recolher menu</span>
       </div>
-      <div class="ueda-footer">${footer}</div>
-    </div>`;
-}
-
-function labelsPanel({ brand, footer, logo, skills }: { brand: string; footer: string; logo: string; skills: ExtensionPreviewSkill[] }) {
-  const items = skills.length
-    ? skills.map((skill) => menuItem("▸", escapeHtml(skill.name), skill.description || skill.name)).join("")
-    : `<div class="ueda-welcome">Nenhuma skill ativa. Clique em Atualizar.</div>`;
-
-  return `
-    <div class="ueda-panel labels">
-      ${header(brand, logo)}
-      <div class="ueda-body">
-        ${menuItem("👤", "Minha conta", "Minha conta")}
-        ${items}
-        ${menuItem("↻", "Atualizar extensão", "Atualizar extensão")}
-      </div>
-      <div class="ueda-footer">${footer}</div>
-    </div>`;
-}
-
-function accountPanel({ footer, logo }: { footer: string; logo: string }) {
-  return `
-    <div class="ueda-panel account">
-      ${header("Minha conta", logo)}
-      <div class="ueda-body">
-        <div class="ueda-welcome">${escapeHtml(demoSession.label)}</div>
-        <div class="ueda-account-card">
-          <div class="ueda-account-label">⏱ Tempo restante</div>
-          <div class="ueda-account-value">${demoSession.expiresAtText}</div>
-          <div class="ueda-progress"><div style="width:72%"></div></div>
-          <div class="ueda-account-sub">${demoSession.expiresAtLabel}</div>
+      <div class="ueda-menu-item" style="cursor:default;">
+        ${iconUser()}
+        <div class="ueda-text" style="display:flex;flex-direction:column;">
+          <span id="ueda-user-name">Minha conta</span>
+          ${accountStatus}
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div class="ueda-account-card"><div class="ueda-account-label">Créditos</div><div class="ueda-account-value">${demoSession.credits}</div></div>
-          <div class="ueda-account-card"><div class="ueda-account-label">Status</div><div class="ueda-account-value" style="font-size:14px">Ativa</div></div>
-        </div>
-        <button class="ueda-btn secondary" style="margin-top:10px">Sair da conta</button>
       </div>
-      <div class="ueda-footer">${footer}</div>
+      ${menuItem(iconBell(), "Notificações", "Notificações")}
+      ${menuItem(iconVolume(), "Som", "Som")}
+      ${skillRows || menuItem(iconSparkles(), "Skills", "Skills")}
+      ${menuItem(iconFolder(), "Baixar projeto", "Baixar projeto")}
+      ${menuItem(iconPencil(), "Remover marca", "Remover marca")}
+      ${menuItem(iconRefresh(), "Atualizar extensão", "Atualizar extensão")}
+      ${menuItem(iconHelp(), "Ajuda & Suporte", "Ajuda & Suporte")}
+      ${menuItem(iconPower(), "Monitor ON", `${brand} ativo`, "ueda-text-green")}
     </div>`;
 }
 
-function header(title: string, logo: string) {
-  return `
-    <div class="ueda-header">
-      <img src="${logo}" alt="" />
-      <div class="title">${title}</div>
-      <button aria-label="Fechar">×</button>
-    </div>`;
+function menuItem(icon: string, label: string, title: string, className = "") {
+  return `<div class="ueda-menu-item ${className}" title="${escapeAttr(title)}">${icon}<span class="ueda-text">${label}</span></div>`;
 }
 
-function menuItem(icon: string, label: string, title: string) {
-  return `<div class="ueda-menu-item" title="${escapeAttr(title)}"><span class="ico">${icon}</span><span>${label}</span></div>`;
-}
-
-function fab({ logo, brand }: { logo: string; brand: string }) {
-  return `<button class="ueda-fab" title="${escapeAttr(brand)}"><img src="${logo}" alt="logo" /></button>`;
-}
+function svg(paths: string) { return `<svg viewBox="0 0 24 24">${paths}</svg>`; }
+function iconChevron() { return svg(`<polyline points="15 18 9 12 15 6"></polyline>`); }
+function iconUser() { return svg(`<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>`); }
+function iconBell() { return svg(`<path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>`); }
+function iconVolume() { return svg(`<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>`); }
+function iconPencil() { return svg(`<path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>`); }
+function iconRefresh() { return svg(`<polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>`); }
+function iconHelp() { return svg(`<circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line>`); }
+function iconPower() { return svg(`<path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line>`); }
+function iconSparkles() { return svg(`<path d="M9.9 10.8 8 15l-1.9-4.2L2 9l4.1-1.8L8 3l1.9 4.2L14 9l-4.1 1.8Z"></path><path d="M19 13l-1.2 2.8L15 17l2.8 1.2L19 21l1.2-2.8L23 17l-2.8-1.2L19 13Z"></path>`); }
+function iconFolder() { return svg(`<path d="M3 7h5l2 2h11v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"></path>`); }
 
 function normalizeHexColor(color: string) {
   return /^#[0-9a-f]{6}$/i.test(color) ? color : "#4fa1c9";
