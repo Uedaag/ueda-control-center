@@ -28,10 +28,11 @@ type ExtensionLivePreviewProps = {
   onStateChange?: (state: ExtensionPreviewState) => void;
 };
 
-type View = "widget" | "login" | "account";
+type View = "widget" | "chat" | "login" | "account";
 
 const VIEW_LABELS: Record<View, string> = {
   widget: "Widget",
+  chat: "Chat",
   login: "Ativação",
   account: "Conta ativa",
 };
@@ -39,6 +40,7 @@ const VIEW_LABELS: Record<View, string> = {
 export function ExtensionLivePreview({ settings, skills }: ExtensionLivePreviewProps) {
   const [view, setView] = useState<View>("widget");
   const srcDoc = useMemo(() => {
+    if (view === "chat") return buildChatDocument(settings);
     if (view === "login") return buildLoginDocument(settings, false);
     if (view === "account") return buildLoginDocument(settings, true);
     return buildPreviewDocument(settings, skills);
@@ -78,12 +80,66 @@ export function ExtensionLivePreview({ settings, skills }: ExtensionLivePreviewP
       <p className="mt-3 text-center text-[11px] leading-relaxed text-muted-foreground">
         {view === "widget"
           ? "Clique na logo flutuante e depois na seta para expandir o menu."
+          : view === "chat"
+            ? "Prévia da borda aplicada ao bloco de chat quando a extensão está ativa."
           : view === "login"
             ? "Painel de ativação exibido ao usuário antes de inserir a chave."
             : "Painel exibido após ativação — dados da conta e tempo restante."}
       </p>
     </div>
   );
+}
+
+function buildChatDocument(settings: ExtensionPreviewSettings) {
+  const accent = normalizeHexColor(settings.brand_color);
+
+  return `<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      html, body { margin: 0; min-height: 100%; background: #20201f; color: #f7f7f4; overflow: hidden; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      body { display: flex; align-items: end; padding: 26px 22px; }
+      ${widgetCss}
+      .lovable-chat-shell { width: min(100%, 720px); margin: 0 auto; }
+      .lovable-chip-row { display: flex; gap: 8px; margin: 0 0 8px; overflow: hidden; }
+      .lovable-chip { flex: 0 0 auto; height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.22); background: #242424; color: #f3f3f0; display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
+      .lovable-chip.is-muted { color: #777; }
+      .lovable-chat-box { min-height: 108px; border: 1px solid rgba(255,255,255,.08); border-radius: 18px; background: #282927; display: flex; flex-direction: column; justify-content: space-between; padding: 18px 14px 12px; }
+      .lovable-chat-box textarea { width: 100%; min-height: 42px; resize: none; border: 0; outline: 0; background: transparent; color: #f4f4f2; font: inherit; font-size: 16px; line-height: 1.45; }
+      .lovable-chat-box textarea::placeholder { color: #b8b8b4; }
+      .lovable-chat-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .lovable-icon-btn { width: 28px; height: 28px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: #3a3a38; color: #f7f7f4; display: inline-grid; place-items: center; }
+      .lovable-action-group { display: flex; align-items: center; gap: 8px; }
+      .lovable-build { border: 0; background: transparent; color: #f5f5f2; font-size: 13px; font-weight: 700; }
+      .lovable-send { background: #9a9a96; color: #111; }
+      svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; }
+    </style>
+  </head>
+  <body class="ueda-monitor-on" style="--ueda-accent:${accent}">
+    <main class="lovable-chat-shell" aria-label="Prévia do chat Lovable">
+      <div class="lovable-chip-row">
+        <span class="lovable-chip">Ajustar efeito 3D</span>
+        <span class="lovable-chip">Animações nas células</span>
+        <span class="lovable-chip">Adicionar placar e reset</span>
+        <span class="lovable-chip is-muted">Status do</span>
+      </div>
+      <form class="lovable-chat-box ueda-chat-active">
+        <textarea placeholder="Pergunte à Lovable..." aria-label="Pergunte à Lovable"></textarea>
+        <div class="lovable-chat-actions">
+          <button class="lovable-icon-btn" type="button" aria-label="Adicionar"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+          <div class="lovable-action-group">
+            <button class="lovable-icon-btn" type="button" aria-label="Melhorar prompt"><svg class="lucide-wand" viewBox="0 0 24 24"><path d="M15 4V2M15 16v-2M8 9H6M20 9h-2M17.8 6.2 19 5M11 13l-6 6M13 11l-2-2 6-6 2 2-6 6Z"/></svg></button>
+            <button class="lovable-build" type="button">Construir</button>
+            <button class="lovable-icon-btn" type="button" aria-label="Microfone"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg></button>
+            <button class="lovable-icon-btn lovable-send" type="button" aria-label="Enviar"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+          </div>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>`;
 }
 
 function buildLoginDocument(settings: ExtensionPreviewSettings, activated: boolean) {
@@ -202,7 +258,7 @@ function widgetMenu({ brand, skills }: { brand: string; skills: ExtensionPreview
       ${menuItem(iconPencil(), "Remover marca", "Remover marca")}
       ${menuItem(iconRefresh(), "Atualizar extensão", "Atualizar extensão")}
       ${menuItem(iconHelp(), "Ajuda & Suporte", "Ajuda & Suporte")}
-      ${menuItem(iconPower(), "Monitor ON", `${brand} ativo`, "ueda-text-green")}
+      ${menuItem(iconPower(), "Logoff", "Encerrar sessão", "ueda-text-red")}
     </div>`;
 }
 

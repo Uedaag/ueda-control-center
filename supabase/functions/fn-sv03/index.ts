@@ -54,18 +54,48 @@ Deno.serve(async (req) => {
         .select("id,name,description,icon,payload,display_order")
         .eq("status", true)
         .order("display_order", { ascending: true });
+
+      const { data: rel } = await supabase
+        .from("releases")
+        .select("version,min_version,download_url,changelog,force_update,is_active,created_at")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const minVersion = rel?.min_version || settings.min_version || "0.0.0";
+      const latestVersion = rel?.version || settings.ext_version || minVersion;
+      const forced = (settings.force_update || "false") === "true" || !!rel?.force_update;
+      const updateRequired = forced || cmpVer(extVersion, minVersion) < 0;
+      const brandColor = settings.brand_color || settings.widget_accent_color || "#4fa1c9";
+
       return json({
         ok: true,
-        version: settings.min_version || "5.1.0",
+        version: latestVersion,
+        min_version: minVersion,
+        update_required: updateRequired,
+        force_update: forced,
+        release: rel
+          ? {
+              version: rel.version,
+              min_version: rel.min_version,
+              download_url: rel.download_url || settings.update_url || "",
+              changelog: rel.changelog || "",
+              force_update: !!rel.force_update,
+              created_at: rel.created_at,
+            }
+          : null,
         settings: {
           brand_name: settings.brand_name || "UEDA EX 5.0",
-          brand_color: settings.brand_color || settings.widget_accent_color || "#4fa1c9",
+          brand_color: brandColor,
+          widget_accent_color: brandColor,
           welcome_message: settings.welcome_message || "Ative sua chave para continuar.",
           footer_signature: settings.footer_signature || "",
           support_url: settings.support_url || "",
           support_email: settings.support_email || "",
           whatsapp: settings.whatsapp || "",
           renewal_url: settings.renewal_url || "",
+          update_url: rel?.download_url || settings.update_url || "",
         },
         skills: activeSkills || [],
       });

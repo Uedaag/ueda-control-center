@@ -12,6 +12,7 @@
   "host_permissions": [
     "https://api.lovable.dev/*",
     "https://uedaagency.lovable.app/*",
+    "https://keqgzvcahsvseowfowwu.supabase.co/*",
     "https://api.mistral.ai/*"
   ],
   "background": {

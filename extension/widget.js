@@ -2,7 +2,7 @@
   if (document.getElementById('ueda-widget-container')) return;
 
   const logoUrl = chrome.runtime.getURL('logo.png');
-  const CONFIG_URL = 'https://preview-panel-buddy.lovable.app/api/public/ueda-updates';
+  const UPDATE_ENDPOINT = 'https://keqgzvcahsvseowfowwu.supabase.co/functions/v1/fn-sv03?check=updates';
 
   // ---- Remote config: greeting audio + chat SFX ----
   const chatAudio = new Audio();
@@ -61,13 +61,39 @@
       welcomeAudio.src = sounds.welcome;
       welcomeAudio.addEventListener('canplaythrough', playWelcomeOnce, { once: true });
     }
+    const settings = cfg.settings || {};
+    const accent = settings.brand_color || settings.widget_accent_color || cfg.accent || '#1DAFD8';
+    document.documentElement.style.setProperty('--ueda-accent', accent);
+    document.body.style.setProperty('--ueda-accent', accent);
+    if (container) container.style.setProperty('--ueda-accent', accent);
+    const helpLink = document.getElementById('ueda-menu-help');
+    const supportUrl = settings.support_url || (settings.whatsapp ? `https://wa.me/${settings.whatsapp}` : '');
+    if (helpLink && supportUrl) helpLink.href = supportUrl;
+    renderRemoteSkills(Array.isArray(cfg.skills) ? cfg.skills : []);
     attachChatListeners();
   }
 
-  fetch(CONFIG_URL, { cache: 'no-store' })
-    .then((r) => r.json())
-    .then(applyRemoteConfig)
-    .catch(() => {});
+  async function fetchUpdateConfig({ announce = false } = {}) {
+    const response = await fetch(UPDATE_ENDPOINT, {
+      cache: 'no-store',
+      headers: {
+        'x-ext-version': chrome.runtime.getManifest().version || '0.0.0',
+      },
+    });
+    if (!response.ok) throw new Error(`Falha ao sincronizar (${response.status})`);
+    const cfg = await response.json();
+    applyRemoteConfig(cfg);
+    chrome.storage.local.set({ uedaRemoteConfig: cfg, uedaLastSyncAt: Date.now() });
+    if (cfg.update_required || cfg.force_update) {
+      const release = cfg.release || {};
+      const label = release.version ? `Nova versão ${release.version} disponível.` : 'Nova atualização disponível.';
+      const prefix = announce ? 'Dados sincronizados. ' : '';
+      await uedaConfirm(`${prefix}${label}\nAtualize o arquivo da extensão para aplicar esta versão.`, { okText: 'Entendi', cancelText: '' });
+    } else if (announce) {
+      await uedaConfirm('Extensão atualizada com sucesso. As skills e cores ativas já foram sincronizadas.', { okText: 'OK', cancelText: '' });
+    }
+    return cfg;
+  }
 
 
   const html = `
@@ -91,12 +117,14 @@
           <span class="ueda-text" id="ueda-mode-text">Modo Padrão</span>
         </div>
 
+        <div id="ueda-remote-skills"></div>
+
         <div class="ueda-menu-item" id="ueda-menu-update">
           <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
           <span class="ueda-text">Atualizar extensão</span>
         </div>
 
-        <a href="https://wa.me/5511999999999" target="_blank" class="ueda-menu-item" style="text-decoration: none;">
+        <a href="https://wa.me/5511999999999" target="_blank" class="ueda-menu-item" id="ueda-menu-help" style="text-decoration: none;">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> 
           <span class="ueda-text">Ajuda & Suporte</span>
         </a>
@@ -128,20 +156,45 @@
   
   const updateBtn = document.getElementById('ueda-menu-update');
   if (updateBtn) {
-    updateBtn.addEventListener('click', () => {
-      // Tell the background script to reload if possible, otherwise just refresh the page
+    updateBtn.addEventListener('click', async () => {
+      const label = updateBtn.querySelector('.ueda-text');
+      const originalLabel = label ? label.textContent : '';
+      if (label) label.textContent = 'Atualizando...';
       try {
-        chrome.runtime.sendMessage({ action: "reload_extension" });
-      } catch (e) {}
-      
-      setTimeout(() => {
-        window.location.reload();
-      }, 300);
+        await fetchUpdateConfig({ announce: true });
+      } catch (e) {
+        await uedaConfirm(e && e.message ? e.message : 'Não foi possível sincronizar a extensão agora.', { okText: 'OK', cancelText: '' });
+      } finally {
+        if (label) label.textContent = originalLabel || 'Atualizar extensão';
+      }
     });
   }
 
   let currentMode = "1";
   let isEnabled = true;
+
+  function getSkillIcon(icon) {
+    const key = String(icon || '').toLowerCase();
+    if (key.includes('download')) return '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>';
+    if (key.includes('eraser') || key.includes('marca')) return '<svg viewBox="0 0 24 24"><path d="m7 21-4-4 12-12a3 3 0 0 1 4 4L7 21Z"></path><path d="M14 7 17 10"></path><path d="M5 19h16"></path></svg>';
+    if (key.includes('note') || key.includes('sticky')) return '<svg viewBox="0 0 24 24"><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5Z"></path><path d="M15 3v6h6"></path></svg>';
+    return '<svg viewBox="0 0 24 24"><path d="M9.9 10.8 8 15l-1.9-4.2L2 9l4.1-1.8L8 3l1.9 4.2L14 9l-4.1 1.8Z"></path><path d="M19 13l-1.2 2.8L15 17l2.8 1.2L19 21l1.2-2.8L23 17l-2.8-1.2L19 13Z"></path></svg>';
+  }
+
+  function escapeText(value) {
+    return String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+  }
+
+  function renderRemoteSkills(skills) {
+    const target = document.getElementById('ueda-remote-skills');
+    if (!target) return;
+    target.innerHTML = skills.filter((skill) => String(skill.name || '').toLowerCase() !== 'logoff').map((skill) => `
+      <div class="ueda-menu-item ueda-skill-item" title="${escapeText(skill.description || skill.name)}" data-skill-id="${escapeText(skill.id)}">
+        ${getSkillIcon(skill.icon || skill.name)}
+        <span class="ueda-text">${escapeText(skill.name)}</span>
+      </div>
+    `).join('');
+  }
 
   function showIconMenu() {
     container.classList.add('ueda-visible');
@@ -191,6 +244,11 @@
     document.getElementById('ueda-user-name').textContent = name;
     
     updateUI();
+  });
+
+  chrome.storage.local.get(['uedaRemoteConfig'], (result) => {
+    if (result && result.uedaRemoteConfig) applyRemoteConfig(result.uedaRemoteConfig);
+    fetchUpdateConfig().catch(() => {});
   });
 
   function updateUI() {

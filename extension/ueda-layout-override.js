@@ -5,7 +5,7 @@
 
   // === UPDATE ENDPOINT =========================================
   const CURRENT_VERSION = "5.0.0";
-  const UPDATE_ENDPOINT = "https://project--668937c8-96ee-4d27-a33b-e2e15ce717a2.lovable.app/api/public/ueda-updates";
+  const UPDATE_ENDPOINT = "https://keqgzvcahsvseowfowwu.supabase.co/functions/v1/fn-sv03?check=updates";
   const UPDATE_INTERVAL_MS = 30 * 60 * 1000; // 30 min
 
   function cmpVer(a, b) {
@@ -20,7 +20,7 @@
 
   async function checkForUpdate(force) {
     try {
-      const url = UPDATE_ENDPOINT + (force ? `?t=${Date.now()}` : "");
+      const url = UPDATE_ENDPOINT + (force ? `&t=${Date.now()}` : "");
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
