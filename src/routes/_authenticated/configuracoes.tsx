@@ -182,25 +182,27 @@ function Page() {
               <button onClick={() => setTab("chat")} className={`px-3 py-1.5 rounded-md ${tab === "chat" ? "bg-slate-100 text-slate-900 ring-1 ring-blue-500" : "text-slate-500"}`}>Chat</button>
             </div>
 
-            <div className="mt-4 rounded-3xl bg-white p-3 border border-slate-200">
-              <PhoneFrame>
-                <WidgetHeader title={vals.widget_title || vals.brand_name} accent={accent} />
-                {tab === "login" ? (
+            <div className="mt-4 rounded-3xl bg-gradient-to-br from-slate-100 to-slate-200 p-4 border border-slate-200 min-h-[440px] relative overflow-hidden">
+              {tab === "login" ? (
+                <PhoneFrame>
                   <LoginView vals={vals} accent={accent} />
-                ) : (
-                  <ChatView vals={vals} accent={accent} />
-                )}
-                <div className="mt-auto pt-3 text-center text-[10px] text-slate-400 border-t border-slate-100">
-                  {vals.footer_signature}
-                </div>
-              </PhoneFrame>
+                  <div className="mt-auto pt-3 text-center text-[10px] text-slate-400 border-t border-slate-100">
+                    {vals.footer_signature}
+                  </div>
+                </PhoneFrame>
+              ) : (
+                <FloatingWidget accent={accent} logo={logoAsset.url} brand={vals.brand_name} />
+              )}
             </div>
 
             <p className="mt-4 text-center text-xs text-slate-500 leading-relaxed">
               Esta é a visualização real de como<br />sua marca aparecerá na extensão.
             </p>
 
-            <button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold tracking-widest text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25">
+            <button
+              onClick={() => downloadExtension(vals, accent)}
+              className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold tracking-widest text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25"
+            >
               <Download className="w-4 h-4" /> BAIXAR EXTENSÃO
             </button>
           </div>
@@ -208,6 +210,43 @@ function Page() {
       </div>
     </div>
   );
+}
+
+/* ---------- download with injected config ---------- */
+
+async function downloadExtension(vals: Vals, accent: string) {
+  try {
+    toast("Preparando sua extensão...");
+    const res = await fetch("/ueda-ext-base.zip");
+    if (!res.ok) throw new Error("Falha ao carregar base");
+    const zip = await JSZip.loadAsync(await res.arrayBuffer());
+
+    const supaUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
+    const config = {
+      brand_name: vals.brand_name,
+      brand_color: accent,
+      welcome_message: vals.welcome_message,
+      footer_signature: vals.footer_signature,
+      support_url: vals.support_url,
+      support_email: vals.support_email,
+      whatsapp: vals.whatsapp,
+      renewal_url: vals.renewal_url,
+      default_language: vals.default_language,
+      test_credits: Number(vals.test_credits) || 0,
+      api_endpoint: `${supaUrl}/functions/v1/fn-sv03`,
+      validate_endpoint: `${supaUrl}/functions/v1/fn-vl04`,
+      updates_url: `${supaUrl}/functions/v1/fn-sv03?check=updates`,
+      generated_at: new Date().toISOString(),
+    };
+    zip.file("config.json", JSON.stringify(config, null, 2));
+    zip.file("ueda-updates.json", JSON.stringify({ updates_url: config.updates_url, current: "5.1" }, null, 2));
+
+    const blob = await zip.generateAsync({ type: "blob" });
+    saveAs(blob, `UEDA_EX_${(vals.brand_name || "ext").replace(/\s+/g, "_")}.zip`);
+    toast.success("Extensão pronta com suas configurações");
+  } catch (e) {
+    toast.error(e instanceof Error ? e.message : "Erro ao gerar extensão");
+  }
 }
 
 /* ---------- helpers ---------- */
@@ -250,26 +289,8 @@ function LightInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
 
 function PhoneFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative mx-auto w-full rounded-[28px] bg-white border-[3px] border-slate-900 p-4 min-h-[440px] flex flex-col">
+    <div className="relative mx-auto w-full rounded-[28px] bg-white border-[3px] border-slate-900 p-4 min-h-[400px] flex flex-col">
       {children}
-    </div>
-  );
-}
-
-function WidgetHeader({ title, accent }: { title: string; accent: string }) {
-  return (
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full" style={{ background: accent }} />
-        <span className="text-xs font-bold text-slate-800">{title}</span>
-      </div>
-      <div className="flex items-center gap-2 text-slate-400">
-        <HelpCircle className="w-3.5 h-3.5" />
-        <Volume2 className="w-3.5 h-3.5" />
-        <Move className="w-3.5 h-3.5" />
-        <Moon className="w-3.5 h-3.5" />
-        <Gear className="w-3.5 h-3.5" />
-      </div>
     </div>
   );
 }
@@ -292,45 +313,72 @@ function LoginView({ vals, accent }: { vals: Vals; accent: string }) {
   );
 }
 
-function ChatView({ vals, accent }: { vals: Vals; accent: string }) {
+/* Floating right-side widget with pulsing logo + expandable menus */
+function FloatingWidget({ accent, logo, brand }: { accent: string; logo: string; brand: string }) {
+  const [mode, setMode] = useState<"collapsed" | "icons" | "labels">("collapsed");
+
+  const items = [
+    { icon: User, label: "Minha conta", status: "Pausado", statusColor: "#ef4444" },
+    { icon: Volume2, label: "Som ON", active: true },
+    { icon: Pencil, label: "Remover marca" },
+    { icon: RefreshCw, label: "Atualizar extensão" },
+    { icon: HelpCircle, label: "Ajuda & Suporte" },
+    { icon: Power, label: "Monitor ON", active: true },
+  ];
+
   return (
-    <div className="flex flex-col gap-3">
-      <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full text-white font-bold flex items-center justify-center text-xs" style={{ background: accent }}>U1</div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-bold text-slate-800">User001</span>
-              <BadgeCheck className="w-3.5 h-3.5 text-emerald-500" />
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[9px] font-bold text-white bg-slate-700 px-1.5 rounded">PRO</span>
-              <span className="text-[10px] text-slate-500 truncate">e0d6fb...</span>
-            </div>
+    <div className="absolute inset-0 flex items-end justify-end p-5">
+      {/* Expanded label menu */}
+      {mode === "labels" && (
+        <div className="absolute right-20 bottom-24 w-[210px] rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-3 animate-in fade-in zoom-in-95">
+          <button
+            onClick={() => setMode("icons")}
+            className="w-full mb-2 rounded-lg border py-2 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5"
+            style={{ borderColor: accent, color: accent }}
+          >
+            <ChevronRight className="w-3.5 h-3.5" /> Recolher menu
+          </button>
+          <div className="space-y-2">
+            {items.map((it) => (
+              <button key={it.label} className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-slate-800 text-left">
+                <it.icon className="w-4 h-4 shrink-0" style={{ color: it.active ? accent : "#94a3b8" }} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-semibold" style={{ color: it.active ? accent : "#e2e8f0" }}>{it.label}</div>
+                  {it.status && <div className="text-[10px] font-bold" style={{ color: it.statusColor }}>{it.status}</div>}
+                </div>
+              </button>
+            ))}
           </div>
-          <LogOut className="w-4 h-4 text-red-400" />
         </div>
-        <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500">
-          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> EXPIRA EM 30D</span>
-          <span className="font-bold text-slate-800">100%</span>
-        </div>
-        <div className="mt-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-          <div className="h-full bg-emerald-400" style={{ width: "100%" }} />
-        </div>
-      </div>
+      )}
 
-      <div className="rounded-xl border border-slate-200 p-3">
-        <div className="text-[11px] text-slate-400">Como posso te ajudar hoje?</div>
-      </div>
+      <div className="flex flex-col items-center gap-3">
+        {/* Icon strip */}
+        {mode === "icons" && (
+          <div className="flex flex-col items-center gap-2 rounded-full bg-slate-900 border border-slate-700 py-3 px-2 shadow-2xl animate-in fade-in slide-in-from-right-2">
+            <button onClick={() => setMode("labels")} className="w-7 h-7 rounded-md border flex items-center justify-center" style={{ borderColor: accent, color: accent }}>
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            {items.map((it) => (
+              <button key={it.label} className="w-7 h-7 flex items-center justify-center">
+                <it.icon className="w-4 h-4" style={{ color: it.active ? accent : "#cbd5e1" }} />
+              </button>
+            ))}
+          </div>
+        )}
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-slate-400">
-          <button className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center"><Paperclip className="w-3.5 h-3.5" /></button>
-          <button className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center"><Mic className="w-3.5 h-3.5" /></button>
-          <button className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center"><Target className="w-3.5 h-3.5" /></button>
-        </div>
-        <button className="w-8 h-8 rounded-full text-white flex items-center justify-center" style={{ background: accent }}><Send className="w-3.5 h-3.5" /></button>
+        {/* Pulsing logo button */}
+        <button
+          onClick={() => setMode(mode === "collapsed" ? "icons" : "collapsed")}
+          className="relative w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center"
+          aria-label={brand}
+        >
+          <span className="absolute inset-0 rounded-full animate-ping opacity-40" style={{ background: accent }} />
+          <span className="absolute -inset-1 rounded-full opacity-30 animate-pulse" style={{ boxShadow: `0 0 0 6px ${accent}22, 0 0 0 12px ${accent}11` }} />
+          <img src={logo} alt="" className="relative w-9 h-9 object-contain" />
+        </button>
       </div>
     </div>
   );
+}
 }
