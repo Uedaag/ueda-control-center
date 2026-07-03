@@ -1,8 +1,8 @@
 {
-  "brand_name": "UEDA EX 5.0",
+  "brand_name": "Ueda ex",
   "brand_color": "#4fa1c9",
-  "welcome_message": "Bem-vindo! Como posso ajudar você hoje?",
-  "footer_signature": "Powered by UEDA EX 5.0",
+  "welcome_message": "Bem-vindo! Ative sua chave para continuar.",
+  "footer_signature": "© 2026 Ueda Agency – Todos os direitos reservados",
   "support_url": "",
   "support_email": "",
   "whatsapp": "",
@@ -11,5 +11,6 @@
   "test_credits": 0,
   "api_endpoint": "",
   "validate_endpoint": "",
-  "updates_url": ""
+  "updates_url": "",
+  "initial_skills": []
 }
