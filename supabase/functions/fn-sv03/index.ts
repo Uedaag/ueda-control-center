@@ -46,17 +46,28 @@ Deno.serve(async (req) => {
     const settings: Record<string, string> = {};
     (settingsRows || []).forEach((r: any) => (settings[r.key] = r.value));
 
-    // Public updates check — no license required. Extension calls this to refresh brand config.
+    // Public updates check — no license required. Extension refreshes brand config + active skills.
     const url = new URL(req.url);
     if (url.searchParams.get("check") === "updates") {
+      const { data: activeSkills } = await supabase
+        .from("skills")
+        .select("id,name,description,icon,payload,display_order")
+        .eq("status", true)
+        .order("display_order", { ascending: true });
       return json({
         ok: true,
         version: settings.min_version || "5.1.0",
         settings: {
-          widget_accent_color: settings.widget_accent_color || "#4fa1c9",
-          widget_title: settings.widget_title || "UEDA EX 5.0",
-          widget_subtitle: settings.widget_subtitle || "",
+          brand_name: settings.brand_name || "UEDA EX 5.0",
+          brand_color: settings.brand_color || settings.widget_accent_color || "#4fa1c9",
+          welcome_message: settings.welcome_message || "Ative sua chave para continuar.",
+          footer_signature: settings.footer_signature || "",
+          support_url: settings.support_url || "",
+          support_email: settings.support_email || "",
+          whatsapp: settings.whatsapp || "",
+          renewal_url: settings.renewal_url || "",
         },
+        skills: activeSkills || [],
       });
     }
 
