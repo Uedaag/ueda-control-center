@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useNavigate, useRouterState } 
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LayoutDashboard, Sparkles, Rocket, Eye, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Sparkles, Rocket, Eye, Settings, LogOut, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 
