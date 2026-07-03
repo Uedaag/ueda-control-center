@@ -126,7 +126,7 @@ function Page() {
               </Field>
               <Field label="Cor de Identidade" hint="Tom cromático primário do software.">
                 <div className="flex items-center gap-3">
-                  <label className="w-14 h-11 rounded-lg cursor-pointer shrink-0 border border-slate-200 shadow-inner relative overflow-hidden" style={{ background: accent }}>
+                  <label className="w-14 h-11 rounded-lg cursor-pointer shrink-0 border border-border shadow-inner relative overflow-hidden" style={{ background: accent }}>
                     <input type="color" value={accent} onChange={(e) => set("brand_color", e.target.value)} className="opacity-0 absolute inset-0 cursor-pointer" />
                   </label>
                   <LightInput value={vals.brand_color} onChange={(e) => set("brand_color", e.target.value)} />
@@ -149,7 +149,7 @@ function Page() {
             </div>
 
             <div className="mt-6">
-              <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.15em] text-slate-500 uppercase mb-2">
+              <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.15em] text-muted-foreground uppercase mb-2">
                 <ImageIcon className="w-4 h-4" style={{ color: accent }} /> Logotipo de Interface
               </div>
               <div className="rounded-2xl bg-background border border-border p-6 flex flex-col gap-6 sm:flex-row sm:items-center">

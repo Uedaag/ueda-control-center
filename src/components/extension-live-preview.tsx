@@ -65,7 +65,7 @@ export function ExtensionLivePreview({ settings, skills, state, onStateChange }:
         </div>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-slate-950">
+      <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-muted">
         <iframe
           title="Prévia real da extensão"
           srcDoc={srcDoc}
