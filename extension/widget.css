@@ -189,54 +189,12 @@ body.ueda-monitor-on div:has(textarea[aria-label*="Pergunte"]) {
   body.ueda-monitor-on .ueda-chat-active { animation: none !important; }
 }
 
-/* "melhorar prompt" -> pill button with pencil icon + text in UEDA colors */
-body.ueda-monitor-on .ueda-prompt-enhance,
-body.ueda-monitor-on button:has(> svg.lucide-wand),
-body.ueda-monitor-on button:has(> svg.lucide-wand-sparkles),
-body.ueda-monitor-on button:has(> svg[class*="wand"]) {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  height: 32px !important;
-  padding: 0 12px !important;
-  border-radius: 999px !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  color: #e6edf3 !important;
-  background: #1a1d21 !important;
-  border: 1px solid rgba(255,255,255,0.08) !important;
-  box-shadow: none !important;
-  transition: background 0.2s ease, border-color 0.2s ease !important;
-}
-
-body.ueda-monitor-on button:has(> svg[class*="wand"])::after {
-  content: "melhorar prompt";
-  font-size: 12px;
-  font-weight: 500;
-  color: #e6edf3;
-  letter-spacing: 0.01em;
-}
-
-body.ueda-monitor-on button:has(> svg[class*="wand"]):hover {
-  background: #22262b !important;
-  border-color: color-mix(in srgb, var(--ueda-accent, #1DAFD8) 45%, transparent) !important;
-}
-
+/* "melhorar prompt": keep native layout, only tint the wand icon in UEDA accent */
 body.ueda-monitor-on button:has(> svg[class*="wand"]) > svg {
-  width: 14px !important;
-  height: 14px !important;
   stroke: var(--ueda-accent, #1DAFD8) !important;
   color: var(--ueda-accent, #1DAFD8) !important;
-  /* Draw a pencil over the wand icon using CSS mask so we don't touch the DOM */
-  fill: none !important;
 }
 
-/* Hide the original text span (if present) so ::after label is the single source */
-body.ueda-monitor-on button:has(> svg[class*="wand"]) > span,
-body.ueda-monitor-on button:has(> svg[class*="wand"]) > :not(svg):not(:empty) {
-  display: none !important;
-}
 
 
 
