@@ -12,6 +12,8 @@ import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { ThemeProvider } from "@/components/theme-provider";
+
 
 function NotFoundComponent() {
   return (
@@ -118,10 +120,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="dark">
+      <ThemeProvider defaultTheme="dark">
         <Outlet />
-        <Toaster theme="dark" position="top-right" />
-      </div>
+        <Toaster position="top-right" richColors closeButton />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
+
