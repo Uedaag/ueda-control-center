@@ -15,8 +15,8 @@ import {
   ExtensionLivePreview,
   type ExtensionPreviewSettings,
   type ExtensionPreviewSkill,
-  type ExtensionPreviewState,
 } from "@/components/extension-live-preview";
+
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   component: Page,
