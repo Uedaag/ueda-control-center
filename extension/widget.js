@@ -71,93 +71,64 @@
     return `
       :root, body { --ueda-accent: ${accent}; }
       @keyframes ueda-chat-glow {
-        0%, 100% { box-shadow: 0 0 0 1px var(--ueda-accent), 0 0 16px color-mix(in srgb, var(--ueda-accent) 34%, transparent); }
-        50% { box-shadow: 0 0 0 2px var(--ueda-accent), 0 0 30px color-mix(in srgb, var(--ueda-accent) 58%, transparent); }
+        0%, 100% { box-shadow: 0 0 0 2px ${accent}, 0 0 20px color-mix(in srgb, ${accent} 35%, transparent) !important; }
+        50%      { box-shadow: 0 0 0 2px ${accent}, 0 0 32px color-mix(in srgb, ${accent} 60%, transparent) !important; }
       }
-      body.ueda-monitor-on .ueda-chat-active,
-      body.ueda-monitor-on form:has(textarea[placeholder*="Lovable"]),
-      body.ueda-monitor-on form:has(textarea[placeholder*="Pergunte"]),
-      body.ueda-monitor-on div:has(> textarea[placeholder*="Lovable"]),
-      body.ueda-monitor-on div:has(> textarea[placeholder*="Pergunte"]),
-      body.ueda-monitor-on div:has(textarea[aria-label*="Lovable"]),
-      body.ueda-monitor-on div:has(textarea[aria-label*="Pergunte"]) {
-        border: 1px solid var(--ueda-accent) !important;
-        border-radius: 18px !important;
+      body.ueda-monitor-on textarea[placeholder*="Lovable" i]:not(#ueda-widget-container textarea),
+      body.ueda-monitor-on textarea[placeholder*="Pergunte" i]:not(#ueda-widget-container textarea),
+      body.ueda-monitor-on textarea[placeholder*="Ask" i]:not(#ueda-widget-container textarea) {
+        outline: 2px solid ${accent} !important;
+        outline-offset: 2px !important;
+        border-radius: 12px !important;
         animation: ueda-chat-glow 2.4s ease-in-out infinite !important;
-        transition: border-color .25s ease, box-shadow .25s ease !important;
+        transition: outline-color .25s ease !important;
       }
-      body.ueda-monitor-on .ueda-prompt-enhance,
-      body.ueda-monitor-on button:has(> svg.lucide-wand),
-      body.ueda-monitor-on button:has(> svg.lucide-wand-sparkles),
-      body.ueda-monitor-on button:has(> svg[class*="wand"]) {
-        font-size: 0 !important;
-        gap: 0 !important;
-        width: 34px !important;
-        min-width: 34px !important;
-        height: 34px !important;
-        padding: 0 !important;
-        border-radius: 999px !important;
-        color: var(--ueda-accent) !important;
-        background: radial-gradient(circle at 50% 42%, #111418 0%, #050506 70%) !important;
-        border: 1px solid color-mix(in srgb, var(--ueda-accent) 50%, transparent) !important;
-        box-shadow: 0 0 14px color-mix(in srgb, var(--ueda-accent) 42%, transparent) !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+      body.ueda-monitor-on form.relative,
+      body.ueda-monitor-on .relative form,
+      body.ueda-monitor-on [class*="ChatInput"],
+      body.ueda-monitor-on [class*="chat-input"],
+      body.ueda-monitor-on [data-testid="chat-input"],
+      body.ueda-monitor-on [data-testid="chat-input-container"] {
+        border-radius: 14px !important;
+        animation: ueda-chat-glow 2.4s ease-in-out infinite !important;
       }
       @media (prefers-reduced-motion: reduce) {
-        body.ueda-monitor-on .ueda-chat-active { animation: none !important; }
+        body.ueda-monitor-on [class*="chat"], body.ueda-monitor-on textarea { animation: none !important; }
       }
     `;
   }
 
-  function isLovableTextArea(textarea) {
-    const hint = [
-      textarea.getAttribute('placeholder') || '',
-      textarea.getAttribute('aria-label') || '',
-      textarea.closest('form')?.textContent || '',
-    ].join(' ').toLowerCase();
-    return hint.includes('lovable') || hint.includes('pergunte');
-  }
-
-  function markLovableChat() {
+  function applyDirectGlow(accent) {
     try {
-      document.querySelectorAll('textarea').forEach((textarea) => {
-        if (!isLovableTextArea(textarea)) return;
-        const form = textarea.closest('form');
-        const primary = form || textarea.parentElement;
-        if (primary) primary.classList.add('ueda-chat-active');
-
-        let parent = textarea.parentElement;
-        for (let i = 0; parent && i < 3; i += 1) {
-          const style = window.getComputedStyle(parent);
-          const hasSurface = style.borderRadius !== '0px' || style.backgroundColor !== 'rgba(0, 0, 0, 0)';
-          if (hasSurface && parent.offsetWidth > textarea.offsetWidth * 0.8) {
-            parent.classList.add('ueda-chat-active');
-            break;
-          }
-          parent = parent.parentElement;
+      document.querySelectorAll('textarea').forEach((ta) => {
+        if (ta.closest('#ueda-widget-container')) return;
+        const ph = (ta.placeholder || '').toLowerCase();
+        if (!ph) return;
+        if (!/lovable|pergunte|ask/.test(ph)) return;
+        let el = ta.parentElement;
+        for (let i = 0; i < 3 && el && el !== document.body; i += 1) {
+          el.style.setProperty('box-shadow', `0 0 0 2px ${accent}, 0 0 20px ${accent}55`, 'important');
+          el.style.setProperty('border-radius', '14px', 'important');
+          el.style.setProperty('transition', 'box-shadow .25s ease', 'important');
+          el.dataset.uedaGlow = 'true';
+          el = el.parentElement;
         }
-      });
-
-      document.querySelectorAll('button').forEach((button) => {
-        const label = `${button.textContent || ''} ${button.getAttribute('aria-label') || ''}`.toLowerCase();
-        const hasWand = !!button.querySelector('svg[class*="wand"], svg.lucide-wand, svg.lucide-wand-sparkles');
-        if (hasWand || label.includes('melhorar prompt')) button.classList.add('ueda-prompt-enhance');
       });
     } catch (e) {}
   }
 
+  let currentAccent = '#1DAFD8';
   function startChatHighlighter() {
     if (document.__uedaChatHighlighterStarted) return;
     document.__uedaChatHighlighterStarted = true;
-    markLovableChat();
-    setInterval(markLovableChat, 1500);
+    applyDirectGlow(currentAccent);
+    setInterval(() => applyDirectGlow(currentAccent), 1500);
     try {
-      const observer = new MutationObserver(markLovableChat);
+      const observer = new MutationObserver(() => applyDirectGlow(currentAccent));
       observer.observe(document.body, { childList: true, subtree: true });
     } catch (e) {}
   }
+
 
   function applyRemoteConfig(cfg) {
     if (!cfg) return;
@@ -172,6 +143,7 @@
     document.documentElement.style.setProperty('--ueda-accent', accent);
     document.body.style.setProperty('--ueda-accent', accent);
     if (container) container.style.setProperty('--ueda-accent', accent);
+    currentAccent = accent;
     setManagedStyle('ueda-runtime-chat-css', buildRuntimeChatCss(accent));
     setManagedStyle('ueda-remote-custom-css', settings.chat_custom_css || settings.custom_css || cfg.custom_css || '');
     const helpLink = document.getElementById('ueda-menu-help');
@@ -180,6 +152,7 @@
     renderRemoteSkills(Array.isArray(cfg.skills) ? cfg.skills : []);
     attachChatListeners();
     startChatHighlighter();
+    applyDirectGlow(accent);
   }
 
   async function fetchUpdateConfig({ announce = false } = {}) {
@@ -193,7 +166,7 @@
     const cfg = await response.json();
     applyRemoteConfig(cfg);
     chrome.storage.local.set({ uedaRemoteConfig: cfg, uedaLastSyncAt: Date.now() });
-    if (announce) markLovableChat();
+    if (announce) applyDirectGlow(currentAccent);
     return cfg;
   }
 
