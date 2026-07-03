@@ -206,9 +206,8 @@ function Page() {
           <ExtensionLivePreview
             settings={vals as ExtensionPreviewSettings}
             skills={skills}
-            state={previewState}
-            onStateChange={setPreviewState}
           />
+
             <button
               onClick={download}
               disabled={downloading || saving}
