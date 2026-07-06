@@ -117,7 +117,7 @@
     } catch (e) {}
   }
 
-  let currentAccent = '#1DAFD8';
+  let currentAccent = '#1E88E5';
   function startChatHighlighter() {
     if (document.__uedaChatHighlighterStarted) return;
     document.__uedaChatHighlighterStarted = true;
@@ -139,7 +139,7 @@
       welcomeAudio.addEventListener('canplaythrough', playWelcomeOnce, { once: true });
     }
     const settings = cfg.settings || {};
-    const accent = settings.brand_color || settings.widget_accent_color || cfg.accent || '#1DAFD8';
+    const accent = settings.brand_color || settings.widget_accent_color || cfg.accent || '#1E88E5';
     document.documentElement.style.setProperty('--ueda-accent', accent);
     document.body.style.setProperty('--ueda-accent', accent);
     if (container) container.style.setProperty('--ueda-accent', accent);
@@ -183,7 +183,7 @@
           <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           <div class="ueda-text" style="display: flex; flex-direction: column;">
             <span id="ueda-user-name">Minha conta</span>
-            <span id="ueda-time-value" style="font-size: 11px; color: #1DAFD8; font-weight: bold; margin-top: 2px;">Calculando...</span>
+            <span id="ueda-time-value" style="font-size: 11px; color: #1E88E5; font-weight: bold; margin-top: 2px;">Calculando...</span>
           </div>
         </div>
 
@@ -467,7 +467,7 @@
           } else {
             // fallback if it's really a custom string like "29d 21h..."
             timeValue.textContent = validadeTime;
-            timeValue.style.color = '#1DAFD8';
+            timeValue.style.color = '#1E88E5';
             return;
           }
         }
@@ -489,7 +489,7 @@
              const seconds = String(timeLeft % 60).padStart(2, '0');
              timeValue.textContent = `${hours}:${minutes}:${seconds}`;
           }
-          timeValue.style.color = '#1DAFD8';
+          timeValue.style.color = '#1E88E5';
         }
       });
     } catch (e) {
