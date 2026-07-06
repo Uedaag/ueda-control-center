@@ -102,7 +102,7 @@ h1 {
   display: inline-block;
   font-size: 18px;
   font-weight: 700;
-  background: linear-gradient(135deg, #ffffff 0%, #1DAFD8 50%, #ffffff 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #1E88E5 50%, #ffffff 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -610,7 +610,7 @@ h1 {
 .claw-toggle-slot
 .claw-toggle-slot-fill {
   width: 100%;
-  background: linear-gradient(90deg, #1DAFD8, #ffffff);
+  background: linear-gradient(90deg, #1E88E5, #ffffff);
   box-shadow: 0px 0px 1em 0.2em #ffffff;
 }
 
@@ -1725,7 +1725,7 @@ h1 {
   padding: 32px 24px;
   background-color: #16181f; 
   border-radius: 24px;
-  border: 1px solid #1DAFD8;
+  border: 1px solid #1E88E5;
   box-shadow: 0 0 30px rgba(29, 175, 216, 0.15), inset 0 0 20px rgba(29, 175, 216, 0.05);
   display: flex;
   flex-direction: column;
@@ -1871,7 +1871,7 @@ body.light-mode .login-subtitle {
 }
 body.light-mode .login-logo-container {
   background-color: #ffffff;
-  border-color: #1DAFD8;
+  border-color: #1E88E5;
 }
 body.light-mode .login-input-new {
   background-color: #ffffff;
