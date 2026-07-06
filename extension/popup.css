@@ -1940,18 +1940,36 @@ html, body {
   border-radius: 18px;
   min-height: 460px;
 }
+
+/* When login view is visible, hide app header + status bar so only the card shows (matches reference) */
+body:has(#loginView:not([hidden])) .header,
+body:has(#loginView:not([hidden])) .status {
+  display: none !important;
+}
+body:has(#loginView:not([hidden])) .app-shell {
+  padding: 0 !important;
+  min-height: 520px;
+  background: linear-gradient(180deg, #0b0d12 0%, #07080c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 #loginView.ueda-login-wrapper {
-  min-height: 440px;
+  min-height: 520px;
   display: flex !important;
   align-items: center;
   justify-content: center;
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .home-view-replacement {
   border-radius: 18px;
 }
 
 /* =========================================================
-   UEDA login card — inspired reskin, blue primary
+   UEDA login card — reference-matched, blue primary
    ========================================================= */
 .ueda-login-wrapper {
   padding: 14px;
@@ -1961,18 +1979,24 @@ html, body {
 
 .ueda-login-card {
   width: 100%;
-  max-width: 340px;
+  max-width: 380px;
   margin: 0 auto;
-  padding: 22px 22px 18px;
-  background: #16181f;
-  border: 1px solid rgba(255,255,255,0.06);
+  padding: 28px 26px 22px;
+  background: linear-gradient(180deg, #161820 0%, #0d0e13 100%);
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 18px;
-  box-shadow: 0 20px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(30,136,229,0.08);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.65), 0 0 0 1px rgba(30,136,229,0.08);
   display: flex;
   flex-direction: column;
   gap: 14px;
   position: relative;
   font-family: Inter, "Segoe UI", system-ui, sans-serif;
+  animation: uedaLoginSlideUp 0.32s ease-out;
+}
+
+@keyframes uedaLoginSlideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
 }
 
 .ueda-login-head {
@@ -1982,12 +2006,12 @@ html, body {
 }
 
 .ueda-login-logo {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: 14px;
   background: #0f1116;
   border: 1px solid rgba(30,136,229,0.35);
-  box-shadow: 0 6px 18px rgba(30,136,229,0.18);
+  box-shadow: 0 8px 22px rgba(30,136,229,0.25);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1995,12 +2019,12 @@ html, body {
 .ueda-login-logo img { width: 74%; height: 74%; object-fit: contain; }
 
 .ueda-login-close {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.06);
-  color: #c7cedf;
+  color: #9a9a9a;
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -2009,20 +2033,21 @@ html, body {
 .ueda-login-close:hover { background: rgba(255,255,255,0.08); color: #fff; }
 
 .ueda-login-title {
-  margin: 2px 0 0;
-  font-size: 20px;
-  font-weight: 800;
-  color: #f4f6fb;
+  margin: 6px 0 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
   letter-spacing: -0.01em;
   line-height: 1.15;
 }
 
 .ueda-login-sub {
-  margin: 0;
-  font-size: 12.5px;
+  margin: 0 0 6px;
+  font-size: 13.5px;
   line-height: 1.5;
-  color: #a3adc2;
+  color: #9a9a9a;
 }
+
 
 .ueda-login-form {
   display: flex;
