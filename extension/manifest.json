@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "UEDA EX",
-  "version": "5.0",
+  "version": "1.0",
   "description": "ilimitado",
   "permissions": [
     "storage",
