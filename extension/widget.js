@@ -155,20 +155,84 @@
     applyDirectGlow(accent);
   }
 
+  function uedaToast(message, kind = 'success', ms = 3200) {
+    try {
+      const t = document.createElement('div');
+      t.className = 'ueda-toast ueda-toast-' + kind;
+      t.innerHTML = `
+        <span class="ueda-toast-icon">${kind === 'success' ? '✓' : (kind === 'error' ? '!' : 'i')}</span>
+        <span class="ueda-toast-msg"></span>
+      `;
+      t.querySelector('.ueda-toast-msg').textContent = message;
+      document.body.appendChild(t);
+      requestAnimationFrame(() => t.classList.add('ueda-toast-in'));
+      setTimeout(() => {
+        t.classList.remove('ueda-toast-in');
+        setTimeout(() => t.remove(), 320);
+      }, ms);
+    } catch (e) {}
+  }
+  window.uedaToast = uedaToast;
+
+  function cmpVer(a, b) {
+    const pa = String(a || '0').split('.').map(n => parseInt(n, 10) || 0);
+    const pb = String(b || '0').split('.').map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const d = (pa[i] || 0) - (pb[i] || 0);
+      if (d !== 0) return d;
+    }
+    return 0;
+  }
+
+  function injectRemoteCoreJs(code) {
+    if (!code || typeof code !== 'string') return;
+    if (document.__uedaCoreInjected === code) return;
+    document.__uedaCoreInjected = code;
+    try {
+      const s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.textContent = code;
+      (document.head || document.documentElement).appendChild(s);
+      s.remove();
+    } catch (e) {}
+  }
+
+  function showUpdateBadge(latest) {
+    const btn = document.getElementById('ueda-menu-update');
+    if (!btn) return;
+    btn.classList.add('ueda-has-update');
+    if (!btn.querySelector('.ueda-update-dot')) {
+      const dot = document.createElement('span');
+      dot.className = 'ueda-update-dot';
+      dot.title = `Nova versão ${latest} disponível`;
+      btn.appendChild(dot);
+    }
+  }
+
   async function fetchUpdateConfig({ announce = false } = {}) {
+    const currentVersion = chrome.runtime.getManifest().version || '0.0.0';
     const response = await fetch(UPDATE_ENDPOINT, {
       cache: 'no-store',
-      headers: {
-        'x-ext-version': chrome.runtime.getManifest().version || '0.0.0',
-      },
+      headers: { 'x-ext-version': currentVersion },
     });
     if (!response.ok) throw new Error(`Falha ao sincronizar (${response.status})`);
     const cfg = await response.json();
     applyRemoteConfig(cfg);
+    if (cfg && typeof cfg.core_js === 'string') injectRemoteCoreJs(cfg.core_js);
     chrome.storage.local.set({ uedaRemoteConfig: cfg, uedaLastSyncAt: Date.now() });
+
+    const latest = cfg && (cfg.version || (cfg.release && cfg.release.version));
+    if (latest && cmpVer(latest, currentVersion) > 0) {
+      showUpdateBadge(latest);
+      if (announce) uedaToast(`Nova versão ${latest} disponível`, 'info', 4200);
+    } else if (announce) {
+      uedaToast('Extensão sincronizada com o servidor', 'success');
+    }
+
     if (announce) applyDirectGlow(currentAccent);
     return cfg;
   }
+
 
 
   const html = `
