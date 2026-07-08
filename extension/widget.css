@@ -164,8 +164,8 @@
 .ueda-text-red svg { color: #ff8b8b !important; stroke: #ff8b8b !important; }
 
 @keyframes ueda-chat-glow {
-  0%, 100% { box-shadow: 0 0 0 1px var(--ueda-accent, #1E88E5), 0 0 16px color-mix(in srgb, var(--ueda-accent, #1E88E5) 34%, transparent); }
-  50% { box-shadow: 0 0 0 2px var(--ueda-accent, #1E88E5), 0 0 30px color-mix(in srgb, var(--ueda-accent, #1E88E5) 58%, transparent); }
+  0%, 100% { box-shadow: 0 0 0 2px var(--ueda-accent, #1E88E5), 0 0 24px color-mix(in srgb, var(--ueda-accent, #1E88E5) 55%, transparent), 0 0 48px color-mix(in srgb, var(--ueda-accent, #1E88E5) 30%, transparent); }
+  50%      { box-shadow: 0 0 0 3px var(--ueda-accent, #1E88E5), 0 0 42px color-mix(in srgb, var(--ueda-accent, #1E88E5) 80%, transparent), 0 0 72px color-mix(in srgb, var(--ueda-accent, #1E88E5) 50%, transparent); }
 }
 
 body.ueda-monitor-on .ueda-chat-active,
@@ -179,8 +179,8 @@ body.ueda-monitor-on div:has(> div > div > textarea[placeholder*="Lovable"]),
 body.ueda-monitor-on div:has(> div > div > textarea[placeholder*="Pergunte"]),
 body.ueda-monitor-on div:has(textarea[aria-label*="Lovable"]),
 body.ueda-monitor-on div:has(textarea[aria-label*="Pergunte"]) {
-  border: 1px solid var(--ueda-accent, #1E88E5) !important;
-  border-radius: 18px !important;
+  border: 2px solid var(--ueda-accent, #1E88E5) !important;
+  border-radius: 20px !important;
   animation: ueda-chat-glow 2.4s ease-in-out infinite !important;
   transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
 }
