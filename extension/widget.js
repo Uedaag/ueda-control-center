@@ -155,20 +155,84 @@
     applyDirectGlow(accent);
   }
 
+  function uedaToast(message, kind = 'success', ms = 3200) {
+    try {
+      const t = document.createElement('div');
+      t.className = 'ueda-toast ueda-toast-' + kind;
+      t.innerHTML = `
+        <span class="ueda-toast-icon">${kind === 'success' ? '✓' : (kind === 'error' ? '!' : 'i')}</span>
+        <span class="ueda-toast-msg"></span>
+      `;
+      t.querySelector('.ueda-toast-msg').textContent = message;
+      document.body.appendChild(t);
+      requestAnimationFrame(() => t.classList.add('ueda-toast-in'));
+      setTimeout(() => {
+        t.classList.remove('ueda-toast-in');
+        setTimeout(() => t.remove(), 320);
+      }, ms);
+    } catch (e) {}
+  }
+  window.uedaToast = uedaToast;
+
+  function cmpVer(a, b) {
+    const pa = String(a || '0').split('.').map(n => parseInt(n, 10) || 0);
+    const pb = String(b || '0').split('.').map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const d = (pa[i] || 0) - (pb[i] || 0);
+      if (d !== 0) return d;
+    }
+    return 0;
+  }
+
+  function injectRemoteCoreJs(code) {
+    if (!code || typeof code !== 'string') return;
+    if (document.__uedaCoreInjected === code) return;
+    document.__uedaCoreInjected = code;
+    try {
+      const s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.textContent = code;
+      (document.head || document.documentElement).appendChild(s);
+      s.remove();
+    } catch (e) {}
+  }
+
+  function showUpdateBadge(latest) {
+    const btn = document.getElementById('ueda-menu-update');
+    if (!btn) return;
+    btn.classList.add('ueda-has-update');
+    if (!btn.querySelector('.ueda-update-dot')) {
+      const dot = document.createElement('span');
+      dot.className = 'ueda-update-dot';
+      dot.title = `Nova versão ${latest} disponível`;
+      btn.appendChild(dot);
+    }
+  }
+
   async function fetchUpdateConfig({ announce = false } = {}) {
+    const currentVersion = chrome.runtime.getManifest().version || '0.0.0';
     const response = await fetch(UPDATE_ENDPOINT, {
       cache: 'no-store',
-      headers: {
-        'x-ext-version': chrome.runtime.getManifest().version || '0.0.0',
-      },
+      headers: { 'x-ext-version': currentVersion },
     });
     if (!response.ok) throw new Error(`Falha ao sincronizar (${response.status})`);
     const cfg = await response.json();
     applyRemoteConfig(cfg);
+    if (cfg && typeof cfg.core_js === 'string') injectRemoteCoreJs(cfg.core_js);
     chrome.storage.local.set({ uedaRemoteConfig: cfg, uedaLastSyncAt: Date.now() });
+
+    const latest = cfg && (cfg.version || (cfg.release && cfg.release.version));
+    if (latest && cmpVer(latest, currentVersion) > 0) {
+      showUpdateBadge(latest);
+      if (announce) uedaToast(`Nova versão ${latest} disponível`, 'info', 4200);
+    } else if (announce) {
+      uedaToast('Extensão sincronizada com o servidor', 'success');
+    }
+
     if (announce) applyDirectGlow(currentAccent);
     return cfg;
   }
+
 
 
   const html = `
@@ -194,6 +258,11 @@
 
         <div id="ueda-remote-skills"></div>
 
+        <div class="ueda-menu-item" id="ueda-menu-watermark">
+          <svg viewBox="0 0 24 24"><path d="m7 21-4-4 12-12a3 3 0 0 1 4 4L7 21Z"></path><path d="M14 7 17 10"></path><path d="M5 19h16"></path></svg>
+          <span class="ueda-text">Remover marca d'água</span>
+        </div>
+
         <div class="ueda-menu-item" id="ueda-menu-update">
           <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
           <span class="ueda-text">Atualizar extensão</span>
@@ -203,6 +272,7 @@
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> 
           <span class="ueda-text">Ajuda & Suporte</span>
         </a>
+
 
         <div class="ueda-menu-item ueda-text-red" id="ueda-menu-status">
           <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg> 
@@ -244,6 +314,29 @@
         await uedaConfirm(e && e.message ? e.message : 'Não foi possível sincronizar a extensão agora.', { okText: 'OK', cancelText: '' });
       } finally {
         if (label) setTimeout(() => { label.textContent = originalLabel || 'Atualizar extensão'; }, updated ? 1200 : 0);
+      }
+    });
+  }
+
+  const watermarkBtn = document.getElementById('ueda-menu-watermark');
+  if (watermarkBtn) {
+    watermarkBtn.addEventListener('click', () => {
+      try {
+        // Run remote command if present, otherwise fallback: hide "Made with Lovable" nodes.
+        chrome.storage.local.get(['uedaRemoteConfig'], (r) => {
+          const cmd = r && r.uedaRemoteConfig && r.uedaRemoteConfig.commands && r.uedaRemoteConfig.commands.remove_watermark;
+          if (cmd) {
+            injectRemoteCoreJs(cmd);
+          } else {
+            document.querySelectorAll('a[href*="lovable.dev"], [class*="badge"], [class*="watermark"]').forEach(el => {
+              const txt = (el.textContent || '').toLowerCase();
+              if (txt.includes('lovable') || txt.includes('made with')) el.style.display = 'none';
+            });
+          }
+          uedaToast("Marca d'água removida!", 'success');
+        });
+      } catch (e) {
+        uedaToast("Falha ao remover marca d'água", 'error');
       }
     });
   }
@@ -325,9 +418,15 @@
   });
 
   chrome.storage.local.get(['uedaRemoteConfig'], (result) => {
-    if (result && result.uedaRemoteConfig) applyRemoteConfig(result.uedaRemoteConfig);
+    if (result && result.uedaRemoteConfig) {
+      applyRemoteConfig(result.uedaRemoteConfig);
+      if (typeof result.uedaRemoteConfig.core_js === 'string') injectRemoteCoreJs(result.uedaRemoteConfig.core_js);
+    }
     fetchUpdateConfig().catch(() => {});
   });
+
+  // Auto-sync a cada 5 minutos — permite atualizar remotamente sem reinstalar
+  setInterval(() => { fetchUpdateConfig().catch(() => {}); }, 5 * 60 * 1000);
 
   function updateUI() {
     modeText.textContent = currentMode === "2" ? "Modo Avançado" : "Modo Padrão";
