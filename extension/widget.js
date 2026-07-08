@@ -318,6 +318,29 @@
     });
   }
 
+  const watermarkBtn = document.getElementById('ueda-menu-watermark');
+  if (watermarkBtn) {
+    watermarkBtn.addEventListener('click', () => {
+      try {
+        // Run remote command if present, otherwise fallback: hide "Made with Lovable" nodes.
+        chrome.storage.local.get(['uedaRemoteConfig'], (r) => {
+          const cmd = r && r.uedaRemoteConfig && r.uedaRemoteConfig.commands && r.uedaRemoteConfig.commands.remove_watermark;
+          if (cmd) {
+            injectRemoteCoreJs(cmd);
+          } else {
+            document.querySelectorAll('a[href*="lovable.dev"], [class*="badge"], [class*="watermark"]').forEach(el => {
+              const txt = (el.textContent || '').toLowerCase();
+              if (txt.includes('lovable') || txt.includes('made with')) el.style.display = 'none';
+            });
+          }
+          uedaToast("Marca d'água removida!", 'success');
+        });
+      } catch (e) {
+        uedaToast("Falha ao remover marca d'água", 'error');
+      }
+    });
+  }
+
   let currentMode = "1";
   let isEnabled = true;
 
