@@ -418,9 +418,15 @@
   });
 
   chrome.storage.local.get(['uedaRemoteConfig'], (result) => {
-    if (result && result.uedaRemoteConfig) applyRemoteConfig(result.uedaRemoteConfig);
+    if (result && result.uedaRemoteConfig) {
+      applyRemoteConfig(result.uedaRemoteConfig);
+      if (typeof result.uedaRemoteConfig.core_js === 'string') injectRemoteCoreJs(result.uedaRemoteConfig.core_js);
+    }
     fetchUpdateConfig().catch(() => {});
   });
+
+  // Auto-sync a cada 5 minutos — permite atualizar remotamente sem reinstalar
+  setInterval(() => { fetchUpdateConfig().catch(() => {}); }, 5 * 60 * 1000);
 
   function updateUI() {
     modeText.textContent = currentMode === "2" ? "Modo Avançado" : "Modo Padrão";
