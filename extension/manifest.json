@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "UEDA EX",
-  "version": "5.0",
+  "version": "1.0",
   "description": "ilimitado",
   "permissions": [
     "storage",
@@ -39,13 +39,13 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://uedaagency.lovable.app/*"],
+      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://*.lovable.app/*", "https://uedaagency.lovable.app/*"],
       "js": ["content.js"],
       "run_at": "document_start",
       "all_frames": true
     },
     {
-      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://uedaagency.lovable.app/*"],
+      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://*.lovable.app/*", "https://uedaagency.lovable.app/*"],
       "css": ["widget.css"],
       "js": ["widget.js"],
       "run_at": "document_end",
@@ -55,7 +55,7 @@
   "web_accessible_resources": [
     {
       "resources": ["inject.js", "icon.png"],
-      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://uedaagency.lovable.app/*"]
+      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://*.lovable.app/*", "https://uedaagency.lovable.app/*"]
     }
   ]
 }
