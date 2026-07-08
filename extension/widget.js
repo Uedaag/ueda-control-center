@@ -258,6 +258,11 @@
 
         <div id="ueda-remote-skills"></div>
 
+        <div class="ueda-menu-item" id="ueda-menu-watermark">
+          <svg viewBox="0 0 24 24"><path d="m7 21-4-4 12-12a3 3 0 0 1 4 4L7 21Z"></path><path d="M14 7 17 10"></path><path d="M5 19h16"></path></svg>
+          <span class="ueda-text">Remover marca d'água</span>
+        </div>
+
         <div class="ueda-menu-item" id="ueda-menu-update">
           <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
           <span class="ueda-text">Atualizar extensão</span>
@@ -267,6 +272,7 @@
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> 
           <span class="ueda-text">Ajuda & Suporte</span>
         </a>
+
 
         <div class="ueda-menu-item ueda-text-red" id="ueda-menu-status">
           <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg> 
