@@ -414,6 +414,12 @@
     
     const name = result.userName || result.user || "Minha conta";
     document.getElementById('ueda-user-name').textContent = name;
+
+    try {
+      const v = chrome.runtime.getManifest().version || '1.0';
+      const ver = document.getElementById('ueda-version-value');
+      if (ver) ver.textContent = 'v' + v;
+    } catch (e) {}
     
     updateUI();
   });
