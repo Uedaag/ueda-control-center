@@ -248,6 +248,7 @@
           <div class="ueda-text" style="display: flex; flex-direction: column;">
             <span id="ueda-user-name">Minha conta</span>
             <span id="ueda-time-value" style="font-size: 11px; color: #1E88E5; font-weight: bold; margin-top: 2px;">Calculando...</span>
+            <span id="ueda-version-value" style="font-size: 10px; color: #6b7280; font-weight: 500; margin-top: 2px; letter-spacing: 0.05em;">v1.0</span>
           </div>
         </div>
 
