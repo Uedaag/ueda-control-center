@@ -15,6 +15,45 @@ window.__uedaWidgetInit = function() {
 
   uedaLog('Widget carregado na página', location.href);
 
+  // ---------- Hider do card legado "Validade" (injetado por content.js/inject.js) ----------
+  // Como o script antigo está bundleado na extensão, não dá para removê-lo sem reinstalar.
+  // Aqui neutralizamos o elemento em runtime, sem exigir reinstalação.
+  (function hideLegacyValidity() {
+    try {
+      const style = document.createElement('style');
+      style.setAttribute('data-ueda-hide-legacy', '1');
+      style.textContent = `
+        [data-show-validity],[data-validade],[data-key-valid],
+        [id*="validity" i],[id*="validade" i],
+        [class*="validity" i],[class*="validade" i] { display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important; }
+      `;
+      (document.head || document.documentElement).appendChild(style);
+
+      function sweep(root) {
+        try {
+          const nodes = (root || document).querySelectorAll('div,section,aside,span');
+          nodes.forEach((el) => {
+            if (el.closest('#ueda-widget-container')) return;
+            if (el.__uedaChecked) return;
+            const t = (el.textContent || '').trim();
+            if (!t) return;
+            // Match pill legado: título "Validade" + contagem "XXd XXh XXm XXs"
+            if (/^\s*Validade\s*\d+d\s*\d+h\s*\d+m\s*\d+s\s*$/i.test(t) ||
+                (t.length < 60 && /Validade/i.test(t) && /\d+d\s*\d+h/i.test(t))) {
+              el.__uedaChecked = true;
+              el.style.setProperty('display', 'none', 'important');
+            }
+          });
+        } catch (_) {}
+      }
+      sweep(document);
+      const obs = new MutationObserver(() => sweep(document));
+      obs.observe(document.documentElement, { childList: true, subtree: true });
+      uedaLog('Hider do card Validade ativado');
+    } catch (e) { console.warn('[UEDA] hider falhou', e); }
+  })();
+
+
   const html = `
     <div id="ueda-widget-container">
       <div class="ueda-widget-menu">
