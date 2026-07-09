@@ -333,7 +333,12 @@ window.__uedaWidgetInit = function() {
 
   function loadAppliedPayload() {
     chrome.storage.local.get(['uedaPublishedPayload', 'uedaAppliedVersion'], (r) => {
-      if (r.uedaPublishedPayload) applyPublishedPayload(r.uedaPublishedPayload);
+      if (r.uedaPublishedPayload) {
+        applyPublishedPayload(r.uedaPublishedPayload);
+      } else {
+        applyPendingUpdate(true);
+        return;
+      }
       checkForServerUpdate(false);
     });
   }
@@ -359,13 +364,12 @@ window.__uedaWidgetInit = function() {
       });
     });
   }
-  function applyPendingUpdate() {
+  function applyPendingUpdate(silent) {
     chrome.storage.local.get(['licenseKey', 'uedaAppliedVersion', 'appliedVersion'], (r) => {
       const currentVersion = getCurrentConfigVersion(r);
-      const useCached = pendingUpdateData && pendingUpdateData.ok;
       const applyData = (data) => {
         if (!data || !data.ok) {
-          showUedaToast('Nenhuma atualização disponível');
+          if (!silent) showUedaToast('Nenhuma atualização disponível');
           return;
         }
         applyPublishedPayload(data);
@@ -376,19 +380,15 @@ window.__uedaWidgetInit = function() {
         }, () => {
           pendingUpdateData = null;
           setUpdatePending(false);
-          showUedaToast('Extensão atualizada');
+          if (!silent) showUedaToast('Extensão atualizada');
         });
       };
-      if (useCached) {
-        applyData(pendingUpdateData);
-        return;
-      }
-      fetch(SERVER_URL + '?check=updates', {
+      fetch(SERVER_URL + '?check=updates&apply=1', {
         headers: { 'x-license-key': r.licenseKey || '', 'x-ext-version': currentVersion }
       })
         .then(res => res.json())
         .then(applyData)
-        .catch(() => showUedaToast('Falha ao atualizar'));
+        .catch(() => { if (!silent) showUedaToast('Falha ao atualizar'); });
     });
   }
   loadAppliedPayload();

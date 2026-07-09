@@ -65,11 +65,14 @@ Deno.serve(async (req) => {
     // Public updates check — no license required. Returns only the published payload.
     const url = new URL(req.url);
     if (url.searchParams.get("check") === "updates") {
-      const { data: activeSkills } = await supabase
-        .from("skills")
-        .select("id,name,description,icon,payload,display_order,parent_id,action_type,auto_send,prompt_text,published_name,published_description,published_icon,published_status,published_payload,published_display_order,published_parent_id,published_action_type,published_auto_send,published_prompt_text")
-        .eq("published_status", true)
-        .order("published_display_order", { ascending: true });
+      const shouldApply = url.searchParams.get("apply") === "1";
+      const { data: activeSkills } = shouldApply
+        ? await supabase
+            .from("skills")
+            .select("id,name,description,icon,payload,display_order,parent_id,action_type,auto_send,prompt_text,published_name,published_description,published_icon,published_status,published_payload,published_display_order,published_parent_id,published_action_type,published_auto_send,published_prompt_text")
+            .eq("published_status", true)
+            .order("published_display_order", { ascending: true })
+        : { data: [] };
 
       const { data: rel } = await supabase
         .from("releases")
@@ -101,27 +104,31 @@ Deno.serve(async (req) => {
               created_at: rel.created_at,
             }
           : null,
-        settings: {
-          brand_name: settings.brand_name || "UEDA EX 5.0",
-          brand_color: brandColor,
-          widget_accent_color: brandColor,
-          chat_custom_css: settings.chat_custom_css || settings.custom_css || "",
-          custom_css: settings.custom_css || settings.chat_custom_css || "",
-          welcome_message: settings.welcome_message || "Ative sua chave para continuar.",
-          footer_signature: settings.footer_signature || "",
-          support_url: settings.support_url || "",
-          support_email: settings.support_email || "",
-          whatsapp: settings.whatsapp || "",
-          renewal_url: settings.renewal_url || "",
-          update_url: rel?.download_url || settings.update_url || "",
-        },
-        commands: {
-          remove_watermark:
-            settings.remove_watermark_js ||
-            "document.querySelectorAll('a[href*=\"lovable.dev\"], [class*=\"badge\"], [class*=\"watermark\"]').forEach((el)=>{const txt=(el.textContent||'').toLowerCase(); if(txt.includes('lovable')||txt.includes('made with')) el.style.display='none';});",
-        },
-        core_js: settings.core_js || "",
-        skills: (activeSkills || []).map(mapPublishedSkill),
+        settings: shouldApply
+          ? {
+              brand_name: settings.brand_name || "UEDA EX 5.0",
+              brand_color: brandColor,
+              widget_accent_color: brandColor,
+              chat_custom_css: settings.chat_custom_css || settings.custom_css || "",
+              custom_css: settings.custom_css || settings.chat_custom_css || "",
+              welcome_message: settings.welcome_message || "Ative sua chave para continuar.",
+              footer_signature: settings.footer_signature || "",
+              support_url: settings.support_url || "",
+              support_email: settings.support_email || "",
+              whatsapp: settings.whatsapp || "",
+              renewal_url: settings.renewal_url || "",
+              update_url: rel?.download_url || settings.update_url || "",
+            }
+          : undefined,
+        commands: shouldApply
+          ? {
+              remove_watermark:
+                settings.remove_watermark_js ||
+                "document.querySelectorAll('a[href*=\"lovable.dev\"], [class*=\"badge\"], [class*=\"watermark\"]').forEach((el)=>{const txt=(el.textContent||'').toLowerCase(); if(txt.includes('lovable')||txt.includes('made with')) el.style.display='none';});",
+            }
+          : undefined,
+        core_js: shouldApply ? settings.core_js || "" : undefined,
+        skills: shouldApply ? (activeSkills || []).map(mapPublishedSkill) : undefined,
       });
     }
 
