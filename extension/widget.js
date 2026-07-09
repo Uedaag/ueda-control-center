@@ -36,6 +36,9 @@
           chrome.storage.local.remove(msg.keys || [], function () { reply(true); });
         } else if (msg.type === 'download' && chrome.downloads && chrome.downloads.download) {
           chrome.downloads.download(msg.opts || {}, function (id) { reply(id || null); });
+        } else if (msg.type === 'runtime.sendMessage') {
+          try { chrome.runtime.sendMessage(msg.msg, function (r) { reply(r || null); }); }
+          catch (_) { reply(null); }
         } else if (msg.type === 'openTab' && chrome.tabs && chrome.tabs.create) {
           chrome.tabs.create({ url: msg.url }, function (t) { reply((t && t.id) || null); });
         } else {
