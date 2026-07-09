@@ -258,6 +258,24 @@
 }
 
 /* ============================================
+   SKILL TOGGLE (server-driven skills)
+   ============================================ */
+.ueda-skill-toggle {
+  position: relative; width: 30px; height: 16px; border-radius: 999px;
+  background: #2a323e; margin-left: auto; flex: 0 0 auto;
+  transition: background 0.2s;
+}
+.ueda-skill-toggle::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 12px; height: 12px; border-radius: 50%; background: #fff;
+  transition: transform 0.2s;
+}
+.ueda-skill-toggle.on { background: #1DAFD8; }
+.ueda-skill-toggle.on::after { transform: translateX(14px); }
+/* Hide toggle when menu is collapsed (icons-only view) */
+#ueda-widget-container:not(.ueda-expanded) .ueda-skill-toggle { display: none; }
+
+/* ============================================
    CHAT BORDER GLOW — when monitor is ON
    ============================================ */
 .ueda-chat-glow-active {
