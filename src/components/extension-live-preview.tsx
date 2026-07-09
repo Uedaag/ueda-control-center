@@ -198,10 +198,10 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
     { id: "_p2", name: "Notificações", icon: "Bell" },
     { id: "_p3", name: "Baixar projeto", icon: "Download" },
     { id: "_p4", name: "Remover marca", icon: "Edit" },
-  ]).slice(0, 8).map((s) => `
-    <div class="ueda-menu-item ueda-skill-item">
+  ]).slice(0, 8).map((s, i) => `
+    <div class="ueda-menu-item ueda-skill-item${i === 2 ? " is-active" : ""}">
       ${iconByName(s.icon || "Sparkles")}
-      <span class="ueda-menu-header-text">${escapeHtml(s.name)}</span>
+      <span class="ueda-item-text">${escapeHtml(s.name)}</span>
     </div>`).join("");
 
   return `<!doctype html>
@@ -210,34 +210,25 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
   html,body { margin:0; height:100%; background:#0b1220; overflow:hidden; }
   body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${accent}30, transparent 32%), linear-gradient(135deg,#0b1220,#141b2e); }
   ${widgetCss}
-  /* preview-only tweak so the widget stays fully visible inside the iframe */
   #ueda-widget-container { --ueda-accent: ${accent}; }
-  /* preview: menu visibility is toggled by the script below (click the logo) */
-  .ueda-skill-toggle { position: relative; width: 30px; height: 16px; border-radius: 999px; background: #2a323e; margin-left: auto; flex: 0 0 auto; }
-  .ueda-skill-toggle::after { content:""; position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition: transform .2s; }
-  .ueda-skill-toggle.on { background: ${accent}; }
-  .ueda-skill-toggle.on::after { transform: translateX(14px); }
   .preview-hint { position: fixed; left:24px; top:24px; color:#94a3b8; font-size:11px; letter-spacing:.1em; text-transform:uppercase; z-index: 1; }
 </style></head>
 <body>
   <div class="preview-hint">Prévia • Widget flutuante (canto inferior direito)</div>
   <div id="ueda-widget-container">
     <div class="ueda-widget-menu">
-      <div class="ueda-menu-header">
-        ${iconChevron()}
-        <span class="ueda-menu-header-text">Recolher menu</span>
-      </div>
+      <div class="ueda-menu-header">${iconChevron()}</div>
       <div class="ueda-menu-item" style="cursor:default;">
         ${iconUser()}
-        <div style="display:flex;flex-direction:column;">
-          <span class="ueda-menu-header-text">${brand}</span>
-          <span style="font-size:11px;color:${accent};font-weight:700;">Licença ativa</span>
+        <div class="ueda-account-info">
+          <span style="color:#e2e8f0;font-weight:700;font-size:13px;line-height:1.2;">${brand}</span>
+          <span style="font-size:11px;color:${accent};font-weight:700;margin-top:2px;">Licença ativa</span>
         </div>
       </div>
       ${skillItems}
-      <div class="ueda-menu-item">${iconRefresh()}<span class="ueda-menu-header-text">Atualizar extensão</span></div>
-      <div class="ueda-menu-item">${iconHelp()}<span class="ueda-menu-header-text">Ajuda &amp; Suporte</span></div>
-      <div class="ueda-menu-item ueda-text-red">${iconPower()}<span class="ueda-menu-header-text">Logoff</span></div>
+      <div class="ueda-menu-item">${iconRefresh()}<span class="ueda-item-text">Atualizar extensão</span></div>
+      <div class="ueda-menu-item">${iconHelp()}<span class="ueda-item-text">Ajuda &amp; Suporte</span></div>
+      <div class="ueda-menu-item ueda-text-red">${iconPower()}<span class="ueda-item-text">Logoff</span></div>
     </div>
     <button class="ueda-widget-btn" id="ueda-main-btn" title="${escapeAttr(brand)}">
       <img src="${logo}" alt="UEDA" class="ueda-widget-logo"/>
@@ -263,6 +254,8 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
       document.addEventListener('click', function(e){
         if (!c.contains(e.target)) c.classList.remove('ueda-open','ueda-expanded');
       });
+      // Auto-open expanded on preview load
+      setTimeout(function(){ c.classList.add('ueda-open','ueda-expanded'); }, 250);
     })();
   </script>
 </body></html>`;
