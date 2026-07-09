@@ -1,12 +1,77 @@
+// ---------- Chrome API shim (page world → content script bridge) ----------
+// O runtime remoto executa no page world (script src) e não tem acesso nativo
+// a chrome.*. O widget.js (content script) proxia via postMessage.
+(function installChromeShim() {
+  if (window.__uedaChromeShim) return;
+  window.__uedaChromeShim = true;
+  var pending = new Map();
+  var seq = 0;
+  window.addEventListener('message', function (e) {
+    if (e.source !== window) return;
+    var d = e.data;
+    if (!d || d.__uedaBridge !== 'res' || !d.id) return;
+    var cb = pending.get(d.id);
+    if (cb) { pending.delete(d.id); cb(d.result); }
+  });
+  function bridge(type, payload) {
+    return new Promise(function (resolve) {
+      var id = 'u' + (++seq) + '_' + Date.now();
+      pending.set(id, resolve);
+      var msg = Object.assign({ __uedaBridge: 'req', id: id, type: type }, payload || {});
+      window.postMessage(msg, '*');
+      // Timeout de segurança
+      setTimeout(function () {
+        if (pending.has(id)) { pending.delete(id); resolve(null); }
+      }, 4000);
+    });
+  }
+  var root = document.documentElement;
+  var LOGO_URL = root.getAttribute('data-ueda-logo-url') || '';
+  var EXT_VERSION = root.getAttribute('data-ueda-ext-version') || '0.0.0';
+  window.UEDA_LOGO_URL = LOGO_URL;
+  window.UEDA_EXT_VERSION = EXT_VERSION;
+
+  if (!window.chrome) window.chrome = {};
+  if (!window.chrome.storage) window.chrome.storage = {};
+  if (!window.chrome.storage.local) {
+    window.chrome.storage.local = {
+      get: function (keys, cb) {
+        bridge('storage.get', { keys: keys }).then(function (r) { cb && cb(r || {}); });
+      },
+      set: function (data, cb) {
+        bridge('storage.set', { data: data }).then(function () { cb && cb(); });
+      },
+      remove: function (keys, cb) {
+        bridge('storage.remove', { keys: keys }).then(function () { cb && cb(); });
+      },
+    };
+  }
+  if (!window.chrome.runtime) {
+    window.chrome.runtime = {
+      getManifest: function () { return { version: EXT_VERSION }; },
+      getURL: function (p) { return p === 'logo.png' ? LOGO_URL : ''; },
+    };
+  }
+  if (!window.chrome.downloads) {
+    window.chrome.downloads = {
+      download: function (opts, cb) {
+        bridge('download', { opts: opts }).then(function (id) { cb && cb(id); });
+      },
+    };
+  }
+  console.log('[UEDA] chrome shim instalado (page world)');
+})();
+
 window.__uedaWidgetInit = function() {
   if (window.top !== window.self) return;
   if (window.__uedaWidgetMounted) return;
   window.__uedaWidgetMounted = true;
   if (document.getElementById('ueda-widget-container')) return;
 
-  var __uedaScript=document.currentScript||document.querySelector('script[data-ueda-loader]');
-  var logoUrl = (typeof window!=='undefined' && window.UEDA_LOGO_URL) || (__uedaScript && __uedaScript.getAttribute('data-logo-url')) || '';
-  var extVersion = (typeof window!=='undefined' && window.UEDA_EXT_VERSION) || (__uedaScript && __uedaScript.getAttribute('data-ext-version')) || '0.0.0';
+  var __uedaScript = document.currentScript || document.querySelector('script[data-ueda-loader]');
+  var logoUrl = window.UEDA_LOGO_URL || (__uedaScript && __uedaScript.getAttribute('data-logo-url')) || '';
+  var extVersion = window.UEDA_EXT_VERSION || (__uedaScript && __uedaScript.getAttribute('data-ext-version')) || '0.0.0';
+
 
   const UEDA_DEBUG = true;
   function uedaLog(message, extra) {
