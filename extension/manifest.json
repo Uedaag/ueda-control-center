@@ -14,6 +14,7 @@
     "https://uedaagency.lovable.app/*",
     "https://api.mistral.ai/*",
     "https://raw.githubusercontent.com/*",
+    "https://cdn.jsdelivr.net/*",
     "https://keqgzvcahsvseowfowwu.supabase.co/*"
   ],
   "background": {

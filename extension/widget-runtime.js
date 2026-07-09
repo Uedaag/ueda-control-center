@@ -15,7 +15,7 @@
   var LOGO_URL = root.getAttribute('data-ueda-logo-url') || '';
   var EXT_VER  = root.getAttribute('data-ueda-ext-version') || '5.2.0';
   var CFG_URL  = root.getAttribute('data-ueda-config-url') ||
-    'https://raw.githubusercontent.com/Uedaag/ueda-control-center/main/extension/config.json';
+    'https://cdn.jsdelivr.net/gh/Uedaag/ueda-control-center@main/extension/config.json';
 
   // ── Estado global ──
   var state = {
@@ -445,7 +445,7 @@
       var s = document.createElement('script');
       s.setAttribute('data-ueda-loader', '1');
       var newVer = Math.floor(Date.now() / 1000);
-      var RUNTIME_URL = 'https://raw.githubusercontent.com/Uedaag/ueda-control-center/main/extension/widget-runtime.js';
+      var RUNTIME_URL = 'https://cdn.jsdelivr.net/gh/Uedaag/ueda-control-center@main/extension/widget-runtime.js';
       s.src = RUNTIME_URL + '?force=' + newVer;
       s.async = false;
       (document.head || document.documentElement).appendChild(s);
