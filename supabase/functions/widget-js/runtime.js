@@ -4,7 +4,7 @@ window.__uedaWidgetInit = function() {
   window.__uedaWidgetMounted = true;
   if (document.getElementById('ueda-widget-container')) return;
 
-  const logoUrl = chrome.runtime.getURL('logo.png');
+  var __uedaScript=document.currentScript||document.querySelector('script[data-ueda-loader]');var logoUrl=(__uedaScript&&__uedaScript.getAttribute('data-logo-url'))||'';
 
   const UEDA_DEBUG = true;
   function uedaLog(message, extra) {
