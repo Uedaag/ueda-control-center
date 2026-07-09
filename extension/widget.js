@@ -45,7 +45,7 @@ window.__uedaWidgetInit = function() {
           <span class="ueda-item-text" id="ueda-update-text">Atualizar extensão</span>
         </div>
 
-        <a href="https://wa.me/5511999999999" target="_blank" class="ueda-menu-item" style="text-decoration:none;">
+        <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" class="ueda-menu-item" id="ueda-menu-support" style="text-decoration:none;">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
           <span class="ueda-item-text">Ajuda &amp; Suporte</span>
         </a>
@@ -75,6 +75,7 @@ window.__uedaWidgetInit = function() {
   const statusText = document.getElementById('ueda-status-text');
   const updateBtn  = document.getElementById('ueda-menu-update');
   const updateText = document.getElementById('ueda-update-text');
+  const supportLink = document.getElementById('ueda-menu-support');
   const soundBtn   = document.getElementById('ueda-menu-sound');
   const soundText  = document.getElementById('ueda-sound-text');
   const rmvMarkBtn = document.getElementById('ueda-menu-remove-watermark');
@@ -373,6 +374,10 @@ window.__uedaWidgetInit = function() {
       if (color) {
         document.documentElement.style.setProperty('--ueda-accent', color);
         if (container) container.style.setProperty('--ueda-accent', color);
+      }
+      if (supportLink) {
+        const rawSupport = s.support_url || (s.whatsapp ? 'https://wa.me/' + String(s.whatsapp).replace(/\D/g, '') : '');
+        if (rawSupport) supportLink.href = rawSupport;
       }
       const css = s.custom_css || s.chat_custom_css || '';
       if (!__uedaStyleEl) {
