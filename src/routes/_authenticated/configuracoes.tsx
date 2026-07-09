@@ -147,13 +147,56 @@ function Page() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_560px]">
         {/* MAIN */}
         <div className="space-y-6 min-w-0">
-          <div className="rounded-2xl bg-card border border-border p-4 flex items-center justify-end gap-2 shadow-sm">
-            <button onClick={reset} className="text-xs font-semibold tracking-widest text-muted-foreground hover:text-foreground px-3 py-2 flex items-center gap-1.5">
-              <RotateCcw className="w-3.5 h-3.5" /> RESETAR
-            </button>
-            <button onClick={save} disabled={saving} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold tracking-widest px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 disabled:opacity-60">
-              <Save className="w-4 h-4" /> {saving ? "SALVANDO..." : "SALVAR ALTERAÇÕES"}
-            </button>
+          {/* ACTION BAR — draft vs release */}
+          <div className="rounded-2xl bg-card border border-border p-4 shadow-sm space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
+                <CircleDot className={`w-3.5 h-3.5 ${hasDraftChanges ? "text-amber-500 animate-pulse" : "text-emerald-500"}`} />
+                <span className="text-muted-foreground">
+                  {hasDraftChanges ? "Rascunho com alterações não publicadas" : "Sincronizado com a extensão"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={reset} className="text-xs font-semibold tracking-widest text-muted-foreground hover:text-foreground px-3 py-2 flex items-center gap-1.5">
+                  <RotateCcw className="w-3.5 h-3.5" /> DESCARTAR
+                </button>
+                <button onClick={() => saveDraft()} disabled={saving} className="bg-card border border-border hover:bg-muted text-card-foreground text-xs font-bold tracking-widest px-5 py-3 rounded-xl shadow-sm flex items-center gap-2 disabled:opacity-60">
+                  <Save className="w-4 h-4" /> {saving ? "SALVANDO..." : "SALVAR RASCUNHO"}
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-background border border-border p-4 space-y-3">
+              <div className="flex items-center gap-2 text-[11px] font-bold tracking-[0.15em] text-muted-foreground uppercase">
+                <Rocket className="w-3.5 h-3.5" style={{ color: accent }} /> Liberar atualização para clientes
+              </div>
+              <div className="grid gap-3 md:grid-cols-[140px_1fr]">
+                <div>
+                  <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">Versão</label>
+                  <LightInput value={version} onChange={(e) => setVersion(e.target.value)} placeholder="5.1" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">Novidades</label>
+                  <Textarea
+                    value={changelog}
+                    onChange={(e) => setChangelog(e.target.value)}
+                    rows={2}
+                    placeholder="• O que mudou nesta versão"
+                    className="min-h-[52px] bg-background border-input text-foreground focus-visible:border-ring focus-visible:ring-ring/20"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={publishRelease}
+                disabled={publishing}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold tracking-widest px-6 py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                <Rocket className="w-4 h-4" /> {publishing ? "LIBERANDO..." : "LIBERAR NOVA ATUALIZAÇÃO"}
+              </button>
+              <p className="text-[10px] tracking-widest uppercase text-muted-foreground text-center">
+                Só após liberar, a extensão dos clientes recebe as mudanças.
+              </p>
+            </div>
           </div>
 
           {/* ESSÊNCIA VISUAL */}
