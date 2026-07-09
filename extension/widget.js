@@ -1,4 +1,4 @@
-(function() {
+window.__uedaWidgetInit = function() {
   if (document.getElementById('ueda-widget-container')) return;
 
   const logoUrl = chrome.runtime.getURL('logo.png');
@@ -527,4 +527,30 @@
     });
   }, 1000);
 
+};
+
+// Initial injection (retry until <body> exists)
+(function ensureWidget() {
+  if (!document.body) {
+    return setTimeout(ensureWidget, 50);
+  }
+  try { window.__uedaWidgetInit(); } catch (e) {}
 })();
+
+// Keep-alive: re-inject if SPA removes the container
+(function keepAlive() {
+  const check = () => {
+    if (document.body && !document.getElementById('ueda-widget-container')) {
+      try { window.__uedaWidgetInit(); } catch (e) {}
+    }
+  };
+  try {
+    new MutationObserver(check).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+  } catch (e) {}
+  // Safety fallback: poll every 2s in case the observer misses
+  setInterval(check, 2000);
+})();
+
