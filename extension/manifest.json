@@ -46,14 +46,14 @@
     },
     {
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://uedaagency.lovable.app/*"],
-      "js": ["remote-layout.js"],
+      "js": ["ueda-menu.js"],
       "run_at": "document_end",
       "all_frames": false
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["inject.js"],
+      "resources": ["inject.js", "logo.png"],
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://uedaagency.lovable.app/*"]
     }
   ]
