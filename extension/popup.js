@@ -83,9 +83,8 @@
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.ok) throw new Error(data.error_display || 'Chave inválida ou expirada.');
 
-      const shouldRemember = fields.rememberKey?.checked !== false;
       const nextState = {
-        licenseKey: shouldRemember ? key : '',
+        licenseKey: key,
         authStatus: 'success',
         keyValid: true,
         validate: true,
@@ -123,6 +122,7 @@
       showValidity: fields.showValidity?.checked !== false,
       mode: selectedMode,
     });
+    reloadLovableTabs();
   }
 
   async function logout() {

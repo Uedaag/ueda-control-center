@@ -459,8 +459,7 @@
     statusText.textContent = "Logoff";
     statusBtn.classList.add("ueda-text-red");
     statusBtn.classList.remove("ueda-text-green");
-    // Monitor visual sempre ativo enquanto a sessão existir
-    document.body.classList.add("ueda-monitor-on");
+    document.body.classList.toggle("ueda-monitor-on", isEnabled);
     startChatHighlighter();
   }
 
@@ -574,10 +573,12 @@
         document.getElementById('ueda-user-name').textContent = name;
 
         if (!result.enabled) {
+          document.body.classList.remove('ueda-monitor-on');
           timeValue.textContent = 'Pausado';
           timeValue.style.color = '#ff8b8b';
           return;
         }
+        document.body.classList.add('ueda-monitor-on');
         
         if (!result.validade || result.validade === 'Sem validade') {
           timeValue.textContent = 'Ilimitado';
