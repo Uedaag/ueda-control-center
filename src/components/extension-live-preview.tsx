@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import widgetCss from "../../extension/widget.css?raw";
+const widgetCss = "";
 import popupCss from "../../extension/popup.css?raw";
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 
