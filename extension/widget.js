@@ -3,6 +3,15 @@ window.__uedaWidgetInit = function() {
 
   const logoUrl = chrome.runtime.getURL('logo.png');
 
+  const UEDA_DEBUG = true;
+  function uedaLog(message, extra) {
+    if (!UEDA_DEBUG) return;
+    if (extra !== undefined) console.log('[UEDA]', message, extra);
+    else console.log('[UEDA]', message);
+  }
+
+  uedaLog('Widget carregado na página', location.href);
+
   const html = `
     <div id="ueda-widget-container">
       <div class="ueda-widget-menu">
@@ -36,7 +45,7 @@ window.__uedaWidgetInit = function() {
           <span class="ueda-item-text" id="ueda-update-text">Atualizar extensão</span>
         </div>
 
-        <a href="https://wa.me/5511999999999" target="_blank" class="ueda-menu-item" style="text-decoration:none;">
+        <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" class="ueda-menu-item" id="ueda-menu-support" style="text-decoration:none;">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
           <span class="ueda-item-text">Ajuda &amp; Suporte</span>
         </a>
@@ -66,6 +75,7 @@ window.__uedaWidgetInit = function() {
   const statusText = document.getElementById('ueda-status-text');
   const updateBtn  = document.getElementById('ueda-menu-update');
   const updateText = document.getElementById('ueda-update-text');
+  const supportLink = document.getElementById('ueda-menu-support');
   const soundBtn   = document.getElementById('ueda-menu-sound');
   const soundText  = document.getElementById('ueda-sound-text');
   const rmvMarkBtn = document.getElementById('ueda-menu-remove-watermark');
@@ -90,6 +100,16 @@ window.__uedaWidgetInit = function() {
 
   // ---------- Server endpoint (Lovable Cloud / Supabase) ----------
   const SERVER_URL = 'https://keqgzvcahsvseowfowwu.supabase.co/functions/v1/fn-sv03';
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    })[char] || char);
+  }
 
   function showUedaToast(message) {
     const old = document.getElementById('ueda-update-toast');
@@ -151,6 +171,7 @@ window.__uedaWidgetInit = function() {
     skills.forEach(s => { skillsById[s.id] = s; });
     const top = skills.filter(s => !s.parent_id);
     const childrenOf = (pid) => skills.filter(s => s.parent_id === pid);
+    uedaLog('Skills renderizadas', { total: skills.length, menu: top.length });
 
     skillsList.innerHTML = top.map(s => {
       const kids = childrenOf(s.id);
@@ -162,7 +183,7 @@ window.__uedaWidgetInit = function() {
         '<div class="ueda-menu-item ueda-skill-row" data-skill-id="' + s.id + '"' +
         (hasKids ? ' data-has-children="1"' : '') + '>' +
         iconSvg(s.icon || 'Sparkles') +
-        '<span class="ueda-item-text">' + (s.name || 'Skill') + '</span>' +
+        '<span class="ueda-item-text">' + escapeHtml(s.name || 'Skill') + '</span>' +
         chevron +
         '</div>';
       const sub = hasKids
@@ -170,7 +191,7 @@ window.__uedaWidgetInit = function() {
           kids.map(c =>
             '<div class="ueda-menu-item ueda-skill-row" data-skill-id="' + c.id + '" style="padding-left:10px">' +
             iconSvg(c.icon || 'Sparkles') +
-            '<span class="ueda-item-text">' + (c.name || 'Skill') + '</span>' +
+            '<span class="ueda-item-text">' + escapeHtml(c.name || 'Skill') + '</span>' +
             '</div>'
           ).join('') +
           '</div>'
@@ -180,61 +201,95 @@ window.__uedaWidgetInit = function() {
   }
 
   // Locate the chat input on the host page and send text (optionally auto-submit)
-  function findChatTextarea() {
-    // 1) Textarea whose placeholder matches common chat patterns (Lovable = "Pergunte à Lovable...")
-    const textareas = Array.from(document.querySelectorAll('textarea'));
-    const byPlaceholder = textareas.find(t => {
-      const ph = (t.getAttribute('placeholder') || '').toLowerCase();
-      return ph.includes('pergunt') || ph.includes('lovable') || ph.includes('ask') || ph.includes('message') || ph.includes('mensagem') || ph.includes('chat');
-    });
-    if (byPlaceholder) return byPlaceholder;
+  function isUsableChatElement(el) {
+    if (!el || el.closest('#ueda-widget-container')) return false;
+    if (el.disabled || el.readOnly) return false;
+    const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+    if (!rect || rect.width < 8 || rect.height < 8) return false;
+    const style = window.getComputedStyle(el);
+    return style.visibility !== 'hidden' && style.display !== 'none' && Number(style.opacity || '1') > 0;
+  }
 
-    // 2) Visible textarea inside a form (chat composer usually has form submit)
-    const inForm = textareas.find(t => t.closest('form') && t.offsetParent !== null);
+  function findChatTextarea() {
+    const fields = Array.from(document.querySelectorAll('textarea, input[type="text"], input:not([type]), [contenteditable="true"], [role="textbox"]'))
+      .filter(isUsableChatElement);
+
+    const byIntent = fields.find(t => {
+      const ph = (t.getAttribute('placeholder') || '').toLowerCase();
+      const aria = (t.getAttribute('aria-label') || '').toLowerCase();
+      const testId = (t.getAttribute('data-testid') || '').toLowerCase();
+      const joined = ph + ' ' + aria + ' ' + testId;
+      return joined.includes('pergunt') || joined.includes('lovable') || joined.includes('ask') || joined.includes('message') || joined.includes('mensagem') || joined.includes('chat') || joined.includes('prompt');
+    });
+    if (byIntent) return byIntent;
+
+    // Visible field inside a form (chat composer usually has form submit)
+    const inForm = fields.find(t => t.closest('form'));
     if (inForm) return inForm;
 
-    // 3) Last visible textarea on page
-    const visible = textareas.filter(t => t.offsetParent !== null);
-    if (visible.length) return visible[visible.length - 1];
-
-    // 4) Fallback: any contenteditable (ProseMirror etc.)
-    const editable = document.querySelector('[contenteditable="true"]');
-    return editable || null;
+    // Last visible editable on page: the Lovable composer sits at the bottom.
+    return fields.length ? fields[fields.length - 1] : null;
   }
 
   function findSendButton(fromEl) {
-    // Look near the textarea for a submit button
     const scopes = [];
     if (fromEl) {
       let p = fromEl.parentElement;
-      for (let i = 0; i < 5 && p; i++) { scopes.push(p); p = p.parentElement; }
+      for (let i = 0; i < 8 && p; i++) { scopes.push(p); p = p.parentElement; }
     }
     scopes.push(document);
+
+    const isEnabledButton = (b) => {
+      if (!b || b.closest('#ueda-widget-container')) return false;
+      if (b.disabled || b.getAttribute('aria-disabled') === 'true') return false;
+      const rect = b.getBoundingClientRect ? b.getBoundingClientRect() : null;
+      if (!rect || rect.width < 10 || rect.height < 10) return false;
+      const style = window.getComputedStyle(b);
+      return style.visibility !== 'hidden' && style.display !== 'none' && Number(style.opacity || '1') > 0;
+    };
+
+    const rejectText = /(construir|build|melhorar|improve|microfone|microphone|anexar|attach|adicionar|add)/i;
     for (const scope of scopes) {
-      const btns = Array.from(scope.querySelectorAll('button, [role="button"]'));
-      // Prefer explicit submit / aria labels
+      const btns = Array.from(scope.querySelectorAll('button, [role="button"]')).filter(isEnabledButton);
       const byLabel = btns.find(b => {
-        const al = (b.getAttribute('aria-label') || '').toLowerCase();
-        return al.includes('enviar') || al.includes('send') || al === 'submit';
+        const al = ((b.getAttribute('aria-label') || '') + ' ' + (b.getAttribute('title') || '') + ' ' + (b.textContent || '')).toLowerCase();
+        return al.includes('enviar') || al.includes('send') || al.includes('submit');
       });
       if (byLabel && !byLabel.disabled) return byLabel;
       const bySubmit = btns.find(b => b.getAttribute('type') === 'submit' && !b.disabled);
       if (bySubmit) return bySubmit;
+
+      const iconOnly = btns
+        .filter(b => !rejectText.test(b.textContent || ''))
+        .filter(b => b.querySelector('svg'))
+        .sort((a, b) => b.getBoundingClientRect().right - a.getBoundingClientRect().right);
+      if (iconOnly[0]) return iconOnly[0];
     }
     return null;
   }
 
+  function clickLikeUser(button) {
+    const opts = { bubbles: true, cancelable: true, view: window };
+    try { button.dispatchEvent(new PointerEvent('pointerdown', opts)); } catch (_) {}
+    try { button.dispatchEvent(new MouseEvent('mousedown', opts)); } catch (_) {}
+    try { button.dispatchEvent(new PointerEvent('pointerup', opts)); } catch (_) {}
+    try { button.dispatchEvent(new MouseEvent('mouseup', opts)); } catch (_) {}
+    button.click();
+  }
+
   function injectPromptIntoChat(text, autoSend) {
-    if (!text) { console.log('[UEDA] prompt vazio'); return; }
+    if (!text) { uedaLog('Prompt vazio'); showUedaToast('Prompt vazio'); return; }
     const el = findChatTextarea();
-    if (!el) { console.log('[UEDA] Chat input não encontrado'); return; }
+    if (!el) { uedaLog('Chat input não encontrado'); showUedaToast('Chat não encontrado'); return; }
+    uedaLog('Chat input encontrado', { tag: el.tagName, autoSend });
     el.focus();
 
     if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
       const proto = el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
       const setter = Object.getOwnPropertyDescriptor(proto, 'value');
       if (setter && setter.set) setter.set.call(el, text); else el.value = text;
-      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new InputEvent('beforeinput', { bubbles: true, cancelable: true, inputType: 'insertText', data: text }));
+      el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: text }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
     } else {
       // contenteditable — ProseMirror needs a real beforeinput/insertText
@@ -246,28 +301,33 @@ window.__uedaWidgetInit = function() {
       }
     }
 
-    if (!autoSend) return;
+    if (!autoSend) { showUedaToast('Prompt inserido'); return; }
 
-    setTimeout(() => {
+    const trySend = (attempt = 1) => {
       // Preferred: click the send button (React-friendly)
       const btn = findSendButton(el);
       if (btn) {
-        btn.click();
-        console.log('[UEDA] Skill enviada via botão de submit');
+        clickLikeUser(btn);
+        uedaLog('Skill enviada via botão', { attempt });
+        showUedaToast('Comando enviado');
         return;
       }
+      if (attempt < 3) return setTimeout(() => trySend(attempt + 1), attempt * 260);
+
       // Fallback: try submitting the enclosing form
       const form = el.closest && el.closest('form');
       if (form) {
-        try { form.requestSubmit ? form.requestSubmit() : form.submit(); console.log('[UEDA] Skill enviada via form.submit'); return; } catch(_) {}
+        try { form.requestSubmit ? form.requestSubmit() : form.submit(); uedaLog('Skill enviada via formulário'); showUedaToast('Comando enviado'); return; } catch(_) {}
       }
       // Last resort: dispatch Enter
       const evInit = { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true };
       el.dispatchEvent(new KeyboardEvent('keydown', evInit));
       el.dispatchEvent(new KeyboardEvent('keypress', evInit));
       el.dispatchEvent(new KeyboardEvent('keyup', evInit));
-      console.log('[UEDA] Skill enviada via Enter simulado');
-    }, 80);
+      uedaLog('Skill enviada via Enter simulado');
+      showUedaToast('Comando enviado');
+    };
+    setTimeout(() => trySend(1), 160);
   }
 
   // Delegate skill clicks (parent expand / child execute)
@@ -292,13 +352,16 @@ window.__uedaWidgetInit = function() {
 
     // Execute skill action
     try {
+      uedaLog('Executando skill', { name: skill.name, action_type: skill.action_type, auto_send: skill.auto_send });
       if (skill.action_type === 'chat_prompt') {
         injectPromptIntoChat(skill.prompt_text || '', !!skill.auto_send);
       } else if (skill.payload) {
         new Function(skill.payload)();
+        showUedaToast('Skill executada');
       }
     } catch (err) {
-      console.log('[UEDA] Erro executando skill:', err);
+      uedaLog('Erro executando skill', err);
+      showUedaToast('Erro na skill');
     }
   });
 
@@ -308,7 +371,14 @@ window.__uedaWidgetInit = function() {
     try {
       const s = (data && data.settings) || {};
       const color = s.widget_accent_color || s.brand_color;
-      if (color) document.documentElement.style.setProperty('--ueda-accent', color);
+      if (color) {
+        document.documentElement.style.setProperty('--ueda-accent', color);
+        if (container) container.style.setProperty('--ueda-accent', color);
+      }
+      if (supportLink) {
+        const rawSupport = s.support_url || (s.whatsapp ? 'https://wa.me/' + String(s.whatsapp).replace(/\D/g, '') : '');
+        if (rawSupport) supportLink.href = rawSupport;
+      }
       const css = s.custom_css || s.chat_custom_css || '';
       if (!__uedaStyleEl) {
         __uedaStyleEl = document.createElement('style');
@@ -319,7 +389,8 @@ window.__uedaWidgetInit = function() {
       if (data && data.commands && data.commands.remove_watermark) {
         try { new Function(data.commands.remove_watermark)(); } catch (e) {}
       }
-    } catch (e) { console.log('[UEDA] applyServerLayout error', e); }
+      uedaLog('Layout publicado aplicado', { color });
+    } catch (e) { uedaLog('applyServerLayout error', e); }
   }
 
   function applyPublishedPayload(data) {
@@ -329,6 +400,7 @@ window.__uedaWidgetInit = function() {
       const active = data.skills.filter(s => (typeof s.status === 'boolean' ? s.status : s.status === 'active' || s.status == null));
       renderSkills(active);
     }
+    uedaLog('Payload publicado aplicado', { version: data.version });
   }
 
   function loadAppliedPayload() {

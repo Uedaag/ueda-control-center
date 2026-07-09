@@ -20,6 +20,7 @@ export type ExtensionPreviewSkill = {
   icon?: string | null;
   payload?: string | null;
   display_order?: number | null;
+  parent_id?: string | null;
 };
 
 type ExtensionLivePreviewProps = {
@@ -235,11 +236,29 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
   const logo = escapeAttr(logoAsset.url);
 
   // Mirror widget.js exactly: server-driven skills only (no placeholders here)
-  const skillItems = skills.slice(0, 8).map((s) => `
-    <div class="ueda-menu-item ueda-skill-row">
-      ${iconByName(s.icon || "Sparkles")}
-      <span class="ueda-item-text">${escapeHtml(s.name)}</span>
-    </div>`).join("");
+  const topSkills = skills.filter((skill) => !skill.parent_id).slice(0, 8);
+  const skillItems = topSkills.map((skill) => {
+    const children = skills.filter((child) => child.parent_id === skill.id);
+    const hasChildren = children.length > 0;
+    const parent = `
+      <div class="ueda-menu-item ueda-skill-row"${hasChildren ? " data-has-children=\"1\"" : ""}>
+        ${iconByName(skill.icon || "Sparkles")}
+        <span class="ueda-item-text">${escapeHtml(skill.name)}</span>
+        ${hasChildren ? '<svg class="ueda-sk-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;transition:transform .2s"><polyline points="6 9 12 15 18 9"></polyline></svg>' : ""}
+      </div>`;
+
+    const submenu = hasChildren
+      ? `<div class="ueda-skill-sub" style="display:block;padding-left:16px;border-left:2px solid rgba(255,255,255,.08);margin:2px 0 4px 12px;">
+          ${children.map((child) => `
+            <div class="ueda-menu-item ueda-skill-row" style="padding-left:10px">
+              ${iconByName(child.icon || "Sparkles")}
+              <span class="ueda-item-text">${escapeHtml(child.name)}</span>
+            </div>`).join("")}
+        </div>`
+      : "";
+
+    return parent + submenu;
+  }).join("");
 
   const bgStyles = bg === "light"
     ? `background: linear-gradient(135deg,#f4f6fb,#e6ebf2); }
