@@ -1,5 +1,5 @@
 (() => {
-  const VALIDATE_ENDPOINT = 'https://keqgzvcahsvseowfowwu.supabase.co/functions/v1/fn-vl04';
+  const VALIDATE_ENDPOINT = 'https://uedaagency.lovable.app/api/login';
 
   const fields = {
     loginView: document.getElementById('loginView'),
@@ -78,10 +78,12 @@
       const response = await fetch(VALIDATE_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ license_key: key, fingerprint: await getDeviceId() }),
+        body: JSON.stringify({ key, deviceid: await getDeviceId() }),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) throw new Error(data.error_display || 'Chave inválida ou expirada.');
+      if (!response.ok || data.status !== 'success') {
+        throw new Error(data.msg || 'Chave inválida ou expirada.');
+      }
 
       const nextState = {
         licenseKey: key,
@@ -91,9 +93,9 @@
         enabled: true,
         mode: '1',
         showValidity: true,
-        userName: data.label || 'Minha conta',
-        user: data.label || 'Minha conta',
-        validade: data.expires_at || 'Sem validade',
+        userName: data.user || 'Minha conta',
+        user: data.user || 'Minha conta',
+        validade: data.validade || 'Sem validade',
         lastValidationAt: Date.now(),
       };
       await setStorage(nextState);
