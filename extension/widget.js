@@ -1,9 +1,7 @@
-// UEDA EX — bootstrap definitivo (fetch + eval no mundo isolado).
-// Executa o runtime remoto no mesmo contexto da extensão (isolated world),
-// mantendo acesso a chrome.* (storage, runtime, downloads).
-// A partir daqui, TODA mudança de UI/lógica é feita apenas em
-// supabase/functions/widget-js/runtime.js e propagada com um simples F5.
-// Não adicione lógica de UI aqui.
+// UEDA EX — bootstrap MV3-safe com ponte chrome.* via postMessage.
+// Content script injeta o runtime remoto (page world) e faz o proxy das
+// chamadas chrome.storage/chrome.runtime que o runtime precisa.
+// Toda mudança futura vai em runtime.js — nenhuma reinstalação.
 (function bootstrap() {
   try {
     if (window.top !== window.self) return;
@@ -12,41 +10,55 @@
 
     var RUNTIME_URL = 'https://keqgzvcahsvseowfowwu.supabase.co/functions/v1/widget-js';
 
-    // Contexto injetado no runtime (evita depender de document.currentScript).
-    try {
-      window.UEDA_LOGO_URL = chrome.runtime.getURL('logo.png');
-    } catch (_) { window.UEDA_LOGO_URL = ''; }
-    try {
-      window.UEDA_EXT_VERSION = chrome.runtime.getManifest().version;
-    } catch (_) { window.UEDA_EXT_VERSION = '0.0.0'; }
+    // ---- Info da extensão exposta ao page world via dataset ----
+    var LOGO_URL = '';
+    var EXT_VERSION = '0.0.0';
+    try { LOGO_URL = chrome.runtime.getURL('logo.png'); } catch (_) {}
+    try { EXT_VERSION = chrome.runtime.getManifest().version; } catch (_) {}
+    var root = document.documentElement;
+    root.setAttribute('data-ueda-logo-url', LOGO_URL);
+    root.setAttribute('data-ueda-ext-version', EXT_VERSION);
 
-    function loadRuntime() {
-      fetch(RUNTIME_URL + '?t=' + Date.now(), { cache: 'no-store' })
-        .then(function (r) {
-          if (!r.ok) throw new Error('HTTP ' + r.status);
-          return r.text();
-        })
-        .then(function (code) {
-          try {
-            // Indirect eval → executa no escopo do isolated world com chrome.*
-            (0, eval)(code);
-            console.log('[UEDA] runtime remoto carregado', window.UEDA_EXT_VERSION);
-          } catch (err) {
-            console.error('[UEDA] erro executando runtime remoto', err);
-          }
-        })
-        .catch(function (err) {
-          console.error('[UEDA] falha ao baixar runtime remoto', err);
-          // Retry em 5s (rede oscilando)
-          setTimeout(loadRuntime, 5000);
-        });
-    }
+    // ---- Ponte: content script executa chrome.* em nome do page world ----
+    window.addEventListener('message', function (e) {
+      if (e.source !== window) return;
+      var msg = e.data;
+      if (!msg || msg.__uedaBridge !== 'req' || !msg.id) return;
+      function reply(result) {
+        window.postMessage({ __uedaBridge: 'res', id: msg.id, result: result }, '*');
+      }
+      try {
+        if (msg.type === 'storage.get') {
+          chrome.storage.local.get(msg.keys || null, function (r) { reply(r || {}); });
+        } else if (msg.type === 'storage.set') {
+          chrome.storage.local.set(msg.data || {}, function () { reply(true); });
+        } else if (msg.type === 'storage.remove') {
+          chrome.storage.local.remove(msg.keys || [], function () { reply(true); });
+        } else if (msg.type === 'download' && chrome.downloads && chrome.downloads.download) {
+          chrome.downloads.download(msg.opts || {}, function (id) { reply(id || null); });
+        } else if (msg.type === 'openTab' && chrome.tabs && chrome.tabs.create) {
+          chrome.tabs.create({ url: msg.url }, function (t) { reply((t && t.id) || null); });
+        } else {
+          reply(null);
+        }
+      } catch (err) {
+        reply({ __error: String(err && err.message || err) });
+      }
+    });
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadRuntime, { once: true });
-    } else {
-      loadRuntime();
+    // ---- Injeta o runtime remoto ----
+    function inject() {
+      if (document.querySelector('script[data-ueda-loader]')) return;
+      var s = document.createElement('script');
+      s.setAttribute('data-ueda-loader', '1');
+      s.src = RUNTIME_URL + '?t=' + Date.now();
+      s.async = false;
+      s.onerror = function () { console.error('[UEDA] falha ao carregar runtime remoto'); };
+      (document.head || document.documentElement).appendChild(s);
+      console.log('[UEDA] bootstrap OK — runtime remoto solicitado', EXT_VERSION);
     }
+    if (document.head || document.documentElement) inject();
+    else document.addEventListener('DOMContentLoaded', inject, { once: true });
   } catch (e) {
     console.error('[UEDA] bootstrap falhou', e);
   }
