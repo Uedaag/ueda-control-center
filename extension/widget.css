@@ -1,38 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
 /* ── Clean up the lovable chat blocker ── */
-/* Targets the blocker injected when license is expired */
 #lovable-chat-blocker {
   background: transparent !important;
   backdrop-filter: blur(4px) !important;
   font-family: 'Montserrat', sans-serif !important;
   border-radius: 12px !important;
 }
-
-/* Hide the huge warning emoji div */
 #lovable-chat-blocker > div:first-child,
-#lovable-chat-blocker svg {
-  display: none !important;
-}
-
-#lovable-chat-blocker h3 {
-  font-family: 'Montserrat', sans-serif !important;
-  font-weight: 600 !important;
-}
-
-#lovable-chat-blocker p {
-  font-family: 'Montserrat', sans-serif !important;
-  opacity: 0.8 !important;
-}
-
-
-/* Hide extension countdown if still present */
-#extension-countdown {
-  display: none !important;
-}
+#lovable-chat-blocker svg { display: none !important; }
+#lovable-chat-blocker h3 { font-family: 'Montserrat', sans-serif !important; font-weight: 600 !important; }
+#lovable-chat-blocker p { font-family: 'Montserrat', sans-serif !important; opacity: 0.8 !important; }
+#extension-countdown { display: none !important; }
 
 /* ============================================
-   FLOATING WIDGET CONTAINER
+   FLOATING WIDGET — GLASS PILL SIDEBAR
    ============================================ */
 #ueda-widget-container {
   position: fixed;
@@ -42,15 +24,16 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  gap: 14px;
   font-family: 'Montserrat', 'Inter', -apple-system, sans-serif;
 }
 
 /* ============================================
-   THE FLOATING U LOGO BUTTON
+   FLOATING LOGO BUTTON (below the pill)
    ============================================ */
 .ueda-widget-btn {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   background: transparent;
   border: none;
   display: flex;
@@ -58,208 +41,196 @@
   justify-content: center;
   cursor: pointer;
   position: relative;
-  z-index: 2;
   flex-shrink: 0;
+  order: 2;
 }
-
-/* Pulse rings */
 .ueda-widget-btn::before,
 .ueda-widget-btn::after {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
+  top: 50%; left: 50%;
+  width: 100%; height: 100%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 1.5px solid rgba(29, 175, 216, 0.5);
   animation: ueda-pulse 2.5s infinite cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
 }
-.ueda-widget-btn::after {
-  animation-delay: 1.25s;
-}
-
+.ueda-widget-btn::after { animation-delay: 1.25s; }
 @keyframes ueda-pulse {
-  0% { width: 100%; height: 100%; opacity: 0.8; }
+  0%   { width: 100%; height: 100%; opacity: 0.8; }
   100% { width: 220%; height: 220%; opacity: 0; }
 }
-
 .ueda-widget-logo {
-  width: 46px;
-  height: 46px;
+  width: 48px; height: 48px;
   object-fit: contain;
-  z-index: 2;
-  filter: drop-shadow(0 0 10px rgba(29, 175, 216, 0.6));
+  filter: drop-shadow(0 0 12px rgba(29, 175, 216, 0.65));
   transition: transform 0.2s ease;
 }
-
-#ueda-widget-container:hover .ueda-widget-logo {
-  transform: scale(1.05);
-}
+#ueda-widget-container:hover .ueda-widget-logo { transform: scale(1.05); }
 
 /* ============================================
-   THE DROPDOWN MENU — appears on hover
+   THE GLASS PILL MENU
    ============================================ */
 .ueda-widget-menu {
-  /* Dark glass panel */
-  background: rgba(14, 16, 22, 0.92);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  padding: 6px 0;
-  margin-bottom: 12px;
+  order: 1;
+  position: relative;
+  /* Glass */
+  background: linear-gradient(160deg, rgba(20, 32, 44, 0.55), rgba(8, 14, 22, 0.72));
+  backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid rgba(29, 175, 216, 0.22);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 30px rgba(29, 175, 216, 0.05);
 
-  /* Layout: icons-only by default */
+  /* Big rounded pill */
+  border-radius: 40px;
+  padding: 18px 10px;
+
   display: flex;
   flex-direction: column;
-  width: 54px;
+  align-items: stretch;
+  gap: 6px;
+  width: 68px;
   overflow: hidden;
 
   /* Hidden by default */
   opacity: 0;
   visibility: hidden;
-  transform: translateY(8px) scale(0.97);
-  transition: opacity 0.22s ease, visibility 0.22s ease, transform 0.22s ease, width 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(10px) scale(0.96);
   transform-origin: bottom right;
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease,
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    width 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    border-radius 0.32s ease,
+    padding 0.32s ease;
 }
 
-/* Show menu when open class is applied (JS controls this on click) */
 #ueda-widget-container.ueda-open .ueda-widget-menu {
   opacity: 1;
   visibility: visible;
   transform: translateY(0) scale(1);
-  width: 54px; /* icons only by default */
 }
 
-/* When expanded: show text too */
 #ueda-widget-container.ueda-open.ueda-expanded .ueda-widget-menu {
-  width: 260px;
+  width: 232px;
+  border-radius: 32px;
+  padding: 18px 14px;
 }
 
 /* ============================================
-   MENU HEADER (collapse/expand button)
+   MENU HEADER (chevron toggle at top)
    ============================================ */
 .ueda-menu-header {
-  display: flex;
+  align-self: flex-end;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 9px 10px;
-  margin: 4px 6px 6px 6px;
-  border: 1px solid rgba(29, 175, 216, 0.4);
-  border-radius: 10px;
-  color: #a8b2c8;
-  font-size: 12px;
-  font-weight: 600;
+  width: 34px;
+  height: 34px;
+  margin: 0 4px 6px auto;
+  border-radius: 999px;
+  border: 1px solid rgba(29, 175, 216, 0.35);
+  background: rgba(29, 175, 216, 0.08);
+  color: #7cd7ef;
   cursor: pointer;
-  gap: 8px;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
-  white-space: nowrap;
-  overflow: hidden;
+  flex-shrink: 0;
 }
 .ueda-menu-header:hover {
-  background: rgba(29, 175, 216, 0.12);
-  border-color: #1DAFD8;
+  background: rgba(29, 175, 216, 0.18);
   color: #fff;
+  border-color: #1DAFD8;
 }
 .ueda-menu-header svg {
-  width: 15px;
-  height: 15px;
-  stroke: currentColor;
-  stroke-width: 2;
-  fill: none;
-  flex-shrink: 0;
+  width: 14px; height: 14px;
+  stroke: currentColor; stroke-width: 2.2; fill: none;
   transition: transform 0.3s ease;
 }
-/* Rotate arrow when expanded */
+/* When expanded, arrow flips so it points to collapse */
 #ueda-widget-container.ueda-expanded .ueda-menu-header svg {
   transform: rotate(180deg);
 }
-/* Show text in header only when expanded */
-.ueda-menu-header-text {
-  display: none;
-}
-#ueda-widget-container.ueda-expanded .ueda-menu-header-text {
-  display: inline;
-}
+.ueda-menu-header-text { display: none; }
 
 /* ============================================
-   MENU ITEMS
+   MENU ITEMS — PILL ROWS
    ============================================ */
 .ueda-menu-item {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
-  color: #9aa3b5;
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
   gap: 12px;
+  height: 44px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: #b8c2d4;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   text-decoration: none;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    padding 0.28s ease;
 }
-/* When expanded: align left with padding */
+
+/* Expanded: left align, roomier padding */
 #ueda-widget-container.ueda-expanded .ueda-menu-item {
   justify-content: flex-start;
-  padding: 9px 14px;
+  padding: 0 16px;
+  border-radius: 999px;
 }
+
 .ueda-menu-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  background: rgba(29, 175, 216, 0.12);
+  color: #ffffff;
 }
-.ueda-menu-item:hover svg {
-  stroke: #1DAFD8;
+.ueda-menu-item:hover svg { stroke: #1DAFD8; }
+
+/* Active pill — like "Reduce" in the reference */
+.ueda-menu-item.is-active,
+.ueda-menu-item:active {
+  background: linear-gradient(135deg, rgba(29, 175, 216, 0.22), rgba(29, 175, 216, 0.08));
+  color: #ffffff;
+  box-shadow:
+    inset 0 0 0 1px rgba(29, 175, 216, 0.35),
+    0 6px 18px rgba(29, 175, 216, 0.18);
 }
+.ueda-menu-item.is-active svg { stroke: #1DAFD8; }
+
 .ueda-menu-item svg {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
-  stroke-width: 1.75;
-  fill: none;
+  width: 20px; height: 20px;
+  stroke: currentColor; stroke-width: 1.85; fill: none;
   flex-shrink: 0;
-  transition: stroke 0.15s;
+  transition: stroke 0.2s ease;
 }
-/* Hide text when not expanded */
-.ueda-item-text {
-  display: none;
-}
-#ueda-widget-container.ueda-expanded .ueda-item-text {
-  display: inline;
-}
-/* Account info inner text */
-.ueda-account-info {
-  display: none;
-  flex-direction: column;
-}
-#ueda-widget-container.ueda-expanded .ueda-account-info {
-  display: flex;
-}
+
+/* Text label — hidden until expanded */
+.ueda-item-text { display: none; }
+#ueda-widget-container.ueda-expanded .ueda-item-text { display: inline; }
+
+/* Account info block */
+.ueda-account-info { display: none; flex-direction: column; }
+#ueda-widget-container.ueda-expanded .ueda-account-info { display: flex; }
 
 /* ============================================
    COLOR STATES
    ============================================ */
-.ueda-text-green {
-  color: #22e5a0 !important;
-}
-.ueda-text-green svg {
-  stroke: #22e5a0 !important;
-}
-.ueda-text-red {
-  color: #ff6b6b !important;
-}
-.ueda-text-red svg {
-  stroke: #ff6b6b !important;
-}
+.ueda-text-green { color: #22e5a0 !important; }
+.ueda-text-green svg { stroke: #22e5a0 !important; }
+.ueda-text-red { color: #ff6b6b !important; }
+.ueda-text-red svg { stroke: #ff6b6b !important; }
 
-/* ============================================
-   SKILL TOGGLE (server-driven skills)
-   ============================================ */
+/* Skill toggle is admin-only — never shown to end users */
 .ueda-skill-toggle { display: none !important; }
 
 /* ============================================
