@@ -7,8 +7,8 @@
   --silver-1: #f3f5fb;
   --silver-2: #c7cedf;
   --silver-3: #8d96ab;
-  --accent: #1E88E5;
-  --accent-strong: #1565C0;
+  --accent: #1DAFD8;
+  --accent-strong: #148cb0;
   --ok: #70f0c1;
   --warn: #ffd17e;
   --error: #ff8b8b;
@@ -26,9 +26,13 @@ body {
   padding: 0;
   font-family: "Bahnschrift", "Franklin Gothic Medium", "Trebuchet MS", Arial, Helvetica, sans-serif;
   color: var(--text-main);
-  background: transparent;
-  border-radius: 16px;
-  overflow: hidden;
+  background:
+    -webkit-radial-gradient(140% 80% at 80% -10%, rgba(29, 175, 216, 0.25), transparent 42%),
+    -webkit-radial-gradient(120% 70% at -10% 100%, rgba(29, 175, 216, 0.22), transparent 45%),
+    -webkit-linear-gradient(180deg, #000000 0%, var(--bg-page) 100%),
+    radial-gradient(140% 80% at 80% -10%, rgba(29, 175, 216, 0.25), transparent 42%),
+    radial-gradient(120% 70% at -10% 100%, rgba(29, 175, 216, 0.22), transparent 45%),
+    linear-gradient(180deg, #000000 0%, var(--bg-page) 100%);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -40,17 +44,24 @@ body {
   flex-direction: column;
   gap: 8px;
   padding: 10px;
-  background:
-    radial-gradient(140% 80% at 80% -10%, rgba(29, 175, 216, 0.18), transparent 42%),
-    radial-gradient(120% 70% at -10% 100%, rgba(29, 175, 216, 0.16), transparent 45%),
-    linear-gradient(180deg, #111111 0%, var(--surface) 100%);
+  background: linear-gradient(180deg, #111111 0%, var(--surface) 100%);
   box-shadow: var(--shadow-soft);
-  border-radius: 16px;
   position: relative;
   overflow: hidden;
 }
 
-
+.app-shell::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  left: -55%;
+  width: 42%;
+  height: 180%;
+  background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.02) 35%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0.04) 62%, transparent 100%);
+  transform: rotate(12deg);
+  animation: metallicSweep 5.2s linear infinite;
+  pointer-events: none;
+}
 
 .header { display: flex; justify-content: space-between; align-items: center; }
 .brand { display: flex; align-items: center; gap: 9px; }
@@ -102,7 +113,7 @@ h1 {
   display: inline-block;
   font-size: 18px;
   font-weight: 700;
-  background: linear-gradient(135deg, #ffffff 0%, #1E88E5 50%, #ffffff 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #1DAFD8 50%, #ffffff 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -610,7 +621,7 @@ h1 {
 .claw-toggle-slot
 .claw-toggle-slot-fill {
   width: 100%;
-  background: linear-gradient(90deg, #1E88E5, #ffffff);
+  background: linear-gradient(90deg, #1DAFD8, #ffffff);
   box-shadow: 0px 0px 1em 0.2em #ffffff;
 }
 
@@ -1704,453 +1715,4 @@ h1 {
   stroke: white;
   stroke-width: 2;
   fill: none;
-}
-
-/* --- New Login Styles --- */
-
-.new-login-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: transparent;
-  width: 100%;
-  height: 100%;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.login-centered-box {
-  width: 100%;
-  max-width: 320px;
-  padding: 32px 24px;
-  background-color: #16181f; 
-  border-radius: 24px;
-  border: 1px solid #1E88E5;
-  box-shadow: 0 0 30px rgba(29, 175, 216, 0.15), inset 0 0 20px rgba(29, 175, 216, 0.05);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  text-align: center;
-}
-
-.login-top-icons {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.login-logo-container {
-  width: 48px;
-  height: 48px;
-  background-color: transparent !important;
-  border: none !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.login-logo-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.login-moon-container {
-  position: absolute;
-  right: 0;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: #1a1c23;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.05);
-}
-
-.login-moon-icon {
-  stroke: #a8b2c8;
-}
-
-.login-subtitle {
-  font-size: 11px;
-  color: #c7cedf;
-  margin: 0 0 16px 0;
-  text-align: center;
-  font-family: "Bahnschrift", sans-serif;
-}
-
-.login-form-new {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.login-input-new {
-  width: 100%;
-  background-color: #111217;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  padding: 10px 12px;
-  color: white;
-  font-size: 12px;
-  outline: none;
-  font-family: "Bahnschrift", sans-serif;
-}
-
-.login-input-new::placeholder {
-  color: #5c637a;
-}
-
-.login-input-new:focus {
-  border-color: var(--accent);
-}
-
-.login-button-new {
-  width: 100%;
-  background-color: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: "Bahnschrift", sans-serif;
-  transition: opacity 0.2s;
-}
-
-.login-button-new:hover {
-  opacity: 0.9;
-}
-
-.login-support-new {
-  width: 100%;
-  margin-top: 12px;
-  background-color: #1a1c23;
-  border: 1px solid rgba(255,255,255,0.05);
-  color: white;
-  border-radius: 6px;
-  padding: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  text-decoration: none;
-  font-family: "Bahnschrift", sans-serif;
-  transition: background-color 0.2s;
-}
-
-.login-support-new:hover {
-  background-color: #22252e;
-}
-
-.login-footer-text {
-  margin: 20px 0 0 0;
-  font-size: 10px;
-  color: #5c637a;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* --- Light Mode Styles --- */
-body.light-mode .new-login-wrapper {
-  background-color: #f3f5fb;
-}
-body.light-mode .login-subtitle {
-  color: #5c637a;
-}
-body.light-mode .login-logo-container {
-  background-color: #ffffff;
-  border-color: #1E88E5;
-}
-body.light-mode .login-input-new {
-  background-color: #ffffff;
-  color: #0a0a0a;
-  border-color: #c7cedf;
-}
-body.light-mode .login-support-new {
-  background-color: #ffffff;
-  color: #0a0a0a;
-  border-color: #c7cedf;
-}
-body.light-mode .login-support-new:hover {
-  background-color: #e2e8f4;
-}
-body.light-mode .login-moon-container {
-  background-color: #ffffff;
-  border-color: #c7cedf;
-}
-body.light-mode .login-moon-icon {
-  stroke: #0a0a0a;
-}
-body.light-mode .login-footer-text {
-  color: #8d96ab;
-}
-
-/* Hide old popup elements completely */
-.header, .status, .home-view {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  height: 0 !important;
-  overflow: hidden !important;
-}
-
-.home-view-replacement {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  width: 100vw;
-  background-color: #0b0d13;
-  color: #a8b2c8;
-  font-size: 13px;
-  text-align: center;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-/* If login view is hidden by popup.js, it means user is logged in, hide body to just close it visually if possible */
-body:has(#loginView[hidden]) .app-shell {
-  display: none !important;
-}
-
-body:has(#loginView[hidden]) .home-view-replacement {
-  display: flex !important;
-}
-
-/* --- Layout overrides: rounded body + centered login --- */
-html, body {
-  border-radius: 18px;
-  overflow: hidden;
-}
-.app-shell {
-  border-radius: 18px;
-  min-height: 460px;
-}
-
-/* When login view is visible, hide app header + status bar so only the card shows (matches reference) */
-body:has(#loginView:not([hidden])) .header,
-body:has(#loginView:not([hidden])) .status {
-  display: none !important;
-}
-body:has(#loginView:not([hidden])) .app-shell {
-  padding: 0 !important;
-  min-height: 520px;
-  background: linear-gradient(180deg, #0b0d12 0%, #07080c 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#loginView.ueda-login-wrapper {
-  min-height: 520px;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  width: 100%;
-  box-sizing: border-box;
-}
-.home-view-replacement {
-  border-radius: 18px;
-}
-
-/* =========================================================
-   UEDA login card — reference-matched, blue primary
-   ========================================================= */
-.ueda-login-wrapper {
-  padding: 14px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.ueda-login-card {
-  width: 100%;
-  max-width: 380px;
-  margin: 0 auto;
-  padding: 28px 26px 22px;
-  background: linear-gradient(180deg, #161820 0%, #0d0e13 100%);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 18px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.65), 0 0 0 1px rgba(30,136,229,0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  position: relative;
-  font-family: Inter, "Segoe UI", system-ui, sans-serif;
-  animation: uedaLoginSlideUp 0.32s ease-out;
-}
-
-@keyframes uedaLoginSlideUp {
-  from { opacity: 0; transform: translateY(12px) scale(0.98); }
-  to   { opacity: 1; transform: none; }
-}
-
-.ueda-login-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.ueda-login-logo {
-  width: 64px;
-  height: 64px;
-  border-radius: 14px;
-  background: #0f1116;
-  border: 1px solid rgba(30,136,229,0.35);
-  box-shadow: 0 8px 22px rgba(30,136,229,0.25);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-.ueda-login-logo img { width: 74%; height: 74%; object-fit: contain; }
-
-.ueda-login-close {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
-  color: #9a9a9a;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease;
-}
-.ueda-login-close:hover { background: rgba(255,255,255,0.08); color: #fff; }
-
-.ueda-login-title {
-  margin: 6px 0 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.01em;
-  line-height: 1.15;
-}
-
-.ueda-login-sub {
-  margin: 0 0 6px;
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: #9a9a9a;
-}
-
-
-.ueda-login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 2px;
-}
-
-.ueda-login-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: #8b95ab;
-  text-transform: uppercase;
-}
-
-.ueda-login-input {
-  width: 100%;
-  background: #0d0f14;
-  border: 1px solid rgba(30,136,229,0.35);
-  border-radius: 10px;
-  padding: 12px 14px;
-  color: #fff;
-  font-size: 13px;
-  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  letter-spacing: 0.06em;
-  outline: none;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-}
-.ueda-login-input::placeholder { color: #4d5468; letter-spacing: 0.08em; }
-.ueda-login-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(30,136,229,0.18);
-  background: #0f1218;
-}
-
-.ueda-login-remember {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 12px;
-  color: #c7cedf;
-  cursor: pointer;
-  user-select: none;
-  margin-top: 2px;
-}
-.ueda-login-remember input { display: none; }
-.ueda-check-box {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  background: #0d0f14;
-  border: 1.5px solid rgba(255,255,255,0.18);
-  display: inline-grid;
-  place-items: center;
-  transition: all 0.18s ease;
-  position: relative;
-}
-.ueda-login-remember input:checked + .ueda-check-box {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.ueda-login-remember input:checked + .ueda-check-box::after {
-  content: "";
-  width: 4px;
-  height: 8px;
-  border: solid #fff;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg) translate(-1px, -1px);
-}
-
-.ueda-login-cta {
-  width: 100%;
-  margin-top: 6px;
-  padding: 13px 14px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #2196F3 0%, #1E88E5 55%, #1976D2 100%);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  box-shadow: 0 10px 24px rgba(30,136,229,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
-  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
-}
-.ueda-login-cta:hover { filter: brightness(1.06); box-shadow: 0 14px 30px rgba(30,136,229,0.45), inset 0 1px 0 rgba(255,255,255,0.2); }
-.ueda-login-cta:active { transform: translateY(1px); }
-
-.ueda-login-footer {
-  margin-top: 4px;
-  text-align: center;
-  font-size: 11.5px;
-  color: #8b95ab;
-  text-decoration: none;
-}
-.ueda-login-footer span { color: var(--accent); font-weight: 700; }
-.ueda-login-footer:hover span { text-decoration: underline; }
-
-.ueda-login-card .login-msg {
-  margin: 0;
-  min-height: 14px;
-  font-size: 11.5px;
-  text-align: center;
-  color: #ff9a9a;
 }
