@@ -114,42 +114,32 @@
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
   }
 
-  // ---------- Render skills from server ----------
+  // ---------- Render skills from server (read-only for clients) ----------
   const skillsList = document.getElementById('ueda-skills-list');
-  let skillsEnabled = {};
 
   function renderSkills(skills) {
     if (!skillsList) return;
+    // Toggle is hidden from end users; management lives in the admin skills panel.
     skillsList.innerHTML = skills.map(s => {
-      const on = skillsEnabled[s.id] !== false; // default enabled
       return '<div class="ueda-menu-item ueda-skill-row" data-skill-id="' + s.id + '">' +
         iconSvg(s.icon || 'Sparkles') +
         '<span class="ueda-item-text">' + (s.name || 'Skill') + '</span>' +
-        '<span class="ueda-skill-toggle ' + (on ? 'on' : '') + '"></span>' +
         '</div>';
     }).join('');
-    // Attach toggle handlers
-    skillsList.querySelectorAll('.ueda-skill-row').forEach(row => {
-      row.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = row.dataset.skillId;
-        skillsEnabled[id] = skillsEnabled[id] === false ? true : false;
-        chrome.storage.local.set({ skillsEnabled });
-        const t = row.querySelector('.ueda-skill-toggle');
-        if (t) t.classList.toggle('on', skillsEnabled[id] !== false);
-      });
-    });
   }
 
   function loadSkillsFromServer() {
-    chrome.storage.local.get(['skillsEnabled', 'licenseKey'], (r) => {
-      skillsEnabled = r.skillsEnabled || {};
+    chrome.storage.local.get(['licenseKey'], (r) => {
       fetch(SERVER_URL + '?check=updates', {
         headers: { 'x-license-key': r.licenseKey || '', 'x-ext-version': '5.0.0' }
       })
         .then(res => res.json())
         .then(data => {
-          if (data && Array.isArray(data.skills)) renderSkills(data.skills);
+          if (data && Array.isArray(data.skills)) {
+            // Only render skills flagged active on the server
+            const active = data.skills.filter(s => s.status ? s.status === 'active' : true);
+            renderSkills(active);
+          }
         })
         .catch(err => console.log('[UEDA] Falha ao carregar skills:', err));
     });
