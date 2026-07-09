@@ -51,16 +51,8 @@ body {
 }
 
 .app-shell::after {
-  content: "";
-  position: absolute;
-  top: -40%;
-  left: -55%;
-  width: 42%;
-  height: 180%;
-  background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.02) 35%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0.04) 62%, transparent 100%);
-  transform: rotate(12deg);
-  animation: metallicSweep 5.2s linear infinite;
-  pointer-events: none;
+  display: none !important;
+}
 }
 
 .header { display: flex; justify-content: space-between; align-items: center; }
@@ -1715,4 +1707,229 @@ h1 {
   stroke: white;
   stroke-width: 2;
   fill: none;
+}
+
+/* --- New Login Styles --- */
+
+.new-login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.login-centered-box {
+  width: 100%;
+  max-width: 320px;
+  padding: 32px 24px;
+  background-color: #16181f; 
+  border-radius: 24px;
+  border: 1px solid #1DAFD8;
+  box-shadow: 0 0 30px rgba(29, 175, 216, 0.15), inset 0 0 20px rgba(29, 175, 216, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  text-align: center;
+}
+
+.login-top-icons {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.login-logo-container {
+  width: 48px;
+  height: 48px;
+  background-color: transparent !important;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-logo-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.login-moon-container {
+  position: absolute;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #1a1c23;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.login-moon-icon {
+  stroke: #a8b2c8;
+}
+
+.login-subtitle {
+  font-size: 11px;
+  color: #c7cedf;
+  margin: 0 0 16px 0;
+  text-align: center;
+  font-family: "Bahnschrift", sans-serif;
+}
+
+.login-form-new {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-input-new {
+  width: 100%;
+  background-color: #111217;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: white;
+  font-size: 12px;
+  outline: none;
+  font-family: "Bahnschrift", sans-serif;
+}
+
+.login-input-new::placeholder {
+  color: #5c637a;
+}
+
+.login-input-new:focus {
+  border-color: var(--accent);
+}
+
+.login-button-new {
+  width: 100%;
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: "Bahnschrift", sans-serif;
+  transition: opacity 0.2s;
+}
+
+.login-button-new:hover {
+  opacity: 0.9;
+}
+
+.login-support-new {
+  width: 100%;
+  margin-top: 12px;
+  background-color: #1a1c23;
+  border: 1px solid rgba(255,255,255,0.05);
+  color: white;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  font-family: "Bahnschrift", sans-serif;
+  transition: background-color 0.2s;
+}
+
+.login-support-new:hover {
+  background-color: #22252e;
+}
+
+.login-footer-text {
+  margin: 20px 0 0 0;
+  font-size: 10px;
+  color: #5c637a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Light Mode Styles --- */
+body.light-mode .new-login-wrapper {
+  background-color: #f3f5fb;
+}
+body.light-mode .login-subtitle {
+  color: #5c637a;
+}
+body.light-mode .login-logo-container {
+  background-color: #ffffff;
+  border-color: #1DAFD8;
+}
+body.light-mode .login-input-new {
+  background-color: #ffffff;
+  color: #0a0a0a;
+  border-color: #c7cedf;
+}
+body.light-mode .login-support-new {
+  background-color: #ffffff;
+  color: #0a0a0a;
+  border-color: #c7cedf;
+}
+body.light-mode .login-support-new:hover {
+  background-color: #e2e8f4;
+}
+body.light-mode .login-moon-container {
+  background-color: #ffffff;
+  border-color: #c7cedf;
+}
+body.light-mode .login-moon-icon {
+  stroke: #0a0a0a;
+}
+body.light-mode .login-footer-text {
+  color: #8d96ab;
+}
+
+/* Hide old popup elements completely */
+.header, .status, .home-view {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+.home-view-replacement {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: #0b0d13;
+  color: #a8b2c8;
+  font-size: 13px;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* If login view is hidden by popup.js, it means user is logged in, hide body to just close it visually if possible */
+body:has(#loginView[hidden]) .app-shell {
+  display: none !important;
+}
+
+body:has(#loginView[hidden]) .home-view-replacement {
+  display: flex !important;
 }

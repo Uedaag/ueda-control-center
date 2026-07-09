@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "UEDA AGENCY",
-  "version": "1.5",
+  "name": "UEDA EX",
+  "version": "5.0",
   "description": "ilimitado",
   "permissions": [
     "storage",
@@ -12,8 +12,7 @@
   "host_permissions": [
     "https://api.lovable.dev/*",
     "https://uedaagency.lovable.app/*",
-    "https://api.mistral.ai/*",
-    "https://keqgzvcahsvseowfowwu.supabase.co/*"
+    "https://api.mistral.ai/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -46,9 +45,10 @@
     },
     {
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://uedaagency.lovable.app/*"],
-      "js": ["ueda-menu.js"],
+      "css": ["widget.css"],
+      "js": ["widget.js"],
       "run_at": "document_end",
-      "all_frames": false
+      "all_frames": true
     }
   ],
   "web_accessible_resources": [
