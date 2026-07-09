@@ -40,12 +40,13 @@ const VIEW_LABELS: Record<View, string> = {
 
 export function ExtensionLivePreview({ settings, skills }: ExtensionLivePreviewProps) {
   const [view, setView] = useState<View>("widget");
+  const [bg, setBg] = useState<"dark" | "light">("dark");
   const srcDoc = useMemo(() => {
     if (view === "chat") return buildChatDocument(settings);
     if (view === "login") return buildLoginDocument(settings, false);
     if (view === "account") return buildLoginDocument(settings, true);
-    return buildPreviewDocument(settings, skills);
-  }, [settings, skills, view]);
+    return buildPreviewDocument(settings, skills, bg);
+  }, [settings, skills, view, bg]);
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
@@ -67,6 +68,23 @@ export function ExtensionLivePreview({ settings, skills }: ExtensionLivePreviewP
           ))}
         </div>
       </div>
+
+      {view === "widget" && (
+        <div className="mb-3 flex justify-end">
+          <div className="inline-flex rounded-lg border border-border bg-background p-1 text-xs font-semibold">
+            {(["light", "dark"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setBg(mode)}
+                className={`rounded-md px-3 py-1 transition-colors ${bg === mode ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+              >
+                {mode === "light" ? "☀ Claro" : "🌙 Escuro"}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="overflow-hidden rounded-2xl border border-border bg-muted">
         <iframe
@@ -211,7 +229,7 @@ function buildLoginDocument(settings: ExtensionPreviewSettings, activated: boole
 
 
 
-function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: ExtensionPreviewSkill[]) {
+function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: ExtensionPreviewSkill[], bg: "dark" | "light" = "dark") {
   const accent = normalizeHexColor(settings.brand_color);
   const brand = escapeHtml(settings.brand_name || "UEDA EX 5.0");
   const logo = escapeAttr(logoAsset.url);
@@ -227,14 +245,20 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
       <span class="ueda-item-text">${escapeHtml(s.name)}</span>
     </div>`).join("");
 
+  const bgStyles = bg === "light"
+    ? `background: linear-gradient(135deg,#f4f6fb,#e6ebf2); }
+       body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${accent}22, transparent 36%); }`
+    : `background:#0b1220; }
+       body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${accent}30, transparent 32%), linear-gradient(135deg,#0b1220,#141b2e); }`;
+  const hintColor = bg === "light" ? "#475569" : "#94a3b8";
+
   return `<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
-  html,body { margin:0; height:100%; background:#0b1220; overflow:hidden; }
-  body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${accent}30, transparent 32%), linear-gradient(135deg,#0b1220,#141b2e); }
+  html,body { margin:0; height:100%; overflow:hidden; ${bgStyles}
   ${widgetCss}
   #ueda-widget-container { --ueda-accent: ${accent}; }
-  .preview-hint { position: fixed; left:24px; top:24px; color:#94a3b8; font-size:11px; letter-spacing:.1em; text-transform:uppercase; z-index: 1; }
+  .preview-hint { position: fixed; left:24px; top:24px; color:${hintColor}; font-size:11px; letter-spacing:.1em; text-transform:uppercase; z-index: 1; }
 </style></head>
 <body>
   <div class="preview-hint">Prévia • Widget flutuante (canto inferior direito)</div>

@@ -84,15 +84,15 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     inset 0 0 30px rgba(29, 175, 216, 0.05);
 
-  /* Big rounded pill */
-  border-radius: 40px;
-  padding: 18px 10px;
+  /* Big rounded pill — slim */
+  border-radius: 34px;
+  padding: 12px 6px;
 
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 6px;
-  width: 68px;
+  gap: 4px;
+  width: 54px;
   overflow: hidden;
 
   /* Hidden by default */
@@ -116,29 +116,33 @@
 }
 
 #ueda-widget-container.ueda-open.ueda-expanded .ueda-widget-menu {
-  width: 232px;
-  border-radius: 32px;
-  padding: 18px 14px;
+  width: 210px;
+  border-radius: 28px;
+  padding: 14px 12px;
 }
 
 /* ============================================
    MENU HEADER (chevron toggle at top)
    ============================================ */
 .ueda-menu-header {
-  align-self: flex-end;
+  align-self: center;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  margin: 0 4px 6px auto;
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 4px;
   border-radius: 999px;
   border: 1px solid rgba(29, 175, 216, 0.35);
-  background: rgba(29, 175, 216, 0.08);
+  background: rgba(29, 175, 216, 0.06);
   color: #7cd7ef;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
   flex-shrink: 0;
+}
+#ueda-widget-container.ueda-expanded .ueda-menu-header {
+  align-self: flex-end;
+  margin: 0 2px 6px auto;
 }
 .ueda-menu-header:hover {
   background: rgba(29, 175, 216, 0.18);
@@ -146,27 +150,26 @@
   border-color: #1DAFD8;
 }
 .ueda-menu-header svg {
-  width: 14px; height: 14px;
+  width: 12px; height: 12px;
   stroke: currentColor; stroke-width: 2.2; fill: none;
   transition: transform 0.3s ease;
 }
-/* When expanded, arrow flips so it points to collapse */
 #ueda-widget-container.ueda-expanded .ueda-menu-header svg {
   transform: rotate(180deg);
 }
 .ueda-menu-header-text { display: none; }
 
 /* ============================================
-   MENU ITEMS — PILL ROWS
+   MENU ITEMS — icon rows (thin)
    ============================================ */
 .ueda-menu-item {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  height: 44px;
-  padding: 0 10px;
+  gap: 10px;
+  height: 38px;
+  padding: 0 8px;
   border-radius: 999px;
   color: #b8c2d4;
   font-size: 13px;
@@ -186,8 +189,8 @@
 /* Expanded: left align, roomier padding */
 #ueda-widget-container.ueda-expanded .ueda-menu-item {
   justify-content: flex-start;
-  padding: 0 16px;
-  border-radius: 999px;
+  padding: 0 14px;
+  height: 40px;
 }
 
 .ueda-menu-item:hover {
@@ -196,19 +199,18 @@
 }
 .ueda-menu-item:hover svg { stroke: #1DAFD8; }
 
-/* Active pill — like "Reduce" in the reference */
-.ueda-menu-item.is-active,
-.ueda-menu-item:active {
-  background: linear-gradient(135deg, rgba(29, 175, 216, 0.22), rgba(29, 175, 216, 0.08));
+/* Active pill — like the highlighted item in the reference */
+.ueda-menu-item.is-active {
+  background: linear-gradient(135deg, rgba(29, 175, 216, 0.26), rgba(29, 175, 216, 0.08));
   color: #ffffff;
   box-shadow:
-    inset 0 0 0 1px rgba(29, 175, 216, 0.35),
+    inset 0 0 0 1px rgba(29, 175, 216, 0.45),
     0 6px 18px rgba(29, 175, 216, 0.18);
 }
 .ueda-menu-item.is-active svg { stroke: #1DAFD8; }
 
 .ueda-menu-item svg {
-  width: 20px; height: 20px;
+  width: 18px; height: 18px;
   stroke: currentColor; stroke-width: 1.85; fill: none;
   flex-shrink: 0;
   transition: stroke 0.2s ease;
