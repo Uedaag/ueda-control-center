@@ -28,7 +28,33 @@ type Skill = {
   action_type: string; // 'js' | 'chat_prompt'
   auto_send: boolean;
   prompt_text: string;
+  published_name: string | null;
+  published_description: string | null;
+  published_icon: string | null;
+  published_status: boolean;
+  published_payload: string | null;
+  published_display_order: number | null;
+  published_parent_id: string | null;
+  published_action_type: string | null;
+  published_auto_send: boolean | null;
+  published_prompt_text: string | null;
+  published_at: string | null;
 };
+
+function hasUnpublishedChanges(skill: Skill) {
+  return (
+    skill.name !== (skill.published_name ?? skill.name) ||
+    (skill.description ?? "") !== (skill.published_description ?? skill.description ?? "") ||
+    (skill.icon ?? "") !== (skill.published_icon ?? skill.icon ?? "") ||
+    skill.status !== skill.published_status ||
+    (skill.payload ?? "") !== (skill.published_payload ?? skill.payload ?? "") ||
+    skill.display_order !== (skill.published_display_order ?? skill.display_order) ||
+    (skill.parent_id ?? null) !== (skill.published_parent_id ?? skill.parent_id ?? null) ||
+    skill.action_type !== (skill.published_action_type ?? skill.action_type) ||
+    skill.auto_send !== (skill.published_auto_send ?? skill.auto_send) ||
+    (skill.prompt_text ?? "") !== (skill.published_prompt_text ?? skill.prompt_text ?? "")
+  );
+}
 
 function Page() {
   const [rows, setRows] = useState<Skill[]>([]);
@@ -83,7 +109,13 @@ function Page() {
 
   const del = async (id: string) => {
     if (!confirm("Deletar skill? Submenus também serão removidos.")) return;
-    await supabase.from("skills").delete().eq("id", id);
+    const skill = rows.find((row) => row.id === id);
+    if (skill?.published_at || skill?.published_status) {
+      await supabase.from("skills").update({ status: false }).eq("id", id);
+      toast.success("Remoção salva como rascunho");
+    } else {
+      await supabase.from("skills").delete().eq("id", id);
+    }
     if (editing?.id === id) setEditing(null);
     load();
   };
@@ -104,11 +136,13 @@ function Page() {
       })
       .eq("id", editing.id);
     if (error) return toast.error(error.message);
-    toast.success("Skill salva");
+    toast.success("Skill salva como rascunho");
     load();
   };
 
-  const renderRow = (s: Skill, i: number, total: number, isChild = false) => (
+  const renderRow = (s: Skill, i: number, total: number, isChild = false) => {
+    const dirty = hasUnpublishedChanges(s);
+    return (
     <div
       key={s.id}
       className={`flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 cursor-pointer ${editing?.id === s.id ? "bg-white/10" : ""} ${isChild ? "ml-6 border-l border-white/10 pl-3" : ""}`}
@@ -122,6 +156,11 @@ function Page() {
           <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-muted-foreground uppercase tracking-wider">
             {s.action_type === "chat_prompt" ? (s.auto_send ? "prompt • auto" : "prompt") : "js"}
           </span>
+          {dirty && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground uppercase tracking-wider">
+              rascunho
+            </span>
+          )}
         </div>
         <div className="text-xs text-muted-foreground truncate">{s.description}</div>
       </div>
@@ -140,7 +179,8 @@ function Page() {
         <Trash2 className="h-4 w-4 text-red-500" />
       </Button>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -148,7 +188,7 @@ function Page() {
         <div>
           <h1 className="text-3xl font-bold gradient-text">Skills</h1>
           <p className="text-muted-foreground text-sm">
-            Menus e submenus da extensão. Aprove com o Switch — só skills ativas aparecem para o cliente.
+            Menus e submenus da extensão. O switch salva rascunho; clientes só recebem após liberar atualização.
           </p>
         </div>
         <Button onClick={() => create(null)} className="gradient-accent border-0 text-white">

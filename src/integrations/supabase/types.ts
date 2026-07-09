@@ -156,6 +156,17 @@ export type Database = {
           parent_id: string | null
           payload: string
           prompt_text: string
+          published_action_type: string | null
+          published_at: string | null
+          published_auto_send: boolean | null
+          published_description: string | null
+          published_display_order: number | null
+          published_icon: string | null
+          published_name: string | null
+          published_parent_id: string | null
+          published_payload: string | null
+          published_prompt_text: string | null
+          published_status: boolean
           status: boolean
           updated_at: string
         }
@@ -171,6 +182,17 @@ export type Database = {
           parent_id?: string | null
           payload?: string
           prompt_text?: string
+          published_action_type?: string | null
+          published_at?: string | null
+          published_auto_send?: boolean | null
+          published_description?: string | null
+          published_display_order?: number | null
+          published_icon?: string | null
+          published_name?: string | null
+          published_parent_id?: string | null
+          published_payload?: string | null
+          published_prompt_text?: string | null
+          published_status?: boolean
           status?: boolean
           updated_at?: string
         }
@@ -186,6 +208,17 @@ export type Database = {
           parent_id?: string | null
           payload?: string
           prompt_text?: string
+          published_action_type?: string | null
+          published_at?: string | null
+          published_auto_send?: boolean | null
+          published_description?: string | null
+          published_display_order?: number | null
+          published_icon?: string | null
+          published_name?: string | null
+          published_parent_id?: string | null
+          published_payload?: string | null
+          published_prompt_text?: string | null
+          published_status?: boolean
           status?: boolean
           updated_at?: string
         }
@@ -193,6 +226,13 @@ export type Database = {
           {
             foreignKeyName: "skills_parent_id_fkey"
             columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skills_published_parent_id_fkey"
+            columns: ["published_parent_id"]
             isOneToOne: false
             referencedRelation: "skills"
             referencedColumns: ["id"]
