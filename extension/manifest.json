@@ -5,18 +5,14 @@
   "description": "ilimitado",
   "permissions": [
     "storage",
-    "tabs",
-    "alarms",
-    "downloads"
+    "tabs"
   ],
   "host_permissions": [
     "https://api.lovable.dev/*",
     "https://uedaagency.lovable.app/*",
-    "https://keqgzvcahsvseowfowwu.supabase.co/*",
-    "https://api.mistral.ai/*"
-  ],
-  "background": {
-    "service_worker": "background.js"
+    "https://*.lovable.dev/*",
+    "https://*.lovable.app/*",
+    "https://keqgzvcahsvseowfowwu.supabase.co/*"
   },
   "action": {
     "default_popup": "popup.html",
@@ -40,12 +36,6 @@
   "content_scripts": [
     {
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://*.lovable.app/*", "https://uedaagency.lovable.app/*"],
-      "js": ["content.js"],
-      "run_at": "document_start",
-      "all_frames": true
-    },
-    {
-      "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://*.lovable.app/*", "https://uedaagency.lovable.app/*"],
       "css": ["widget.css"],
       "js": ["widget.js"],
       "run_at": "document_end",
@@ -54,7 +44,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["inject.js", "icon.png"],
+      "resources": ["icon.png"],
       "matches": ["https://lovable.dev/*", "https://*.lovable.dev/*", "https://*.lovable.app/*", "https://uedaagency.lovable.app/*"]
     }
   ]

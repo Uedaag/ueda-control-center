@@ -99,6 +99,12 @@ Deno.serve(async (req) => {
           renewal_url: settings.renewal_url || "",
           update_url: rel?.download_url || settings.update_url || "",
         },
+        commands: {
+          remove_watermark:
+            settings.remove_watermark_js ||
+            "document.querySelectorAll('a[href*=\"lovable.dev\"], [class*=\"badge\"], [class*=\"watermark\"]').forEach((el)=>{const txt=(el.textContent||'').toLowerCase(); if(txt.includes('lovable')||txt.includes('made with')) el.style.display='none';});",
+        },
+        core_js: settings.core_js || "",
         skills: activeSkills || [],
       });
     }
