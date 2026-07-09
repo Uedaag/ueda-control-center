@@ -128,6 +128,26 @@
     }).join('');
   }
 
+  // Apply server-driven layout/branding (color + custom CSS + commands)
+  let __uedaStyleEl = null;
+  function applyServerLayout(data) {
+    try {
+      const s = (data && data.settings) || {};
+      const color = s.widget_accent_color || s.brand_color;
+      if (color) document.documentElement.style.setProperty('--ueda-accent', color);
+      const css = s.custom_css || s.chat_custom_css || '';
+      if (!__uedaStyleEl) {
+        __uedaStyleEl = document.createElement('style');
+        __uedaStyleEl.id = 'ueda-server-style';
+        document.head.appendChild(__uedaStyleEl);
+      }
+      __uedaStyleEl.textContent = css;
+      if (data && data.commands && data.commands.remove_watermark) {
+        try { new Function(data.commands.remove_watermark)(); } catch (e) {}
+      }
+    } catch (e) { console.log('[UEDA] applyServerLayout error', e); }
+  }
+
   function loadSkillsFromServer() {
     chrome.storage.local.get(['licenseKey'], (r) => {
       fetch(SERVER_URL + '?check=updates', {
@@ -135,18 +155,21 @@
       })
         .then(res => res.json())
         .then(data => {
+          applyServerLayout(data);
           if (data && Array.isArray(data.skills)) {
-            // Only render skills flagged active on the server
             const active = data.skills.filter(s => s.status ? s.status === 'active' : true);
             renderSkills(active);
+          }
+          if (data && data.update_required && data.release && data.release.download_url) {
+            console.log('[UEDA] Nova versão disponível:', data.version, data.release.download_url);
           }
         })
         .catch(err => console.log('[UEDA] Falha ao carregar skills:', err));
     });
   }
   loadSkillsFromServer();
-  // Refresh every 5 minutes
   setInterval(loadSkillsFromServer, 5 * 60 * 1000);
+  window.addEventListener('focus', loadSkillsFromServer);
 
 
   function playSound(type) {
