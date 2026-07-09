@@ -135,6 +135,12 @@ function buildChatDocument(settings: ExtensionPreviewSettings) {
       .lovable-build { border: 0; background: transparent; color: #f5f5f2; font-size: 13px; font-weight: 700; }
       .lovable-send { background: #9a9a96; color: #111; }
       svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; }
+      /* Override widget.css chat glow so it responds ao brand_color */
+      .ueda-chat-glow-active {
+        box-shadow: 0 0 0 2px ${accent}, 0 0 24px ${accent}59 !important;
+        border-radius: 18px !important;
+        transition: box-shadow 0.3s ease !important;
+      }
       ${settings.chat_custom_css || ""}
     </style>
   </head>
