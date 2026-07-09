@@ -1,214 +1,522 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="popup.css">
+  <title>UEDA EX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════
+       CSS VARIABLES — DARK THEME (default)
+    ══════════════════════════════════════════ */
+    :root {
+      --accent:      #1DAFD8;
+      --accent-glow: rgba(29,175,216,0.28);
+      --bg:          #10121c;
+      --surface:     #181a26;
+      --surface2:    #1e2133;
+      --border:      rgba(29,175,216,0.30);
+      --text:        #e2e8f0;
+      --text-muted:  #6a7590;
+      --input-bg:    #0d0f1a;
+      --input-border:rgba(29,175,216,0.22);
+      --btn-text:    #ffffff;
+      --support-bg:  #0d0f1a;
+      --support-border: rgba(255,255,255,0.06);
+      --support-text: #6a7590;
+      --logout-border: rgba(255,90,90,0.22);
+      --logout-text: #ff6b6b;
+      --shadow:      0 8px 40px rgba(0,0,0,0.55), 0 0 28px var(--accent-glow);
+    }
+
+    /* ══════════════════════════════════════════
+       LIGHT THEME
+    ══════════════════════════════════════════ */
+    html[data-theme="light"] {
+      --bg:          #ffffff;
+      --surface:     #f4f6fa;
+      --surface2:    #eaecf4;
+      --border:      rgba(29,175,216,0.35);
+      --text:        #111827;
+      --text-muted:  #6b7280;
+      --input-bg:    #f9fafb;
+      --input-border:rgba(29,175,216,0.30);
+      --btn-text:    #ffffff;
+      --support-bg:  #f9fafb;
+      --support-border: rgba(0,0,0,0.08);
+      --support-text: #6b7280;
+      --logout-border: rgba(220,38,38,0.22);
+      --logout-text: #dc2626;
+      --shadow:      0 8px 32px rgba(0,0,0,0.13), 0 0 0 1px rgba(29,175,216,0.12);
+    }
+
+    /* ══════════════════════════════════════════
+       RESET & BASE
+    ══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 320px;
+      background: transparent;
+      font-family: 'Montserrat', -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════════════════════
+       CARD — the only visible element
+    ══════════════════════════════════════════ */
+    .card {
+      background: var(--bg);
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 28px 22px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      transition: background 0.3s, box-shadow 0.3s, border-color 0.3s;
+    }
+
+    /* ══════════════════════════════════════════
+       HEADER ROW  (logo + theme toggle)
+    ══════════════════════════════════════════ */
+    .card-top {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .card-logo {
+      width: 46px;
+      height: 46px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px var(--accent-glow));
+    }
+
+    .theme-btn {
+      position: absolute;
+      right: 0; top: 0;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--support-border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: color 0.2s, background 0.2s;
+    }
+    .theme-btn:hover { color: var(--accent); background: var(--surface); }
+    .theme-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ══════════════════════════════════════════
+       SUBTITLE
+    ══════════════════════════════════════════ */
+    .card-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 18px;
+      line-height: 1.55;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+
+    /* ══════════════════════════════════════════
+       INPUT
+    ══════════════════════════════════════════ */
+    .key-input {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 11px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 10px;
+    }
+    .key-input::placeholder { color: var(--text-muted); }
+    .key-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(29,175,216,0.14);
+    }
+
+    /* ══════════════════════════════════════════
+       ACTIVATE BUTTON
+    ══════════════════════════════════════════ */
+    .activate-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: 11px;
+      color: var(--btn-text);
+      font-size: 13px;
+      font-weight: 700;
+      font-family: inherit;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 18px rgba(29,175,216,0.38);
+      transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .activate-btn:hover  { filter: brightness(1.1); transform: translateY(-1px); }
+    .activate-btn:active { transform: translateY(0); filter: brightness(0.97); }
+    .activate-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    /* ══════════════════════════════════════════
+       SUPPORT LINK
+    ══════════════════════════════════════════ */
+    .support-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px;
+      background: var(--support-bg);
+      border: 1px solid var(--support-border);
+      border-radius: 11px;
+      color: var(--support-text);
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 600;
+      text-decoration: none;
+      margin-bottom: 16px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .support-link:hover { border-color: #25D366; color: #25D366; }
+
+    /* ══════════════════════════════════════════
+       FOOTER LABEL
+    ══════════════════════════════════════════ */
+    .card-footer {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      font-weight: 600;
+      opacity: 0.5;
+    }
+
+    /* ══════════════════════════════════════════
+       MESSAGE
+    ══════════════════════════════════════════ */
+    .msg {
+      font-size: 12px;
+      text-align: center;
+      min-height: 16px;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    .msg.error   { color: #ff6b6b; }
+    .msg.success { color: #22e5a0; }
+
+    /* ══════════════════════════════════════════
+       HOME CARD  (when logged in)
+    ══════════════════════════════════════════ */
+    #homeView {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .home-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .home-validity {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .home-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    /* Monitor toggle row */
+    .monitor-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--support-border);
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+
+    .monitor-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .pill {
+      position: relative;
+      width: 44px; height: 24px;
+      background: var(--surface2);
+      border-radius: 100px;
+      cursor: pointer;
+      border: none; outline: none;
+      transition: background 0.25s;
+      flex-shrink: 0;
+    }
+    .pill.on { background: var(--accent); }
+    .pill::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.25s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    .pill.on::after { transform: translateX(20px); }
+
+    /* Logout */
+    .logout-btn {
+      width: 100%;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid var(--logout-border);
+      border-radius: 11px;
+      color: var(--logout-text);
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .logout-btn:hover {
+      background: rgba(255,100,100,0.07);
+      border-color: var(--logout-text);
+    }
+
+    /* Hidden legacy elements needed by popup.js */
+    .legacy-hidden {
+      position: absolute;
+      width: 1px; height: 1px;
+      opacity: 0; pointer-events: none;
+      overflow: hidden;
+    }
+  </style>
 </head>
 <body>
-  <main class="app-shell">
-    <header class="header">
-      <div class="brand">
-        <span class="brand-icon" aria-hidden="true">
-          <img src="logo.png" alt="Logo UEDA AGENCY">
-        </span>
-        <h1 id="brandTitle">
-          <span class="brand-text">
-            <span class="brand-letter" style="animation-delay: 0s;">U</span>
-            <span class="brand-letter" style="animation-delay: 0.08s;">E</span>
-            <span class="brand-letter" style="animation-delay: 0.16s;">D</span>
-            <span class="brand-letter" style="animation-delay: 0.24s;">A</span>
-            <span class="brand-letter" style="animation-delay: 0.32s;">&nbsp;</span>
-            <span class="brand-letter" style="animation-delay: 0.4s;">A</span>
-            <span class="brand-letter" style="animation-delay: 0.48s;">G</span>
-            <span class="brand-letter" style="animation-delay: 0.56s;">E</span>
-            <span class="brand-letter" style="animation-delay: 0.64s;">N</span>
-            <span class="brand-letter" style="animation-delay: 0.72s;">C</span>
-            <span class="brand-letter" style="animation-delay: 0.8s;">Y</span>
-          </span>
-        </h1>
-        <div>
-          <p class="user-line" id="userLine"></p>
-        </div>
-      </div>
-      <span class="live-dot" aria-hidden="true"></span>
-    </header>
 
-    <section id="loginView" class="login-wrapper">
-      <form class="login-form">
-        <div class="login-form-texture"></div>
-        <h1 class="login-brand-title">
-          <span class="brand-text">
-            <span class="brand-letter" style="animation-delay: 0s;">U</span>
-            <span class="brand-letter" style="animation-delay: 0.08s;">E</span>
-            <span class="brand-letter" style="animation-delay: 0.16s;">D</span>
-            <span class="brand-letter" style="animation-delay: 0.24s;">A</span>
-            <span class="brand-letter" style="animation-delay: 0.32s;">&nbsp;</span>
-            <span class="brand-letter" style="animation-delay: 0.4s;">A</span>
-            <span class="brand-letter" style="animation-delay: 0.48s;">G</span>
-            <span class="brand-letter" style="animation-delay: 0.56s;">E</span>
-            <span class="brand-letter" style="animation-delay: 0.64s;">N</span>
-            <span class="brand-letter" style="animation-delay: 0.72s;">C</span>
-            <span class="brand-letter" style="animation-delay: 0.8s;">Y</span>
-          </span>
-        </h1>
-        <div class="login-input-container">
-          <svg class="login-input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <g>
-              <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M12 21a6 6 0 0 0-4.24 1.76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </g>
-          </svg>
-          <input type="text" id="keyInput" class="login-input" placeholder="Insira sua key" autocomplete="off">
-        </div>
-        <button id="loginButton" class="login-button-wrapper" type="button">
-          <span class="login-button-text">Entrar</span>
-        </button>
-        <p class="login-msg" id="loginMsg"></p>
-      </form>
-    </section>
+  <!-- ═══════════════════════════════════════
+       LOGIN CARD
+  ═══════════════════════════════════════ -->
+  <div class="card" id="loginView">
+    <div class="card-top">
+      <img src="logo.png" class="card-logo" alt="UEDA EX" onerror="this.style.display='none'">
+      <button class="theme-btn" id="themeBtn" title="Alternar tema" aria-label="Alternar tema claro/escuro">
+        <!-- Moon icon (dark mode indicator) -->
+        <svg id="iconMoon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <!-- Sun icon (light mode indicator, hidden by default) -->
+        <svg id="iconSun" viewBox="0 0 24 24" style="display:none">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+    </div>
 
-    <section id="homeView" class="home-view" hidden>
-      <section class="panel warning" id="warningBox" hidden>
-        <p class="warning-title">Key expirada, sair</p>
-        <p class="panel-description">As interceptacoes pararam de funcionar.</p>
-      </section>
+    <p class="card-sub">Insira sua chave para ativar a extensão.</p>
 
-      <section class="panel toggle-panel">
-        <div>
-          <p class="panel-label">Status</p>
-          <p class="panel-description">Ative para usar a extensao neste site.</p>
-        </div>
-        <div class="toggle-container">
-          <div class="toggle-wrap">
-            <input class="toggle-input" id="enabled" type="checkbox" />
-            <label class="toggle-track" for="enabled">
-              <div class="track-lines">
-                <div class="track-line"></div>
-              </div>
-              <div class="toggle-thumb">
-                <div class="thumb-core"></div>
-                <div class="thumb-inner"></div>
-                <div class="thumb-scan"></div>
-                <div class="thumb-particles">
-                  <div class="thumb-particle"></div>
-                  <div class="thumb-particle"></div>
-                  <div class="thumb-particle"></div>
-                  <div class="thumb-particle"></div>
-                  <div class="thumb-particle"></div>
-                </div>
-              </div>
-              <div class="toggle-data">
-                <div class="data-text off">OFF</div>
-                <div class="data-text on">ON</div>
-                <div class="status-indicator off"></div>
-                <div class="status-indicator on"></div>
-              </div>
-              <div class="energy-rings">
-                <div class="energy-ring"></div>
-                <div class="energy-ring"></div>
-                <div class="energy-ring"></div>
-              </div>
-              <div class="interface-lines">
-                <div class="interface-line"></div>
-                <div class="interface-line"></div>
-                <div class="interface-line"></div>
-                <div class="interface-line"></div>
-                <div class="interface-line"></div>
-                <div class="interface-line"></div>
-              </div>
-              <div class="toggle-reflection"></div>
-              <div class="holo-glow"></div>
-            </label>
-          </div>
-        </div>
-      </section>
+    <input
+      type="text"
+      id="keyInput"
+      class="key-input"
+      placeholder="Sua chave de licença..."
+      autocomplete="off"
+    >
 
-      <section class="panel">
-        <p class="panel-label">Modo de operacao</p>
-        <div class="radio-group-container" id="modeGroup" role="radiogroup" aria-label="Modo de operacao">
-          <label class="radio-label" for="mode1">
-            <input type="radio" id="mode1" name="mode" value="1" class="radio-input">
-            <div class="radio-custom"></div>
-            <div class="radio-text-container">
-              <span class="radio-text">Modo Padrao</span>
-              <span class="radio-description">Mais estabilidade no uso diario.</span>
-            </div>
-          </label>
-          <label class="radio-label" for="mode2">
-            <input type="radio" id="mode2" name="mode" value="2" class="radio-input">
-            <div class="radio-custom"></div>
-            <div class="radio-text-container">
-              <span class="radio-text">Modo Padrao 2</span>
-              <span class="radio-description">Mais estabilidade no uso diario.</span>
-            </div>
-          </label>
+    <button id="loginButton" class="activate-btn">Ativar Licença</button>
 
-        </div>
-      </section>
+    <a href="https://wa.me/5577999134858" target="_blank" rel="noopener" class="support-link">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#25D366" viewBox="0 0 16 16">
+        <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
+      </svg>
+      Suporte: 77 99913-4858
+    </a>
 
-      <section class="panel toggle-panel">
-        <div>
-          <p class="panel-label">Mostrar validade</p>
-          <p class="panel-description">Oculta ou mostra o countdown na Lovable.</p>
-        </div>
-        <div class="toggle-container">
-          <div class="toggle-wrap">
-            <input class="toggle-input" id="showValidity" type="checkbox" />
-            <label class="toggle-track" for="showValidity">
-              <div class="track-lines">
-                <div class="track-line"></div>
-              </div>
-              <div class="toggle-thumb">
-                <div class="thumb-core"></div>
-                <div class="thumb-inner"></div>
-                <div class="thumb-scan"></div>
-                <div class="thumb-particles">
-                  <div class="thumb-particle"></div>
-                  <div class="thumb-particle"></div>
-                  <div class="thumb-particle"></div>
-                  <div class="thumb-particle"></div>
-                  <div class="thumb-particle"></div>
-                </div>
-              </div>
-              <div class="toggle-data">
-                <div class="data-text off">OFF</div>
-                <div class="data-text on">ON</div>
-                <div class="status-indicator off"></div>
-                <div class="status-indicator on"></div>
-              </div>
-              <div class="energy-rings">
-                <div class="energy-ring"></div>
-                <div class="energy-ring"></div>
-                <div class="energy-ring"></div>
-              </div>
-              <div class="interface-lines">
-                <div class="interface-line"></div>
-                <div class="interface-line"></div>
-                <div class="interface-line"></div>
-                <div class="interface-line"></div>
-                <div class="interface-line"></div>
-                <div class="interface-line"></div>
-              </div>
-              <div class="toggle-reflection"></div>
-              <div class="holo-glow"></div>
-            </label>
-          </div>
-        </div>
-      </section>
+    <span class="card-footer">UEDA AGENCY · v5.0</span>
+    <p class="msg" id="loginMsg"></p>
+  </div>
 
+  <!-- ═══════════════════════════════════════
+       HOME CARD  (after activation)
+  ═══════════════════════════════════════ -->
+  <div class="card" id="homeView">
+    <div class="card-top">
+      <img src="logo.png" class="card-logo" alt="UEDA EX" onerror="this.style.display='none'">
+      <button class="theme-btn" id="themeBtnHome" title="Alternar tema" aria-label="Alternar tema">
+        <svg id="iconMoonHome" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="iconSunHome" viewBox="0 0 24 24" style="display:none">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+    </div>
 
+    <p class="home-name" id="userName">Minha conta</p>
+    <p class="home-validity" id="userValidity">Calculando...</p>
 
-      <button id="logoutButton" class="logout-button" type="button">Log out</button>
-    </section>
-
-    <p class="status" id="status" role="status" aria-live="polite">
-      <span class="status-dot" aria-hidden="true"></span>
-      <span class="status-text">Tudo certo</span>
-      <span class="countdown" id="countdown"></span>
+    <p class="home-desc">
+      Use o ícone flutuante <strong style="color:var(--text)">na tela do site</strong> para gerenciar a extensão.
     </p>
-  </main>
 
+    <div class="monitor-row">
+      <span class="monitor-label">Monitor</span>
+      <button class="pill" id="monitorToggle"></button>
+    </div>
+
+    <button class="logout-btn" id="logoutButton">Sair da conta</button>
+
+    <!-- Hidden inputs required by obfuscated popup.js -->
+    <div class="legacy-hidden">
+      <input type="checkbox" id="enabled">
+      <input type="checkbox" id="showValidity">
+      <div id="countdown"></div>
+      <div id="warningBox"></div>
+      <p id="status"><span class="status-dot"></span><span class="status-text"></span><span id=""></span></p>
+      <p id="userLine"></p>
+      <h1 id="brandTitle"><span class="brand-text"></span></h1>
+      <div id="modeGroup"></div>
+      <header class="header"><div class="brand"></div></header>
+    </div>
+  </div>
+
+  <!-- popup.js (obfuscated – controls auth logic) -->
   <script src="popup.js"></script>
+
+  <!-- Theme & home-view enhancer script -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ── Theme ────────────────────────────────── */
+      const THEME_KEY = 'ueda_theme';
+      const root = document.documentElement;
+
+      function applyTheme(t) {
+        root.setAttribute('data-theme', t);
+        const isDark = t === 'dark';
+        ['iconMoon','iconMoonHome'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = isDark ? 'block' : 'none';
+        });
+        ['iconSun','iconSunHome'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = isDark ? 'none' : 'block';
+        });
+        localStorage.setItem(THEME_KEY, t);
+      }
+
+      function toggleTheme() {
+        const current = root.getAttribute('data-theme') || 'dark';
+        applyTheme(current === 'dark' ? 'light' : 'dark');
+      }
+
+      // Load saved theme (or system preference)
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved) {
+        applyTheme(saved);
+      } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(prefersDark ? 'dark' : 'light');
+      }
+
+      document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+      document.getElementById('themeBtnHome').addEventListener('click', toggleTheme);
+
+      /* ── Monitor toggle ────────────────────────── */
+      const monitorPill = document.getElementById('monitorToggle');
+      const enabledCb   = document.getElementById('enabled');
+
+      function syncPill() {
+        monitorPill.classList.toggle('on', !!enabledCb.checked);
+      }
+
+      monitorPill.addEventListener('click', () => {
+        enabledCb.checked = !enabledCb.checked;
+        enabledCb.dispatchEvent(new Event('change'));
+        syncPill();
+      });
+      enabledCb.addEventListener('change', syncPill);
+      syncPill();
+
+      /* ── Home view: name & validity ─────────────── */
+      try {
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.get(null, (r) => {
+            const nameKeys = ['userName','user','username','cliente','nome','name'];
+            let name = 'Minha conta';
+            for (const k of nameKeys) {
+              if (r[k] && typeof r[k] === 'string' && r[k].length < 50) { name = r[k]; break; }
+            }
+            const nameEl = document.getElementById('userName');
+            if (nameEl) nameEl.textContent = name;
+
+            const valEl = document.getElementById('userValidity');
+            if (valEl) {
+              const v = r.validade;
+              if (!v || v === 'Sem validade') {
+                valEl.textContent = 'Ilimitado ✓';
+                valEl.style.color = '#22e5a0';
+              } else {
+                const ms = typeof v === 'string' ? new Date(v).getTime() : Number(v);
+                const days = Math.max(0, Math.floor((ms - Date.now()) / 86400000));
+                if (days <= 0) {
+                  valEl.textContent = 'Expirado';
+                  valEl.style.color = '#ff6b6b';
+                } else {
+                  valEl.textContent = `${days} dias restantes`;
+                  valEl.style.color = days <= 5 ? '#f59e0b' : 'var(--accent)';
+                }
+              }
+            }
+            syncPill();
+          });
+        }
+      } catch (_) {}
+    })();
+  </script>
 </body>
 </html>
