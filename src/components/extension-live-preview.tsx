@@ -202,7 +202,6 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
     <div class="ueda-menu-item ueda-skill-item">
       ${iconByName(s.icon || "Sparkles")}
       <span class="ueda-menu-header-text">${escapeHtml(s.name)}</span>
-      <span class="ueda-skill-toggle on" aria-hidden="true"></span>
     </div>`).join("");
 
   return `<!doctype html>
