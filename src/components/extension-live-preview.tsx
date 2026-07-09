@@ -167,20 +167,43 @@ function buildLoginDocument(settings: ExtensionPreviewSettings, activated: boole
       </div>
     </section>`;
 
+  const accent = normalizeHexColor(settings.brand_color);
   const activatedHtml = `
-    <div class="home-view-replacement" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:420px;text-align:center;padding:32px 24px;">
-      <div class="login-logo-container" style="width:56px;height:56px;margin-bottom:18px;">
-        <img src="${logo}" style="width:100%;height:100%;object-fit:contain;" alt="Logo" />
+    <div class="activated-toast" role="status">
+      <div class="activated-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <h3 style="color:#fff;font-size:16px;margin:0 0 10px;font-weight:700;">${brand} Ativo</h3>
-      <p style="margin:0;color:#a8b2c8;font-size:13px;line-height:1.5;">O painel de controle foi movido.<br/><br/>Use o ícone flutuante <b style="color:#1DAFD8;">na tela do site</b> para gerenciar.</p>
+      <div class="activated-text">
+        <strong>Chave ativada com sucesso</strong>
+        <span>${brand} atualizado — este painel será fechado.</span>
+      </div>
     </div>`;
 
   return `<!doctype html><html><head><meta charset="utf-8"/><style>
     ${popupCss}
-    html, body { width: 100%; height: 100%; }
-    body { display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .app-shell { width: 320px; }
+    html, body { width: 100%; height: 100%; margin:0; }
+    body { display: flex; align-items: center; justify-content: center; padding: 20px; background:#0b1220; }
+    .app-shell { width: ${activated ? "280px" : "320px"}; display:flex; align-items:center; justify-content:center; }
+    .activated-toast {
+      width: 100%;
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px;
+      background: rgba(20,32,44,0.92);
+      border: 1px solid ${accent}55;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35), 0 0 0 1px ${accent}22 inset;
+      color: #e6edf7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .activated-icon {
+      width: 34px; height: 34px; border-radius: 50%;
+      display:flex;align-items:center;justify-content:center;
+      background: ${accent}22; color: ${accent}; flex:0 0 34px;
+    }
+    .activated-icon svg { width: 18px; height: 18px; }
+    .activated-text { display:flex; flex-direction:column; gap: 2px; min-width: 0; }
+    .activated-text strong { font-size: 13px; font-weight: 700; color:#fff; }
+    .activated-text span { font-size: 11.5px; color:#a8b2c8; line-height:1.35; }
   </style></head><body>
     <main class="app-shell">${activated ? activatedHtml : loginHtml}</main>
   </body></html>`;
