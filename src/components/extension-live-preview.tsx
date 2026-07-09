@@ -69,6 +69,23 @@ export function ExtensionLivePreview({ settings, skills }: ExtensionLivePreviewP
         </div>
       </div>
 
+      {view === "widget" && (
+        <div className="mb-3 flex justify-end">
+          <div className="inline-flex rounded-lg border border-border bg-background p-1 text-xs font-semibold">
+            {(["light", "dark"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setBg(mode)}
+                className={`rounded-md px-3 py-1 transition-colors ${bg === mode ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+              >
+                {mode === "light" ? "☀ Claro" : "🌙 Escuro"}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="overflow-hidden rounded-2xl border border-border bg-muted">
         <iframe
           key={view}
