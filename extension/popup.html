@@ -58,11 +58,16 @@
 
     html, body {
       width: 320px;
+      min-height: 100vh;
       background: transparent;
       font-family: 'Montserrat', -apple-system, sans-serif;
       -webkit-font-smoothing: antialiased;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+    body { padding: 8px; }
 
     /* ══════════════════════════════════════════
        CARD — the only visible element
@@ -513,6 +518,32 @@
               }
             }
             syncPill();
+          });
+        }
+      } catch (_) {}
+
+      /* ── Detect activation success → show msg + auto-close ── */
+      try {
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+          let closed = false;
+          const showActivated = () => {
+            if (closed) return;
+            closed = true;
+            const msg = document.getElementById('loginMsg');
+            if (msg) {
+              msg.textContent = '✓ Chave ativada com sucesso!';
+              msg.className = 'msg success';
+            }
+            const btn = document.getElementById('loginButton');
+            if (btn) { btn.textContent = 'Ativada ✓'; btn.disabled = true; }
+            setTimeout(() => { try { window.close(); } catch (_) {} }, 1600);
+          };
+          chrome.storage.onChanged.addListener((changes, area) => {
+            if (area !== 'local') return;
+            const s = changes.authStatus;
+            if (s && s.newValue === 'success') showActivated();
+            const k = changes.keyValid;
+            if (k && k.newValue === true) showActivated();
           });
         }
       } catch (_) {}
