@@ -1,4 +1,7 @@
 window.__uedaWidgetInit = function() {
+  if (window.top !== window.self) return;
+  if (window.__uedaWidgetMounted) return;
+  window.__uedaWidgetMounted = true;
   if (document.getElementById('ueda-widget-container')) return;
 
   const logoUrl = chrome.runtime.getURL('logo.png');

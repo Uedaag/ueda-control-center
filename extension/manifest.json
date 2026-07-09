@@ -60,7 +60,7 @@
       "css": ["widget.css"],
       "js": ["widget.js"],
       "run_at": "document_end",
-      "all_frames": true
+      "all_frames": false
     }
   ],
   "web_accessible_resources": [
