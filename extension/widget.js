@@ -103,16 +103,42 @@
       document.querySelectorAll('textarea').forEach((ta) => {
         if (ta.closest('#ueda-widget-container')) return;
         const ph = (ta.placeholder || '').toLowerCase();
-        if (!ph) return;
-        if (!/lovable|pergunte|ask/.test(ph)) return;
+        const aria = (ta.getAttribute('aria-label') || '').toLowerCase();
+        const hay = ph + ' ' + aria;
+        if (!/lovable|pergunte|ask|prompt|mensagem|message/.test(hay)) return;
         let el = ta.parentElement;
-        for (let i = 0; i < 3 && el && el !== document.body; i += 1) {
-          el.style.setProperty('box-shadow', `0 0 0 2px ${accent}, 0 0 20px ${accent}55`, 'important');
-          el.style.setProperty('border-radius', '14px', 'important');
+        for (let i = 0; i < 4 && el && el !== document.body; i += 1) {
+          el.style.setProperty('box-shadow', `0 0 0 2px ${accent}, 0 0 22px ${accent}66`, 'important');
+          el.style.setProperty('border-radius', '16px', 'important');
           el.style.setProperty('transition', 'box-shadow .25s ease', 'important');
           el.dataset.uedaGlow = 'true';
           el = el.parentElement;
         }
+      });
+      // Renomeia botão "Melhorar prompt" -> "Reescrever prompt"
+      document.querySelectorAll('button').forEach((btn) => {
+        if (btn.dataset.uedaRenamed === '1') return;
+        const hasWand = btn.querySelector('svg[class*="wand" i], svg[data-lucide*="wand" i]');
+        const txt = (btn.textContent || '').trim().toLowerCase();
+        const aria = (btn.getAttribute('aria-label') || '').toLowerCase();
+        const isImprove = hasWand || txt.includes('melhorar prompt') || aria.includes('melhorar prompt') || txt === 'melhorar' || aria.includes('improve prompt');
+        if (!isImprove) return;
+        // Substitui textos internos
+        const walker = document.createTreeWalker(btn, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        let touched = false;
+        while ((node = walker.nextNode())) {
+          const v = (node.nodeValue || '');
+          if (/melhorar\s*prompt/i.test(v)) { node.nodeValue = v.replace(/melhorar\s*prompt/gi, 'Reescrever prompt'); touched = true; }
+          else if (v.trim().toLowerCase() === 'melhorar') { node.nodeValue = v.replace(/melhorar/i, 'Reescrever'); touched = true; }
+        }
+        if (aria.includes('melhorar')) btn.setAttribute('aria-label', 'Reescrever prompt');
+        if (btn.title && /melhorar/i.test(btn.title)) btn.title = 'Reescrever prompt';
+        btn.dataset.uedaRenamed = '1';
+        // colore o ícone
+        const svg = btn.querySelector('svg');
+        if (svg) { svg.style.stroke = accent; svg.style.color = accent; }
+        void touched;
       });
     } catch (e) {}
   }
