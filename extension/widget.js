@@ -116,17 +116,107 @@ window.__uedaWidgetInit = function() {
 
   // ---------- Render skills from server (read-only for clients) ----------
   const skillsList = document.getElementById('ueda-skills-list');
+  let skillsById = {};
 
   function renderSkills(skills) {
     if (!skillsList) return;
-    // Toggle is hidden from end users; management lives in the admin skills panel.
-    skillsList.innerHTML = skills.map(s => {
-      return '<div class="ueda-menu-item ueda-skill-row" data-skill-id="' + s.id + '">' +
+    skillsById = {};
+    skills.forEach(s => { skillsById[s.id] = s; });
+    const top = skills.filter(s => !s.parent_id);
+    const childrenOf = (pid) => skills.filter(s => s.parent_id === pid);
+
+    skillsList.innerHTML = top.map(s => {
+      const kids = childrenOf(s.id);
+      const hasKids = kids.length > 0;
+      const chevron = hasKids
+        ? '<svg class="ueda-sk-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;transition:transform .2s"><polyline points="6 9 12 15 18 9"></polyline></svg>'
+        : '';
+      const parent =
+        '<div class="ueda-menu-item ueda-skill-row" data-skill-id="' + s.id + '"' +
+        (hasKids ? ' data-has-children="1"' : '') + '>' +
         iconSvg(s.icon || 'Sparkles') +
         '<span class="ueda-item-text">' + (s.name || 'Skill') + '</span>' +
+        chevron +
         '</div>';
+      const sub = hasKids
+        ? '<div class="ueda-skill-sub" data-parent="' + s.id + '" style="display:none;padding-left:16px;border-left:2px solid rgba(255,255,255,.08);margin:2px 0 4px 12px;">' +
+          kids.map(c =>
+            '<div class="ueda-menu-item ueda-skill-row" data-skill-id="' + c.id + '" style="padding-left:10px">' +
+            iconSvg(c.icon || 'Sparkles') +
+            '<span class="ueda-item-text">' + (c.name || 'Skill') + '</span>' +
+            '</div>'
+          ).join('') +
+          '</div>'
+        : '';
+      return parent + sub;
     }).join('');
   }
+
+  // Locate the chat input on the host page and send text (optionally auto-enter)
+  function injectPromptIntoChat(text, autoSend) {
+    if (!text) return;
+    // Priority: focused editable, then last textarea/contenteditable on page
+    let el = document.activeElement;
+    const isEditable = (n) => n && (n.tagName === 'TEXTAREA' || n.tagName === 'INPUT' || n.getAttribute && n.getAttribute('contenteditable') === 'true');
+    if (!isEditable(el)) {
+      const candidates = Array.from(document.querySelectorAll('textarea, [contenteditable="true"]'));
+      el = candidates[candidates.length - 1] || null;
+    }
+    if (!el) { console.log('[UEDA] Chat input não encontrado'); return; }
+    el.focus();
+
+    if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')
+        || Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+      setter && setter.set ? setter.set.call(el, text) : (el.value = text);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    } else {
+      // contenteditable
+      el.innerText = text;
+      el.dispatchEvent(new InputEvent('input', { bubbles: true, data: text, inputType: 'insertText' }));
+    }
+
+    if (autoSend) {
+      setTimeout(() => {
+        const evInit = { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true };
+        el.dispatchEvent(new KeyboardEvent('keydown', evInit));
+        el.dispatchEvent(new KeyboardEvent('keypress', evInit));
+        el.dispatchEvent(new KeyboardEvent('keyup', evInit));
+      }, 60);
+    }
+  }
+
+  // Delegate skill clicks (parent expand / child execute)
+  skillsList && skillsList.addEventListener('click', (e) => {
+    const row = e.target.closest('.ueda-skill-row');
+    if (!row) return;
+    e.stopPropagation();
+    const id = row.getAttribute('data-skill-id');
+    const skill = skillsById[id];
+    if (!skill) return;
+
+    if (row.getAttribute('data-has-children')) {
+      const sub = skillsList.querySelector('.ueda-skill-sub[data-parent="' + id + '"]');
+      const chev = row.querySelector('.ueda-sk-chevron');
+      if (sub) {
+        const open = sub.style.display !== 'none';
+        sub.style.display = open ? 'none' : 'block';
+        if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+      }
+      return;
+    }
+
+    // Execute skill action
+    try {
+      if (skill.action_type === 'chat_prompt') {
+        injectPromptIntoChat(skill.prompt_text || '', !!skill.auto_send);
+      } else if (skill.payload) {
+        new Function(skill.payload)();
+      }
+    } catch (err) {
+      console.log('[UEDA] Erro executando skill:', err);
+    }
+  });
 
   // Apply server-driven layout/branding (color + custom CSS + commands)
   let __uedaStyleEl = null;
@@ -157,7 +247,7 @@ window.__uedaWidgetInit = function() {
         .then(data => {
           applyServerLayout(data);
           if (data && Array.isArray(data.skills)) {
-            const active = data.skills.filter(s => s.status ? s.status === 'active' : true);
+            const active = data.skills.filter(s => (typeof s.status === 'boolean' ? s.status : s.status === 'active' || s.status == null));
             renderSkills(active);
           }
           if (data && data.update_required && data.release && data.release.download_url) {
