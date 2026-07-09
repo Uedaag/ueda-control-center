@@ -127,7 +127,7 @@ function buildChatDocument(settings: ExtensionPreviewSettings) {
         <span class="lovable-chip">Adicionar placar e reset</span>
         <span class="lovable-chip is-muted">Status do</span>
       </div>
-      <form class="lovable-chat-box ueda-chat-active">
+      <form class="lovable-chat-box ueda-chat-active ueda-chat-glow-active" style="--ueda-accent:${accent}">
         <textarea placeholder="Pergunte à Lovable..." aria-label="Pergunte à Lovable"></textarea>
         <div class="lovable-chat-actions">
           <button class="lovable-icon-btn" type="button" aria-label="Adicionar"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
