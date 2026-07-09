@@ -13,7 +13,7 @@
     "https://*.lovable.dev/*",
     "https://*.lovable.app/*",
     "https://keqgzvcahsvseowfowwu.supabase.co/*"
-  },
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
