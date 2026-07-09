@@ -212,7 +212,7 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
   ${widgetCss}
   /* preview-only tweak so the widget stays fully visible inside the iframe */
   #ueda-widget-container { --ueda-accent: ${accent}; }
-  .ueda-widget-menu { display: flex !important; opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
+  /* preview: menu visibility is toggled by the script below (click the logo) */
   .ueda-skill-toggle { position: relative; width: 30px; height: 16px; border-radius: 999px; background: #2a323e; margin-left: auto; flex: 0 0 auto; }
   .ueda-skill-toggle::after { content:""; position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition: transform .2s; }
   .ueda-skill-toggle.on { background: ${accent}; }
@@ -239,10 +239,32 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
       <div class="ueda-menu-item">${iconHelp()}<span class="ueda-menu-header-text">Ajuda &amp; Suporte</span></div>
       <div class="ueda-menu-item ueda-text-red">${iconPower()}<span class="ueda-menu-header-text">Logoff</span></div>
     </div>
-    <button class="ueda-widget-btn" title="${escapeAttr(brand)}">
+    <button class="ueda-widget-btn" id="ueda-main-btn" title="${escapeAttr(brand)}">
       <img src="${logo}" alt="UEDA" class="ueda-widget-logo"/>
     </button>
   </div>
+  <script>
+    (function(){
+      var c = document.getElementById('ueda-widget-container');
+      var btn = document.getElementById('ueda-main-btn');
+      var header = c.querySelector('.ueda-menu-header');
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        if (c.classList.contains('ueda-open')) {
+          c.classList.remove('ueda-open','ueda-expanded');
+        } else {
+          c.classList.add('ueda-open');
+        }
+      });
+      header.addEventListener('click', function(e){
+        e.stopPropagation();
+        c.classList.toggle('ueda-expanded');
+      });
+      document.addEventListener('click', function(e){
+        if (!c.contains(e.target)) c.classList.remove('ueda-open','ueda-expanded');
+      });
+    })();
+  </script>
 </body></html>`;
 }
 
