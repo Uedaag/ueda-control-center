@@ -30,7 +30,7 @@ window.__uedaWidgetInit = function() {
           <svg viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           <div class="ueda-account-info">
             <span id="ueda-user-name" style="color:#e2e8f0; font-weight:600; font-size:13px; line-height:1.2;">Minha conta</span>
-            <span id="ueda-time-value" style="color:var(--ueda-accent,#1DAFD8); font-size:11px; font-weight:600; margin-top:2px;">Calculando...</span>
+            <span id="ueda-time-value" style="display:none;"></span>
           </div>
         </div>
 
