@@ -32,20 +32,50 @@
     el.textContent = cssText;
   }
 
+  const BASE_MODERN_CSS = `
+    /* ---- UEDA Modern Widget Overlay (aplica sobre inject.js/content.js) ---- */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+    :root, body { --ueda-accent: var(--ueda-accent, #1E88E5); }
+
+    /* Chat glow (borda azul animada no textarea do Lovable) */
+    @keyframes ueda-chat-glow-modern {
+      0%,100% { box-shadow: 0 0 0 2px var(--ueda-accent), 0 0 22px color-mix(in srgb, var(--ueda-accent) 40%, transparent); }
+      50%     { box-shadow: 0 0 0 2px var(--ueda-accent), 0 0 36px color-mix(in srgb, var(--ueda-accent) 65%, transparent); }
+    }
+    body textarea[placeholder*="Lovable" i]:not([id*="ueda"]),
+    body textarea[placeholder*="Pergunte" i]:not([id*="ueda"]),
+    body textarea[placeholder*="Ask" i]:not([id*="ueda"]) {
+      outline: 2px solid var(--ueda-accent) !important;
+      outline-offset: 2px !important;
+      border-radius: 14px !important;
+      animation: ueda-chat-glow-modern 2.6s ease-in-out infinite !important;
+      transition: outline-color .25s ease !important;
+    }
+
+    /* Floating widget container — se existir com IDs conhecidos */
+    #ueda-widget, #ueda-fab, [id*="ueda-widget"] {
+      font-family: "DM Sans", Inter, system-ui, sans-serif !important;
+    }
+    #ueda-widget-container .ueda-widget-btn,
+    #ueda-fab {
+      border: 1px solid color-mix(in srgb, var(--ueda-accent) 45%, transparent) !important;
+      box-shadow: 0 18px 44px rgba(0,0,0,0.42), 0 0 0 10px color-mix(in srgb, var(--ueda-accent) 12%, transparent), 0 0 28px color-mix(in srgb, var(--ueda-accent) 30%, transparent) !important;
+    }
+  `;
+
   function apply(cfg) {
     if (!cfg) return;
     const settings = cfg.settings || {};
     const accent = settings.brand_color || settings.widget_accent_color || '#1E88E5';
-    // 1) Variáveis CSS globais que a extensão original pode consumir
     setStyle(VAR_STYLE_ID, `
       :root, html, body {
         --ueda-accent: ${accent} !important;
         --ueda-brand: ${accent} !important;
       }
     `);
-    // 2) CSS customizado do painel (chat glow, marca, botões, etc.)
     const custom = settings.chat_custom_css || settings.custom_css || '';
-    setStyle(STYLE_ID, custom || '');
+    // Base moderna sempre + override do painel
+    setStyle(STYLE_ID, BASE_MODERN_CSS + '\n' + (custom || ''));
   }
 
   function showReleaseModal(version, changelog) {
