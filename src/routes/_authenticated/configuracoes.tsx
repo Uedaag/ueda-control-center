@@ -101,15 +101,7 @@ function Page() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_560px]">
         {/* MAIN */}
         <div className="space-y-6 min-w-0">
-          {/* HERO CARD */}
-          <div className="rounded-2xl bg-card border border-border p-6 flex flex-col gap-5 shadow-sm sm:flex-row sm:items-center">
-            <div className="w-12 h-12 rounded-xl bg-background border border-border flex items-center justify-center shrink-0" style={{ color: accent }}>
-              <Palette className="w-5 h-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-black italic tracking-tight text-card-foreground">IDENTIDADE VISUAL</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">Molde o ecossistema com a essência da sua marca e veja a extensão real no mesmo painel.</p>
-            </div>
+          <div className="rounded-2xl bg-card border border-border p-4 flex items-center justify-end gap-2 shadow-sm">
             <button onClick={reset} className="text-xs font-semibold tracking-widest text-muted-foreground hover:text-foreground px-3 py-2 flex items-center gap-1.5">
               <RotateCcw className="w-3.5 h-3.5" /> RESETAR
             </button>
