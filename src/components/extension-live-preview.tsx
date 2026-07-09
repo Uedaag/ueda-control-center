@@ -40,12 +40,13 @@ const VIEW_LABELS: Record<View, string> = {
 
 export function ExtensionLivePreview({ settings, skills }: ExtensionLivePreviewProps) {
   const [view, setView] = useState<View>("widget");
+  const [bg, setBg] = useState<"dark" | "light">("dark");
   const srcDoc = useMemo(() => {
     if (view === "chat") return buildChatDocument(settings);
     if (view === "login") return buildLoginDocument(settings, false);
     if (view === "account") return buildLoginDocument(settings, true);
-    return buildPreviewDocument(settings, skills);
-  }, [settings, skills, view]);
+    return buildPreviewDocument(settings, skills, bg);
+  }, [settings, skills, view, bg]);
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
