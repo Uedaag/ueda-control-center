@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import widgetCss from "../../extension/widget.css?raw";
-import popupCss from "../../extension/popup.css?raw";
+
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 
 export type ExtensionPreviewState = "collapsed" | "login" | "labels" | "account";
@@ -135,6 +135,12 @@ function buildChatDocument(settings: ExtensionPreviewSettings) {
       .lovable-build { border: 0; background: transparent; color: #f5f5f2; font-size: 13px; font-weight: 700; }
       .lovable-send { background: #9a9a96; color: #111; }
       svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; }
+      /* Override widget.css chat glow so it responds ao brand_color */
+      .ueda-chat-glow-active {
+        box-shadow: 0 0 0 2px ${accent}, 0 0 24px ${accent}59 !important;
+        border-radius: 18px !important;
+        transition: box-shadow 0.3s ease !important;
+      }
       ${settings.chat_custom_css || ""}
     </style>
   </head>
@@ -166,66 +172,175 @@ function buildChatDocument(settings: ExtensionPreviewSettings) {
 function buildLoginDocument(settings: ExtensionPreviewSettings, activated: boolean) {
   const brand = escapeHtml(settings.brand_name || "UEDA EX 5.0");
   const welcome = escapeHtml(settings.welcome_message || "Insira sua chave para ativar a extensão.");
+  const footer = escapeHtml(settings.footer_signature || "UEDA AGENCY · v5.0");
   const logo = escapeAttr(logoAsset.url);
+  const accent = normalizeHexColor(settings.brand_color);
+  const accentGlow = `${accent}47`; // ~28% alpha
 
   const loginHtml = `
-    <section id="loginView" class="login-wrapper new-login-wrapper">
-      <div class="login-centered-box">
-        <div class="login-top-icons">
-          <div class="login-logo-container">
-            <img src="${logo}" class="login-logo-img" alt="Logo" />
-          </div>
-        </div>
-        <p class="login-subtitle">${welcome}</p>
-        <form class="login-form-new" onsubmit="return false">
-          <input type="text" class="login-input-new" placeholder="Sua chave de licença..." />
-          <button class="login-button-new" type="button">Ativar Licença</button>
-        </form>
-        <a class="login-support-new">Suporte</a>
-        <p class="login-footer-text">${brand} - v5.0</p>
+    <div class="card" id="loginView">
+      <div class="card-top">
+        <img src="${logo}" class="card-logo" alt="${escapeAttr(brand)}" />
+        <button class="theme-btn" type="button" aria-label="Alternar tema">
+          <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
       </div>
-    </section>`;
-
-  const accent = normalizeHexColor(settings.brand_color);
-  const activatedHtml = `
-    <div class="activated-toast" role="status">
-      <div class="activated-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
-      <div class="activated-text">
-        <strong>Chave ativada com sucesso</strong>
-        <span>${brand} atualizado — este painel será fechado.</span>
-      </div>
+      <p class="card-sub">${welcome}</p>
+      <input type="text" class="key-input" placeholder="Sua chave de licença..." />
+      <button class="activate-btn" type="button">Ativar Licença</button>
+      <a class="support-link" href="#" onclick="return false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#25D366" viewBox="0 0 16 16">
+          <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592"/>
+        </svg>
+        Suporte: 77 99913-4858
+      </a>
+      <span class="card-footer">${footer}</span>
     </div>`;
 
-  return `<!doctype html><html><head><meta charset="utf-8"/><style>
-    ${popupCss}
-    html, body { width: 100%; height: 100%; margin:0; }
-    body { display: flex; align-items: center; justify-content: center; padding: 20px; background:#0b1220; }
-    .app-shell { width: ${activated ? "280px" : "320px"}; display:flex; align-items:center; justify-content:center; }
-    .activated-toast {
-      width: 100%;
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 16px;
-      background: rgba(20,32,44,0.92);
-      border: 1px solid ${accent}55;
-      border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35), 0 0 0 1px ${accent}22 inset;
-      color: #e6edf7;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    .activated-icon {
-      width: 34px; height: 34px; border-radius: 50%;
-      display:flex;align-items:center;justify-content:center;
-      background: ${accent}22; color: ${accent}; flex:0 0 34px;
-    }
-    .activated-icon svg { width: 18px; height: 18px; }
-    .activated-text { display:flex; flex-direction:column; gap: 2px; min-width: 0; }
-    .activated-text strong { font-size: 13px; font-weight: 700; color:#fff; }
-    .activated-text span { font-size: 11.5px; color:#a8b2c8; line-height:1.35; }
-  </style></head><body>
-    <main class="app-shell">${activated ? activatedHtml : loginHtml}</main>
-  </body></html>`;
+  const activatedHtml = `
+    <div class="card" id="homeView">
+      <div class="card-top">
+        <img src="${logo}" class="card-logo" alt="${escapeAttr(brand)}" />
+        <button class="theme-btn" type="button" aria-label="Alternar tema">
+          <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+      <p class="home-name">${brand}</p>
+      <p class="home-validity">28 dias restantes</p>
+      <p class="home-desc">Use o ícone flutuante <strong>na tela do site</strong> para gerenciar a extensão.</p>
+      <div class="monitor-row">
+        <span class="monitor-label">Monitor</span>
+        <button class="pill on" type="button"></button>
+      </div>
+      <button class="logout-btn" type="button">Sair da conta</button>
+    </div>`;
+
+  return `<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: ${accent};
+    --accent-glow: ${accentGlow};
+    --bg: #10121c;
+    --surface: #181a26;
+    --surface2: #1e2133;
+    --border: ${accent}4D;
+    --text: #e2e8f0;
+    --text-muted: #6a7590;
+    --input-bg: #0d0f1a;
+    --input-border: ${accent}38;
+    --btn-text: #ffffff;
+    --support-bg: #0d0f1a;
+    --support-border: rgba(255,255,255,0.06);
+    --support-text: #6a7590;
+    --logout-border: rgba(255,90,90,0.22);
+    --logout-text: #ff6b6b;
+    --shadow: 0 8px 40px rgba(0,0,0,0.55), 0 0 28px var(--accent-glow);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; font-family: 'Montserrat', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    background:
+      radial-gradient(140% 80% at 80% -10%, ${accent}40, transparent 42%),
+      radial-gradient(120% 70% at -10% 100%, ${accent}38, transparent 45%),
+      linear-gradient(180deg, #000000 0%, #10121c 100%);
+  }
+  .card {
+    width: 320px;
+    background: var(--bg);
+    border-radius: 22px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 28px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .card-top { width: 100%; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 16px; }
+  .card-logo { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 0 10px var(--accent-glow)); }
+  .theme-btn {
+    position: absolute; right: 0; top: 0;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--support-border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-muted);
+  }
+  .theme-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .card-sub {
+    font-size: 12px; color: var(--text-muted); text-align: center;
+    margin-bottom: 18px; line-height: 1.55; font-weight: 500; letter-spacing: 0.01em;
+  }
+  .key-input {
+    width: 100%; padding: 11px 14px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 11px; color: var(--text);
+    font-size: 13px; font-family: inherit; font-weight: 500;
+    outline: none; margin-bottom: 10px;
+  }
+  .key-input::placeholder { color: var(--text-muted); }
+  .activate-btn {
+    width: 100%; padding: 12px;
+    background: var(--accent);
+    border: none; border-radius: 11px;
+    color: var(--btn-text);
+    font-size: 13px; font-weight: 700; font-family: inherit;
+    letter-spacing: 0.02em; cursor: pointer; margin-bottom: 10px;
+    box-shadow: 0 4px 18px ${accent}61;
+  }
+  .support-link {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 10px;
+    background: var(--support-bg);
+    border: 1px solid var(--support-border);
+    border-radius: 11px; color: var(--support-text);
+    font-size: 12px; font-family: inherit; font-weight: 600;
+    text-decoration: none; margin-bottom: 16px;
+  }
+  .card-footer {
+    font-size: 10px; color: var(--text-muted);
+    letter-spacing: 1.2px; text-transform: uppercase;
+    font-weight: 600; opacity: 0.5;
+  }
+  .home-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; text-align: center; }
+  .home-validity { font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 16px; }
+  .home-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; text-align: center; margin-bottom: 18px; }
+  .home-desc strong { color: var(--text); }
+  .monitor-row {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--support-border);
+    border-radius: 12px; margin-bottom: 10px;
+  }
+  .monitor-label { font-size: 13px; font-weight: 700; color: var(--text); }
+  .pill {
+    position: relative; width: 44px; height: 24px;
+    background: var(--surface2); border-radius: 100px;
+    cursor: pointer; border: none; outline: none; flex-shrink: 0;
+  }
+  .pill.on { background: var(--accent); }
+  .pill::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; transition: transform 0.25s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  }
+  .pill.on::after { transform: translateX(20px); }
+  .logout-btn {
+    width: 100%; padding: 10px;
+    background: transparent;
+    border: 1px solid var(--logout-border);
+    border-radius: 11px; color: var(--logout-text);
+    font-size: 12px; font-family: inherit; font-weight: 600;
+    cursor: pointer;
+  }
+</style></head><body>${activated ? activatedHtml : loginHtml}</body></html>`;
 }
 
 
