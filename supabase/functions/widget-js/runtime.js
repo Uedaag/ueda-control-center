@@ -4,7 +4,9 @@ window.__uedaWidgetInit = function() {
   window.__uedaWidgetMounted = true;
   if (document.getElementById('ueda-widget-container')) return;
 
-  var __uedaScript=document.currentScript||document.querySelector('script[data-ueda-loader]');var logoUrl=(__uedaScript&&__uedaScript.getAttribute('data-logo-url'))||'';
+  var __uedaScript=document.currentScript||document.querySelector('script[data-ueda-loader]');
+  var logoUrl = (typeof window!=='undefined' && window.UEDA_LOGO_URL) || (__uedaScript && __uedaScript.getAttribute('data-logo-url')) || '';
+  var extVersion = (typeof window!=='undefined' && window.UEDA_EXT_VERSION) || (__uedaScript && __uedaScript.getAttribute('data-ext-version')) || '0.0.0';
 
   const UEDA_DEBUG = true;
   function uedaLog(message, extra) {
