@@ -223,18 +223,18 @@ function buildLoginDocument(settings: ExtensionPreviewSettings, activated: boole
   :root {
     --accent: ${accent};
     --accent-glow: ${accentGlow};
-    --bg: #10121c;
-    --surface: #181a26;
-    --surface2: #1e2133;
+    --bg: #0f1713;
+    --surface: #132219;
+    --surface2: #1a3a2a;
     --border: ${accent}4D;
-    --text: #e2e8f0;
-    --text-muted: #6a7590;
-    --input-bg: #0d0f1a;
+    --text: #e2ffd6;
+    --text-muted: #7a9184;
+    --input-bg: #0a0f0c;
     --input-border: ${accent}38;
-    --btn-text: #ffffff;
-    --support-bg: #0d0f1a;
+    --btn-text: #0f1713;
+    --support-bg: #0a0f0c;
     --support-border: rgba(255,255,255,0.06);
-    --support-text: #6a7590;
+    --support-text: #7a9184;
     --logout-border: rgba(255,90,90,0.22);
     --logout-text: #ff6b6b;
     --shadow: 0 8px 40px rgba(0,0,0,0.55), 0 0 28px var(--accent-glow);
@@ -245,9 +245,9 @@ function buildLoginDocument(settings: ExtensionPreviewSettings, activated: boole
     display: flex; align-items: center; justify-content: center;
     padding: 24px;
     background:
-      radial-gradient(140% 80% at 80% -10%, ${accent}40, transparent 42%),
-      radial-gradient(120% 70% at -10% 100%, ${accent}38, transparent 45%),
-      linear-gradient(180deg, #000000 0%, #10121c 100%);
+      radial-gradient(140% 80% at 80% -10%, ${accent}33, transparent 42%),
+      radial-gradient(120% 70% at -10% 100%, ${accent}2E, transparent 45%),
+      linear-gradient(180deg, #000000 0%, #0f1713 100%);
   }
   .card {
     width: 320px;
