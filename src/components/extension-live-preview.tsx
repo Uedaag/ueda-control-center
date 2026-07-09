@@ -228,14 +228,20 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
       <span class="ueda-item-text">${escapeHtml(s.name)}</span>
     </div>`).join("");
 
+  const bgStyles = bg === "light"
+    ? `background: linear-gradient(135deg,#f4f6fb,#e6ebf2); }
+       body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${accent}22, transparent 36%); }`
+    : `background:#0b1220; }
+       body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${accent}30, transparent 32%), linear-gradient(135deg,#0b1220,#141b2e); }`;
+  const hintColor = bg === "light" ? "#475569" : "#94a3b8";
+
   return `<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
-  html,body { margin:0; height:100%; background:#0b1220; overflow:hidden; }
-  body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${accent}30, transparent 32%), linear-gradient(135deg,#0b1220,#141b2e); }
+  html,body { margin:0; height:100%; overflow:hidden; ${bgStyles}
   ${widgetCss}
   #ueda-widget-container { --ueda-accent: ${accent}; }
-  .preview-hint { position: fixed; left:24px; top:24px; color:#94a3b8; font-size:11px; letter-spacing:.1em; text-transform:uppercase; z-index: 1; }
+  .preview-hint { position: fixed; left:24px; top:24px; color:${hintColor}; font-size:11px; letter-spacing:.1em; text-transform:uppercase; z-index: 1; }
 </style></head>
 <body>
   <div class="preview-hint">Prévia • Widget flutuante (canto inferior direito)</div>
