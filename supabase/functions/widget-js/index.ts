@@ -1,6 +1,6 @@
 // Serve the widget runtime as JavaScript.
-// Edit runtime.js and redeploy — clients pick it up on next page load.
-import runtimeSrc from "./runtime.js" with { type: "text" };
+// To change widget behavior: edit runtime.js, run build.py, redeploy.
+import runtimeSrc from "./runtime.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -10,7 +10,7 @@ const cors = {
 
 Deno.serve((req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
-  return new Response(runtimeSrc as string, {
+  return new Response(runtimeSrc, {
     headers: {
       ...cors,
       "Content-Type": "application/javascript; charset=utf-8",
