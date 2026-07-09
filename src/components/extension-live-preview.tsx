@@ -193,66 +193,66 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
   const brand = escapeHtml(settings.brand_name || "UEDA EX 5.0");
   const logo = escapeAttr(logoAsset.url);
 
-  const skillRows = (skills.length ? skills : [
-    { id: "_p1", name: "Remover marca d'água", description: "Oculta selo Lovable" },
-    { id: "_p2", name: "Melhorar prompt", description: "Reescreve automaticamente" },
+  const skillItems = (skills.length ? skills : [
+    { id: "_p1", name: "Remover marca", description: "Ocultar selo" },
+    { id: "_p2", name: "Reescrever prompt", description: "Melhorar automaticamente" },
     { id: "_p3", name: "Modo turbo", description: "Respostas mais rápidas" },
-  ]).map((s, i) => {
-    const initial = escapeHtml((s.name || "?").slice(0, 1).toUpperCase());
-    const on = i % 2 === 0;
-    return `
-      <button class="ueda-item ${i === 0 ? "active" : ""}" type="button">
-        <span class="ic">${initial}</span>
-        <span class="lb">
-          <span class="n">${escapeHtml(s.name)}</span>
-          ${s.description ? `<span class="d">${escapeHtml(s.description)}</span>` : ""}
-        </span>
-        <span class="tg ${on ? "on" : ""}"></span>
-      </button>`;
-  }).join("");
+  ]).slice(0, 6).map((s) => `
+    <div class="ueda-menu-item ueda-skill-item">
+      ${iconSparkles()}
+      <span class="ueda-menu-header-text">${escapeHtml(s.name)}</span>
+      <span class="ueda-skill-toggle on" aria-hidden="true"></span>
+    </div>`).join("");
 
   return `<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
-  html,body { margin:0; height:100%; background:#0f172a; font-family: Inter, system-ui, sans-serif; overflow:hidden; }
-  body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 85% 50%, ${accent}33, transparent 40%), linear-gradient(135deg,#0b1220,#141b2e); }
-  .stage { position:relative; height:100%; }
-  .hint { position:absolute; left:24px; top:24px; color:#94a3b8; font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
-  .fab-root { position:absolute; right:22px; top:50%; transform:translateY(-50%); }
-  .fab-btn { width:56px; height:56px; border-radius:50%; border:none; background:#fff; box-shadow:0 10px 28px rgba(0,0,0,.35), 0 0 0 6px ${accent}30; display:grid; place-items:center; position:relative; cursor:pointer; }
-  .fab-btn img { width:34px; height:34px; object-fit:contain; }
-  .fab-btn .dot { position:absolute; top:2px; right:2px; width:12px; height:12px; border-radius:50%; background:#22c55e; border:2px solid #fff; }
-  .panel { position:absolute; right:72px; top:50%; transform:translateY(-50%); min-width:270px; background: rgba(12,16,24,.94); backdrop-filter: blur(14px); border:1px solid ${accent}80; border-radius:18px; padding:12px; color:#eef2f7; box-shadow: 0 24px 60px rgba(0,0,0,.5); }
-  .panel header { display:flex; align-items:center; gap:10px; padding:6px 8px 10px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:8px; }
-  .panel header .t { font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:${accent}; }
-  .panel header .s { font-size:11px; color:#94a3b8; margin-left:auto; }
-  .ueda-item { display:flex; align-items:center; gap:10px; padding:10px; border-radius:12px; border:1px solid transparent; background:transparent; color:#dbe2ee; width:100%; text-align:left; font: inherit; font-size:13px; cursor:pointer; }
-  .ueda-item:hover { background: rgba(255,255,255,.05); }
-  .ueda-item.active { background: ${accent}30; border-color: ${accent}88; color:#fff; }
-  .ueda-item .ic { width:28px; height:28px; display:grid; place-items:center; border-radius:8px; background:rgba(255,255,255,.06); font-size:13px; font-weight:700; }
-  .ueda-item .lb { flex:1; min-width:0; display:flex; flex-direction:column; }
-  .ueda-item .lb .n { font-weight:600; }
-  .ueda-item .lb .d { font-size:11px; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .tg { position:relative; width:32px; height:18px; border-radius:999px; background:#2a323e; flex:0 0 auto; transition: background .2s; }
-  .tg::after { content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:#fff; transition: transform .2s; }
-  .tg.on { background:${accent}; }
-  .tg.on::after { transform: translateX(14px); }
-  .panel footer { display:flex; justify-content:space-between; padding:8px 6px 2px; margin-top:6px; border-top:1px solid rgba(255,255,255,.06); font-size:11px; color:#94a3b8; }
+  html,body { margin:0; height:100%; background:#0b1220; overflow:hidden; }
+  body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${accent}30, transparent 32%), linear-gradient(135deg,#0b1220,#141b2e); }
+  ${widgetCss}
+  /* preview-only tweak so the widget stays fully visible inside the iframe */
+  #ueda-widget-container { --ueda-accent: ${accent}; }
+  .ueda-widget-menu { display: flex !important; opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
+  .ueda-skill-toggle { position: relative; width: 30px; height: 16px; border-radius: 999px; background: #2a323e; margin-left: auto; flex: 0 0 auto; }
+  .ueda-skill-toggle::after { content:""; position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition: transform .2s; }
+  .ueda-skill-toggle.on { background: ${accent}; }
+  .ueda-skill-toggle.on::after { transform: translateX(14px); }
+  .preview-hint { position: fixed; left:24px; top:24px; color:#94a3b8; font-size:11px; letter-spacing:.1em; text-transform:uppercase; z-index: 1; }
 </style></head>
-<body><div class="stage">
-  <div class="hint">Prévia • Widget flutuante</div>
-  <div class="fab-root">
-    <div class="panel" role="menu" aria-label="UEDA Skills">
-      <header><span class="t">Skills</span><span class="s">${skills.length || 3}</span></header>
-      <div>${skillRows}</div>
-      <footer><span>${brand}</span><span>v5.0</span></footer>
+<body>
+  <div class="preview-hint">Prévia • Widget flutuante (canto inferior direito)</div>
+  <div id="ueda-widget-container">
+    <div class="ueda-widget-menu">
+      <div class="ueda-menu-header">
+        ${iconChevron()}
+        <span class="ueda-menu-header-text">Recolher menu</span>
+      </div>
+      <div class="ueda-menu-item" style="cursor:default;">
+        ${iconUser()}
+        <div style="display:flex;flex-direction:column;">
+          <span class="ueda-menu-header-text">${brand}</span>
+          <span style="font-size:11px;color:${accent};font-weight:700;">Licença ativa</span>
+        </div>
+      </div>
+      ${skillItems}
+      <div class="ueda-menu-item">${iconRefresh()}<span class="ueda-menu-header-text">Atualizar extensão</span></div>
+      <div class="ueda-menu-item">${iconHelp()}<span class="ueda-menu-header-text">Ajuda &amp; Suporte</span></div>
+      <div class="ueda-menu-item ueda-text-red">${iconPower()}<span class="ueda-menu-header-text">Logoff</span></div>
     </div>
-    <button class="fab-btn" title="${escapeAttr(brand)}">
-      <img src="${logo}" alt="UEDA"/><span class="dot"></span>
+    <button class="ueda-widget-btn" title="${escapeAttr(brand)}">
+      <img src="${logo}" alt="UEDA" class="ueda-widget-logo"/>
     </button>
   </div>
-</div></body></html>`;
+</body></html>`;
 }
+
+function svg(paths: string) { return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`; }
+function iconChevron() { return svg(`<polyline points="15 18 9 12 15 6"></polyline>`); }
+function iconUser() { return svg(`<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>`); }
+function iconRefresh() { return svg(`<polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>`); }
+function iconHelp() { return svg(`<circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line>`); }
+function iconPower() { return svg(`<path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line>`); }
+function iconSparkles() { return svg(`<path d="M9.9 10.8 8 15l-1.9-4.2L2 9l4.1-1.8L8 3l1.9 4.2L14 9l-4.1 1.8Z"></path>`); }
 
 function normalizeHexColor(color: string) {
   return /^#[0-9a-f]{6}$/i.test(color) ? color : "#4fa1c9";
