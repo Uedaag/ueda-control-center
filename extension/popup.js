@@ -1,5 +1,5 @@
 (() => {
-  const VALIDATE_ENDPOINT = 'https://keqgzvcahsvseowfowwu.supabase.co/functions/v1/fn-vl04';
+  const VALIDATE_ENDPOINT = 'https://uedaagency.lovable.app/api/login';
 
   const fields = {
     loginView: document.getElementById('loginView'),
