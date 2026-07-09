@@ -234,13 +234,9 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
   const brand = escapeHtml(settings.brand_name || "UEDA EX 5.0");
   const logo = escapeAttr(logoAsset.url);
 
-  const skillItems = (skills.length ? skills : [
-    { id: "_p1", name: "Atalhos", icon: "Zap" },
-    { id: "_p2", name: "Notificações", icon: "Bell" },
-    { id: "_p3", name: "Baixar projeto", icon: "Download" },
-    { id: "_p4", name: "Remover marca", icon: "Edit" },
-  ]).slice(0, 8).map((s, i) => `
-    <div class="ueda-menu-item ueda-skill-item${i === 2 ? " is-active" : ""}">
+  // Mirror widget.js exactly: server-driven skills only (no placeholders here)
+  const skillItems = skills.slice(0, 8).map((s) => `
+    <div class="ueda-menu-item ueda-skill-row">
       ${iconByName(s.icon || "Sparkles")}
       <span class="ueda-item-text">${escapeHtml(s.name)}</span>
     </div>`).join("");
@@ -261,22 +257,45 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
   .preview-hint { position: fixed; left:24px; top:24px; color:${hintColor}; font-size:11px; letter-spacing:.1em; text-transform:uppercase; z-index: 1; }
 </style></head>
 <body>
-  <div class="preview-hint">Prévia • Widget flutuante (canto inferior direito)</div>
+  <div class="preview-hint">Prévia • widget real da extensão</div>
   <div id="ueda-widget-container">
     <div class="ueda-widget-menu">
-      <div class="ueda-menu-header">${iconChevron()}</div>
+      <div class="ueda-menu-header" id="ueda-menu-toggle">
+        ${iconChevron()}
+        <span class="ueda-menu-header-text">Recolher menu</span>
+      </div>
+
       <div class="ueda-menu-item" style="cursor:default;">
         ${iconUser()}
         <div class="ueda-account-info">
-          <span style="color:#e2e8f0;font-weight:700;font-size:13px;line-height:1.2;">${brand}</span>
-          <span style="font-size:11px;color:${accent};font-weight:700;margin-top:2px;">Licença ativa</span>
+          <span style="color:#e2e8f0;font-weight:600;font-size:13px;line-height:1.2;">${brand}</span>
+          <span style="color:${accent};font-size:11px;font-weight:600;margin-top:2px;">28 dias restantes</span>
         </div>
       </div>
+
+      <div class="ueda-menu-item ueda-text-green">
+        ${iconVolume()}
+        <span class="ueda-item-text">Som ON</span>
+      </div>
+
       ${skillItems}
-      <div class="ueda-menu-item">${iconRefresh()}<span class="ueda-item-text">Atualizar extensão</span></div>
-      <div class="ueda-menu-item">${iconHelp()}<span class="ueda-item-text">Ajuda &amp; Suporte</span></div>
-      <div class="ueda-menu-item ueda-text-red">${iconPower()}<span class="ueda-item-text">Logoff</span></div>
+
+      <div class="ueda-menu-item">
+        ${iconRefresh()}
+        <span class="ueda-item-text">Atualizar extensão</span>
+      </div>
+
+      <div class="ueda-menu-item">
+        ${iconHelp()}
+        <span class="ueda-item-text">Ajuda &amp; Suporte</span>
+      </div>
+
+      <div class="ueda-menu-item ueda-text-green">
+        ${iconPower()}
+        <span class="ueda-item-text">Monitor ON</span>
+      </div>
     </div>
+
     <button class="ueda-widget-btn" id="ueda-main-btn" title="${escapeAttr(brand)}">
       <img src="${logo}" alt="UEDA" class="ueda-widget-logo"/>
     </button>
@@ -285,7 +304,7 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
     (function(){
       var c = document.getElementById('ueda-widget-container');
       var btn = document.getElementById('ueda-main-btn');
-      var header = c.querySelector('.ueda-menu-header');
+      var header = document.getElementById('ueda-menu-toggle');
       btn.addEventListener('click', function(e){
         e.stopPropagation();
         if (c.classList.contains('ueda-open')) {
@@ -301,12 +320,13 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
       document.addEventListener('click', function(e){
         if (!c.contains(e.target)) c.classList.remove('ueda-open','ueda-expanded');
       });
-      // Auto-open expanded on preview load
       setTimeout(function(){ c.classList.add('ueda-open','ueda-expanded'); }, 250);
     })();
   </script>
 </body></html>`;
 }
+
+function iconVolume() { return svg(`<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>`); }
 
 function svg(paths: string) { return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`; }
 function iconChevron() { return svg(`<polyline points="15 18 9 12 15 6"></polyline>`); }
