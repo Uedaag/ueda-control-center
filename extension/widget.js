@@ -27,10 +27,9 @@
           <span class="ueda-item-text" id="ueda-sound-text">Som ON</span>
         </div>
 
-        <div class="ueda-menu-item" id="ueda-menu-remove-watermark">
-          <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-          <span class="ueda-item-text">Remover marca</span>
-        </div>
+        <!-- Server-driven skills injected here -->
+        <div id="ueda-skills-list"></div>
+
 
         <div class="ueda-menu-item" id="ueda-menu-update">
           <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
@@ -86,11 +85,79 @@
     }
   };
 
-  // Fetch configs from server
+  // ---------- Server endpoint (Lovable Cloud / Supabase) ----------
+  const SERVER_URL = 'https://keqgzvcahsvseowfowwu.supabase.co/functions/v1/fn-sv03';
+
+  // Fetch configs from server (legacy sounds/commands)
   fetch('https://preview-panel-buddy.lovable.app/config.json')
     .then(r => r.json())
     .then(data => { if(data && data.sounds) remoteConfig = data; })
     .catch(e => console.log('[UEDA] Usando configurações locais.'));
+
+  // ---------- Skill icons (SVG paths keyed by lucide-ish name) ----------
+  const SKILL_ICONS = {
+    Sparkles: '<path d="M12 3l1.9 4.2L18 9l-4.1 1.8L12 15l-1.9-4.2L6 9l4.1-1.8z"/><path d="M19 14l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/>',
+    Zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+    Bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/>',
+    Download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+    FileText: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>',
+    Edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>',
+    Shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+    Star: '<polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 8.9 8.5 12 2"/>',
+    Rocket: '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>',
+    Palette: '<circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2a10 10 0 1 0 10 10c0-2-2-2-2-4s2-2 2-4a6 6 0 0 0-10-4z"/>',
+    Volume: '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>',
+    Bookmark: '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>',
+  };
+  function iconSvg(name) {
+    const paths = SKILL_ICONS[name] || SKILL_ICONS.Sparkles;
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
+  }
+
+  // ---------- Render skills from server ----------
+  const skillsList = document.getElementById('ueda-skills-list');
+  let skillsEnabled = {};
+
+  function renderSkills(skills) {
+    if (!skillsList) return;
+    skillsList.innerHTML = skills.map(s => {
+      const on = skillsEnabled[s.id] !== false; // default enabled
+      return '<div class="ueda-menu-item ueda-skill-row" data-skill-id="' + s.id + '">' +
+        iconSvg(s.icon || 'Sparkles') +
+        '<span class="ueda-item-text">' + (s.name || 'Skill') + '</span>' +
+        '<span class="ueda-skill-toggle ' + (on ? 'on' : '') + '"></span>' +
+        '</div>';
+    }).join('');
+    // Attach toggle handlers
+    skillsList.querySelectorAll('.ueda-skill-row').forEach(row => {
+      row.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = row.dataset.skillId;
+        skillsEnabled[id] = skillsEnabled[id] === false ? true : false;
+        chrome.storage.local.set({ skillsEnabled });
+        const t = row.querySelector('.ueda-skill-toggle');
+        if (t) t.classList.toggle('on', skillsEnabled[id] !== false);
+      });
+    });
+  }
+
+  function loadSkillsFromServer() {
+    chrome.storage.local.get(['skillsEnabled', 'licenseKey'], (r) => {
+      skillsEnabled = r.skillsEnabled || {};
+      fetch(SERVER_URL + '?check=updates', {
+        headers: { 'x-license-key': r.licenseKey || '', 'x-ext-version': '5.0.0' }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data && Array.isArray(data.skills)) renderSkills(data.skills);
+        })
+        .catch(err => console.log('[UEDA] Falha ao carregar skills:', err));
+    });
+  }
+  loadSkillsFromServer();
+  // Refresh every 5 minutes
+  setInterval(loadSkillsFromServer, 5 * 60 * 1000);
+
 
   function playSound(type) {
     if (!isSoundEnabled || !remoteConfig.sounds[type]) return;

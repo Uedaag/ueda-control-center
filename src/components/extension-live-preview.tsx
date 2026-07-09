@@ -194,12 +194,13 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
   const logo = escapeAttr(logoAsset.url);
 
   const skillItems = (skills.length ? skills : [
-    { id: "_p1", name: "Remover marca", description: "Ocultar selo" },
-    { id: "_p2", name: "Reescrever prompt", description: "Melhorar automaticamente" },
-    { id: "_p3", name: "Modo turbo", description: "Respostas mais rápidas" },
-  ]).slice(0, 6).map((s) => `
+    { id: "_p1", name: "Atalhos", icon: "Zap" },
+    { id: "_p2", name: "Notificações", icon: "Bell" },
+    { id: "_p3", name: "Baixar projeto", icon: "Download" },
+    { id: "_p4", name: "Remover marca", icon: "Edit" },
+  ]).slice(0, 8).map((s) => `
     <div class="ueda-menu-item ueda-skill-item">
-      ${iconSparkles()}
+      ${iconByName(s.icon || "Sparkles")}
       <span class="ueda-menu-header-text">${escapeHtml(s.name)}</span>
       <span class="ueda-skill-toggle on" aria-hidden="true"></span>
     </div>`).join("");
@@ -275,6 +276,21 @@ function iconRefresh() { return svg(`<polyline points="23 4 23 10 17 10"></polyl
 function iconHelp() { return svg(`<circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line>`); }
 function iconPower() { return svg(`<path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line>`); }
 function iconSparkles() { return svg(`<path d="M9.9 10.8 8 15l-1.9-4.2L2 9l4.1-1.8L8 3l1.9 4.2L14 9l-4.1 1.8Z"></path>`); }
+const SKILL_ICON_PATHS: Record<string, string> = {
+  Sparkles: `<path d="M12 3l1.9 4.2L18 9l-4.1 1.8L12 15l-1.9-4.2L6 9l4.1-1.8z"/><path d="M19 14l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/>`,
+  Zap: `<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>`,
+  Bell: `<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/>`,
+  Download: `<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>`,
+  FileText: `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>`,
+  Edit: `<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>`,
+  Shield: `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>`,
+  Star: `<polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 8.9 8.5 12 2"/>`,
+  Rocket: `<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>`,
+  Palette: `<circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2a10 10 0 1 0 10 10c0-2-2-2-2-4s2-2 2-4a6 6 0 0 0-10-4z"/>`,
+  Volume: `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>`,
+  Bookmark: `<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>`,
+};
+function iconByName(name: string) { return svg(SKILL_ICON_PATHS[name] || SKILL_ICON_PATHS.Sparkles); }
 
 function normalizeHexColor(color: string) {
   return /^#[0-9a-f]{6}$/i.test(color) ? color : "#4fa1c9";
