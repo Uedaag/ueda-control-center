@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { saveAs } from "file-saver";
 import {
   Palette, Save, RotateCcw, Type, MessageSquare, FileText, Image as ImageIcon,
-  Globe, Mail, Phone, RefreshCw, Upload, Download,
+  Globe, Mail, Phone, RefreshCw, Upload, Download, Rocket, CircleDot,
 } from "lucide-react";
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 import {
@@ -20,7 +20,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   component: Page,
-  head: () => ({ meta: [{ title: "Identidade Visual — UEDA EX 5.0" }] }),
+  head: () => ({ meta: [{ title: "Configurações — UEDA EX 5.0" }] }),
 });
 
 const DEFAULTS = {
@@ -44,54 +44,100 @@ type Skill = ExtensionPreviewSkill;
 const SETTING_KEYS = Object.keys(DEFAULTS);
 
 function Page() {
-  const [vals, setVals] = useState<Vals>(DEFAULTS);
-  const [initial, setInitial] = useState<Vals>(DEFAULTS);
+  const [vals, setVals] = useState<Vals>(DEFAULTS);           // draft (form)
+  const [initial, setInitial] = useState<Vals>(DEFAULTS);     // last saved draft
+  const [published, setPublished] = useState<Vals>(DEFAULTS); // live on extension
   const [skills, setSkills] = useState<Skill[]>([]);
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  
+  const [version, setVersion] = useState("5.1");
+  const [changelog, setChangelog] = useState("");
 
   useEffect(() => {
     Promise.all([
-      supabase.from("settings").select("key,value").in("key", SETTING_KEYS),
+      supabase.from("settings").select("key,value,draft_value").in("key", [...SETTING_KEYS, "ext_version"]),
       supabase
         .from("skills")
         .select("id,name,description,icon,payload,display_order")
         .eq("status", true)
         .order("display_order", { ascending: true }),
     ]).then(([settingsResult, skillsResult]) => {
-      const v: Vals = { ...DEFAULTS };
-      (settingsResult.data || []).forEach((r: any) => { if (r.key in DEFAULTS) v[r.key] = r.value ?? ""; });
-      setVals(v); setInitial(v);
+      const draft: Vals = { ...DEFAULTS };
+      const pub: Vals = { ...DEFAULTS };
+      let curVer = "5.1";
+      (settingsResult.data || []).forEach((r: any) => {
+        if (r.key === "ext_version") { curVer = r.value || "5.1"; return; }
+        if (r.key in DEFAULTS) {
+          pub[r.key] = r.value ?? "";
+          draft[r.key] = (r.draft_value ?? r.value) ?? "";
+        }
+      });
+      setVals(draft); setInitial(draft); setPublished(pub);
+      const p = curVer.split(".").map((n) => parseInt(n, 10) || 0);
+      p[p.length - 1] = (p[p.length - 1] || 0) + 1;
+      setVersion(p.join("."));
       setSkills((skillsResult.data as Skill[]) || []);
     });
   }, []);
 
   const set = (k: string, v: string) => setVals((s) => ({ ...s, [k]: v }));
 
-  const persistSettings = async (nextVals: Vals, showToast = true) => {
+  const hasDraftChanges = useMemo(
+    () => SETTING_KEYS.some((k) => (vals[k] ?? "") !== (published[k] ?? "")),
+    [vals, published]
+  );
+
+  const saveDraft = async (showToast = true) => {
     setSaving(true);
-    const rows = Object.entries(nextVals).map(([key, value]) => ({ key, value }));
+    const rows = Object.entries(vals).map(([key, value]) => ({ key, draft_value: value }));
     const { error } = await supabase.from("settings").upsert(rows, { onConflict: "key" });
     setSaving(false);
-    if (error) {
-      toast.error(error.message);
-      return false;
-    }
-    setInitial(nextVals);
-    if (showToast) toast.success("Alterações salvas e sincronizadas com a prévia");
+    if (error) { toast.error(error.message); return false; }
+    setInitial(vals);
+    if (showToast) toast.success("Rascunho salvo — visível apenas na prévia");
     return true;
   };
 
-  const save = () => persistSettings(vals);
+  const publishRelease = async () => {
+    const v = version.trim();
+    if (!v) return toast.error("Informe o número da versão");
+    setPublishing(true);
+    // 1) garante draft salvo
+    const rows = Object.entries(vals).map(([key, value]) => ({ key, value, draft_value: value }));
+    const { error: upErr } = await supabase.from("settings").upsert(rows, { onConflict: "key" });
+    if (upErr) { setPublishing(false); return toast.error(upErr.message); }
+    // 2) desativa releases antigas + cria nova
+    await supabase.from("releases").update({ is_active: false }).neq("id", "00000000-0000-0000-0000-000000000000");
+    const { error: relErr } = await supabase.from("releases").insert({
+      version: v, min_version: v, download_url: "", changelog, force_update: false, is_active: true,
+    });
+    if (relErr) { setPublishing(false); return toast.error(relErr.message); }
+    // 3) bump da versão + flag de notificação
+    await supabase.from("settings").upsert(
+      [
+        { key: "ext_version", value: v, draft_value: v },
+        { key: "min_version", value: v, draft_value: v },
+        { key: "notify_update", value: "true", draft_value: "true" },
+      ],
+      { onConflict: "key" },
+    );
+    setPublished({ ...vals });
+    setChangelog("");
+    const p = v.split(".").map((n) => parseInt(n, 10) || 0);
+    p[p.length - 1] = (p[p.length - 1] || 0) + 1;
+    setVersion(p.join("."));
+    setPublishing(false);
+    toast.success(`Versão ${v} liberada — extensão será atualizada`);
+  };
 
-  const reset = () => { setVals(initial); toast("Alterações revertidas"); };
+  const reset = () => { setVals(published); toast("Rascunho descartado — voltou ao publicado"); };
 
   const accent = useMemo(() => vals.brand_color || "#4fa1c9", [vals.brand_color]);
 
   const download = async () => {
     setDownloading(true);
-    const ok = await persistSettings(vals, false);
+    const ok = await saveDraft(false);
     if (ok) await downloadExtension(vals);
     setDownloading(false);
   };
@@ -101,13 +147,56 @@ function Page() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_560px]">
         {/* MAIN */}
         <div className="space-y-6 min-w-0">
-          <div className="rounded-2xl bg-card border border-border p-4 flex items-center justify-end gap-2 shadow-sm">
-            <button onClick={reset} className="text-xs font-semibold tracking-widest text-muted-foreground hover:text-foreground px-3 py-2 flex items-center gap-1.5">
-              <RotateCcw className="w-3.5 h-3.5" /> RESETAR
-            </button>
-            <button onClick={save} disabled={saving} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold tracking-widest px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 disabled:opacity-60">
-              <Save className="w-4 h-4" /> {saving ? "SALVANDO..." : "SALVAR ALTERAÇÕES"}
-            </button>
+          {/* ACTION BAR — draft vs release */}
+          <div className="rounded-2xl bg-card border border-border p-4 shadow-sm space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
+                <CircleDot className={`w-3.5 h-3.5 ${hasDraftChanges ? "text-amber-500 animate-pulse" : "text-emerald-500"}`} />
+                <span className="text-muted-foreground">
+                  {hasDraftChanges ? "Rascunho com alterações não publicadas" : "Sincronizado com a extensão"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={reset} className="text-xs font-semibold tracking-widest text-muted-foreground hover:text-foreground px-3 py-2 flex items-center gap-1.5">
+                  <RotateCcw className="w-3.5 h-3.5" /> DESCARTAR
+                </button>
+                <button onClick={() => saveDraft()} disabled={saving} className="bg-card border border-border hover:bg-muted text-card-foreground text-xs font-bold tracking-widest px-5 py-3 rounded-xl shadow-sm flex items-center gap-2 disabled:opacity-60">
+                  <Save className="w-4 h-4" /> {saving ? "SALVANDO..." : "SALVAR RASCUNHO"}
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-background border border-border p-4 space-y-3">
+              <div className="flex items-center gap-2 text-[11px] font-bold tracking-[0.15em] text-muted-foreground uppercase">
+                <Rocket className="w-3.5 h-3.5" style={{ color: accent }} /> Liberar atualização para clientes
+              </div>
+              <div className="grid gap-3 md:grid-cols-[140px_1fr]">
+                <div>
+                  <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">Versão</label>
+                  <LightInput value={version} onChange={(e) => setVersion(e.target.value)} placeholder="5.1" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">Novidades</label>
+                  <Textarea
+                    value={changelog}
+                    onChange={(e) => setChangelog(e.target.value)}
+                    rows={2}
+                    placeholder="• O que mudou nesta versão"
+                    className="min-h-[52px] bg-background border-input text-foreground focus-visible:border-ring focus-visible:ring-ring/20"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={publishRelease}
+                disabled={publishing}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold tracking-widest px-6 py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                <Rocket className="w-4 h-4" /> {publishing ? "LIBERANDO..." : "LIBERAR NOVA ATUALIZAÇÃO"}
+              </button>
+              <p className="text-[10px] tracking-widest uppercase text-muted-foreground text-center">
+                Só após liberar, a extensão dos clientes recebe as mudanças.
+              </p>
+            </div>
           </div>
 
           {/* ESSÊNCIA VISUAL */}
