@@ -1,0 +1,34 @@
+{
+  "version": "5.2.0",
+  "lastUpdated": "2026-07-09",
+  "theme": {
+    "bg": "#1a3a2a",
+    "bgItem": "rgba(255,255,255,0.06)",
+    "bgActive": "rgba(74,222,128,0.18)",
+    "accent": "#4ade80",
+    "accentDim": "rgba(74,222,128,0.55)",
+    "text": "#e2ffd6",
+    "textMuted": "rgba(226,255,214,0.55)",
+    "border": "rgba(74,222,128,0.18)",
+    "toastBg": "#111c16",
+    "toastBorder": "#4ade80"
+  },
+  "notifications": [],
+  "sounds": {
+    "welcome": "https://cdn.freesound.org/previews/275/275673_5123851-lq.mp3",
+    "chat": "https://cdn.freesound.org/previews/411/411456_5123851-lq.mp3",
+    "success": "https://cdn.freesound.org/previews/522/522104_5123851-lq.mp3"
+  },
+  "commands": {
+    "remove_watermark": "try { document.querySelectorAll('[class*=\"watermark\"],[class*=\"badge\"],[data-testid*=\"watermark\"]').forEach(function(el){var t=el.textContent||'';if(t.includes('Lovable')||t.includes('lovable'))el.style.display='none';}); document.querySelectorAll('*').forEach(function(el){if(el.children.length===0&&el.textContent.trim()==='Made with Lovable')el.style.display='none';}); console.log('[UEDA] Marca removida'); } catch(e) {}",
+    "update_runtime": "window.__uedaBootstrapped=false;var s=document.querySelector('script[data-ueda-loader]');if(s)s.remove();location.reload();"
+  },
+  "menu": [
+    { "id": "account",    "icon": "user",    "label": "Minha Conta",      "type": "info" },
+    { "id": "chat",       "icon": "toggle",  "label": "Chat Padrão",      "type": "toggle", "storeKey": "enabled" },
+    { "id": "sound",      "icon": "sound",   "label": "Som",              "type": "toggle", "storeKey": "soundEnabled" },
+    { "id": "watermark",  "icon": "edit",    "label": "Remover Marca",    "type": "command", "command": "remove_watermark" },
+    { "id": "update",     "icon": "refresh", "label": "Atualizar",        "type": "command", "command": "update_runtime" },
+    { "id": "support",    "icon": "help",    "label": "Suporte WhatsApp", "type": "link", "url": "https://wa.me/5577999134858" }
+  ]
+}
