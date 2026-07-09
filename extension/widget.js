@@ -209,6 +209,34 @@
     }
   }
 
+  function showReleaseNotification(version, changelog) {
+    try {
+      if (document.querySelector('.ueda-release-modal')) return;
+      const overlay = document.createElement('div');
+      overlay.className = 'ueda-modal-overlay ueda-release-modal';
+      overlay.innerHTML = `
+        <div class="ueda-modal" role="dialog" aria-modal="true" style="width:min(420px,94vw);text-align:left;">
+          <img src="${logoUrl}" alt="" class="ueda-modal-logo" style="margin:0 auto 6px;display:block;" />
+          <div class="ueda-modal-title" style="text-align:center;">NOVA ATUALIZAÇÃO DISPONÍVEL</div>
+          <div style="text-align:center;font-size:22px;font-weight:800;color:var(--ueda-accent,#1E88E5);margin:6px 0 14px;">v${version}</div>
+          <div class="ueda-release-notes" style="white-space:pre-wrap;text-align:left;background:rgba(255,255,255,0.04);padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);max-height:220px;overflow:auto;font-size:13px;line-height:1.5;color:#d9dde7;"></div>
+          <div class="ueda-modal-actions" style="margin-top:16px;">
+            <button type="button" class="ueda-modal-btn ueda-modal-cancel">Depois</button>
+            <button type="button" class="ueda-modal-btn ueda-modal-ok">Atualizar agora</button>
+          </div>
+        </div>`;
+      overlay.querySelector('.ueda-release-notes').textContent = changelog || 'Melhorias e correções.';
+      const close = () => overlay.remove();
+      overlay.querySelector('.ueda-modal-cancel').addEventListener('click', close);
+      overlay.querySelector('.ueda-modal-ok').addEventListener('click', () => {
+        close();
+        fetchUpdateConfig({ announce: true }).catch(() => {});
+      });
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+      document.body.appendChild(overlay);
+    } catch (e) {}
+  }
+
   async function fetchUpdateConfig({ announce = false } = {}) {
     const currentVersion = chrome.runtime.getManifest().version || '0.0.0';
     const response = await fetch(UPDATE_ENDPOINT, {
@@ -221,9 +249,16 @@
     if (cfg && typeof cfg.core_js === 'string') injectRemoteCoreJs(cfg.core_js);
     chrome.storage.local.set({ uedaRemoteConfig: cfg, uedaLastSyncAt: Date.now() });
 
-    const latest = cfg && (cfg.version || (cfg.release && cfg.release.version));
+    const rel = cfg && cfg.release;
+    const latest = cfg && (cfg.version || (rel && rel.version));
     if (latest && cmpVer(latest, currentVersion) > 0) {
       showUpdateBadge(latest);
+      chrome.storage.local.get(['uedaSeenReleaseVersion'], (r) => {
+        if (r.uedaSeenReleaseVersion !== latest) {
+          showReleaseNotification(latest, rel && rel.changelog);
+          chrome.storage.local.set({ uedaSeenReleaseVersion: latest });
+        }
+      });
       if (announce) uedaToast(`Nova versão ${latest} disponível`, 'info', 4200);
     } else if (announce) {
       uedaToast('Extensão sincronizada com o servidor', 'success');
