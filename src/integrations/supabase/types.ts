@@ -121,18 +121,21 @@ export type Database = {
       }
       settings: {
         Row: {
+          draft_value: string | null
           id: string
           key: string
           updated_at: string
           value: string
         }
         Insert: {
+          draft_value?: string | null
           id?: string
           key: string
           updated_at?: string
           value?: string
         }
         Update: {
+          draft_value?: string | null
           id?: string
           key?: string
           updated_at?: string
