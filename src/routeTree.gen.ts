@@ -13,7 +13,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSkillsRouteImport } from './routes/_authenticated/skills'
-import { Route as AuthenticatedReleasesRouteImport } from './routes/_authenticated/releases'
 import { Route as AuthenticatedPreviewRouteImport } from './routes/_authenticated/preview'
 import { Route as AuthenticatedLicencasRouteImport } from './routes/_authenticated/licencas'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -36,11 +35,6 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedSkillsRoute = AuthenticatedSkillsRouteImport.update({
   id: '/skills',
   path: '/skills',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedReleasesRoute = AuthenticatedReleasesRouteImport.update({
-  id: '/releases',
-  path: '/releases',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPreviewRoute = AuthenticatedPreviewRouteImport.update({
@@ -72,7 +66,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/licencas': typeof AuthenticatedLicencasRoute
   '/preview': typeof AuthenticatedPreviewRoute
-  '/releases': typeof AuthenticatedReleasesRoute
   '/skills': typeof AuthenticatedSkillsRoute
 }
 export interface FileRoutesByTo {
@@ -82,7 +75,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/licencas': typeof AuthenticatedLicencasRoute
   '/preview': typeof AuthenticatedPreviewRoute
-  '/releases': typeof AuthenticatedReleasesRoute
   '/skills': typeof AuthenticatedSkillsRoute
 }
 export interface FileRoutesById {
@@ -94,7 +86,6 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/licencas': typeof AuthenticatedLicencasRoute
   '/_authenticated/preview': typeof AuthenticatedPreviewRoute
-  '/_authenticated/releases': typeof AuthenticatedReleasesRoute
   '/_authenticated/skills': typeof AuthenticatedSkillsRoute
 }
 export interface FileRouteTypes {
@@ -106,7 +97,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/licencas'
     | '/preview'
-    | '/releases'
     | '/skills'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -116,7 +106,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/licencas'
     | '/preview'
-    | '/releases'
     | '/skills'
   id:
     | '__root__'
@@ -127,7 +116,6 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/licencas'
     | '/_authenticated/preview'
-    | '/_authenticated/releases'
     | '/_authenticated/skills'
   fileRoutesById: FileRoutesById
 }
@@ -167,13 +155,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSkillsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/releases': {
-      id: '/_authenticated/releases'
-      path: '/releases'
-      fullPath: '/releases'
-      preLoaderRoute: typeof AuthenticatedReleasesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/preview': {
       id: '/_authenticated/preview'
       path: '/preview'
@@ -210,7 +191,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLicencasRoute: typeof AuthenticatedLicencasRoute
   AuthenticatedPreviewRoute: typeof AuthenticatedPreviewRoute
-  AuthenticatedReleasesRoute: typeof AuthenticatedReleasesRoute
   AuthenticatedSkillsRoute: typeof AuthenticatedSkillsRoute
 }
 
@@ -219,7 +199,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLicencasRoute: AuthenticatedLicencasRoute,
   AuthenticatedPreviewRoute: AuthenticatedPreviewRoute,
-  AuthenticatedReleasesRoute: AuthenticatedReleasesRoute,
   AuthenticatedSkillsRoute: AuthenticatedSkillsRoute,
 }
 

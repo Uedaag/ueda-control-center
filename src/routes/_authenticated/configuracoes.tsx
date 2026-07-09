@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { saveAs } from "file-saver";
 import {
   Palette, Save, RotateCcw, Type, MessageSquare, FileText, Image as ImageIcon,
-  Globe, Mail, Phone, RefreshCw, Upload, Download,
+  Globe, Mail, Phone, RefreshCw, Upload, Download, Rocket, CircleDot,
 } from "lucide-react";
 import logoAsset from "@/assets/ueda-logo.png.asset.json";
 import {
@@ -20,7 +20,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   component: Page,
-  head: () => ({ meta: [{ title: "Identidade Visual — UEDA EX 5.0" }] }),
+  head: () => ({ meta: [{ title: "Configurações — UEDA EX 5.0" }] }),
 });
 
 const DEFAULTS = {
@@ -44,54 +44,100 @@ type Skill = ExtensionPreviewSkill;
 const SETTING_KEYS = Object.keys(DEFAULTS);
 
 function Page() {
-  const [vals, setVals] = useState<Vals>(DEFAULTS);
-  const [initial, setInitial] = useState<Vals>(DEFAULTS);
+  const [vals, setVals] = useState<Vals>(DEFAULTS);           // draft (form)
+  const [initial, setInitial] = useState<Vals>(DEFAULTS);     // last saved draft
+  const [published, setPublished] = useState<Vals>(DEFAULTS); // live on extension
   const [skills, setSkills] = useState<Skill[]>([]);
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  
+  const [version, setVersion] = useState("5.1");
+  const [changelog, setChangelog] = useState("");
 
   useEffect(() => {
     Promise.all([
-      supabase.from("settings").select("key,value").in("key", SETTING_KEYS),
+      supabase.from("settings").select("key,value,draft_value").in("key", [...SETTING_KEYS, "ext_version"]),
       supabase
         .from("skills")
         .select("id,name,description,icon,payload,display_order")
         .eq("status", true)
         .order("display_order", { ascending: true }),
     ]).then(([settingsResult, skillsResult]) => {
-      const v: Vals = { ...DEFAULTS };
-      (settingsResult.data || []).forEach((r: any) => { if (r.key in DEFAULTS) v[r.key] = r.value ?? ""; });
-      setVals(v); setInitial(v);
+      const draft: Vals = { ...DEFAULTS };
+      const pub: Vals = { ...DEFAULTS };
+      let curVer = "5.1";
+      (settingsResult.data || []).forEach((r: any) => {
+        if (r.key === "ext_version") { curVer = r.value || "5.1"; return; }
+        if (r.key in DEFAULTS) {
+          pub[r.key] = r.value ?? "";
+          draft[r.key] = (r.draft_value ?? r.value) ?? "";
+        }
+      });
+      setVals(draft); setInitial(draft); setPublished(pub);
+      const p = curVer.split(".").map((n) => parseInt(n, 10) || 0);
+      p[p.length - 1] = (p[p.length - 1] || 0) + 1;
+      setVersion(p.join("."));
       setSkills((skillsResult.data as Skill[]) || []);
     });
   }, []);
 
   const set = (k: string, v: string) => setVals((s) => ({ ...s, [k]: v }));
 
-  const persistSettings = async (nextVals: Vals, showToast = true) => {
+  const hasDraftChanges = useMemo(
+    () => SETTING_KEYS.some((k) => (vals[k] ?? "") !== (published[k] ?? "")),
+    [vals, published]
+  );
+
+  const saveDraft = async (showToast = true) => {
     setSaving(true);
-    const rows = Object.entries(nextVals).map(([key, value]) => ({ key, value }));
+    const rows = Object.entries(vals).map(([key, value]) => ({ key, draft_value: value }));
     const { error } = await supabase.from("settings").upsert(rows, { onConflict: "key" });
     setSaving(false);
-    if (error) {
-      toast.error(error.message);
-      return false;
-    }
-    setInitial(nextVals);
-    if (showToast) toast.success("Alterações salvas e sincronizadas com a prévia");
+    if (error) { toast.error(error.message); return false; }
+    setInitial(vals);
+    if (showToast) toast.success("Rascunho salvo — visível apenas na prévia");
     return true;
   };
 
-  const save = () => persistSettings(vals);
+  const publishRelease = async () => {
+    const v = version.trim();
+    if (!v) return toast.error("Informe o número da versão");
+    setPublishing(true);
+    // 1) garante draft salvo
+    const rows = Object.entries(vals).map(([key, value]) => ({ key, value, draft_value: value }));
+    const { error: upErr } = await supabase.from("settings").upsert(rows, { onConflict: "key" });
+    if (upErr) { setPublishing(false); return toast.error(upErr.message); }
+    // 2) desativa releases antigas + cria nova
+    await supabase.from("releases").update({ is_active: false }).neq("id", "00000000-0000-0000-0000-000000000000");
+    const { error: relErr } = await supabase.from("releases").insert({
+      version: v, min_version: v, download_url: "", changelog, force_update: false, is_active: true,
+    });
+    if (relErr) { setPublishing(false); return toast.error(relErr.message); }
+    // 3) bump da versão + flag de notificação
+    await supabase.from("settings").upsert(
+      [
+        { key: "ext_version", value: v, draft_value: v },
+        { key: "min_version", value: v, draft_value: v },
+        { key: "notify_update", value: "true", draft_value: "true" },
+      ],
+      { onConflict: "key" },
+    );
+    setPublished({ ...vals });
+    setChangelog("");
+    const p = v.split(".").map((n) => parseInt(n, 10) || 0);
+    p[p.length - 1] = (p[p.length - 1] || 0) + 1;
+    setVersion(p.join("."));
+    setPublishing(false);
+    toast.success(`Versão ${v} liberada — extensão será atualizada`);
+  };
 
-  const reset = () => { setVals(initial); toast("Alterações revertidas"); };
+  const reset = () => { setVals(published); toast("Rascunho descartado — voltou ao publicado"); };
 
   const accent = useMemo(() => vals.brand_color || "#4fa1c9", [vals.brand_color]);
 
   const download = async () => {
     setDownloading(true);
-    const ok = await persistSettings(vals, false);
+    const ok = await saveDraft(false);
     if (ok) await downloadExtension(vals);
     setDownloading(false);
   };
