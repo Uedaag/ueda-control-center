@@ -152,38 +152,95 @@ window.__uedaWidgetInit = function() {
     }).join('');
   }
 
-  // Locate the chat input on the host page and send text (optionally auto-enter)
-  function injectPromptIntoChat(text, autoSend) {
-    if (!text) return;
-    // Priority: focused editable, then last textarea/contenteditable on page
-    let el = document.activeElement;
-    const isEditable = (n) => n && (n.tagName === 'TEXTAREA' || n.tagName === 'INPUT' || n.getAttribute && n.getAttribute('contenteditable') === 'true');
-    if (!isEditable(el)) {
-      const candidates = Array.from(document.querySelectorAll('textarea, [contenteditable="true"]'));
-      el = candidates[candidates.length - 1] || null;
+  // Locate the chat input on the host page and send text (optionally auto-submit)
+  function findChatTextarea() {
+    // 1) Textarea whose placeholder matches common chat patterns (Lovable = "Pergunte à Lovable...")
+    const textareas = Array.from(document.querySelectorAll('textarea'));
+    const byPlaceholder = textareas.find(t => {
+      const ph = (t.getAttribute('placeholder') || '').toLowerCase();
+      return ph.includes('pergunt') || ph.includes('lovable') || ph.includes('ask') || ph.includes('message') || ph.includes('mensagem') || ph.includes('chat');
+    });
+    if (byPlaceholder) return byPlaceholder;
+
+    // 2) Visible textarea inside a form (chat composer usually has form submit)
+    const inForm = textareas.find(t => t.closest('form') && t.offsetParent !== null);
+    if (inForm) return inForm;
+
+    // 3) Last visible textarea on page
+    const visible = textareas.filter(t => t.offsetParent !== null);
+    if (visible.length) return visible[visible.length - 1];
+
+    // 4) Fallback: any contenteditable (ProseMirror etc.)
+    const editable = document.querySelector('[contenteditable="true"]');
+    return editable || null;
+  }
+
+  function findSendButton(fromEl) {
+    // Look near the textarea for a submit button
+    const scopes = [];
+    if (fromEl) {
+      let p = fromEl.parentElement;
+      for (let i = 0; i < 5 && p; i++) { scopes.push(p); p = p.parentElement; }
     }
+    scopes.push(document);
+    for (const scope of scopes) {
+      const btns = Array.from(scope.querySelectorAll('button, [role="button"]'));
+      // Prefer explicit submit / aria labels
+      const byLabel = btns.find(b => {
+        const al = (b.getAttribute('aria-label') || '').toLowerCase();
+        return al.includes('enviar') || al.includes('send') || al === 'submit';
+      });
+      if (byLabel && !byLabel.disabled) return byLabel;
+      const bySubmit = btns.find(b => b.getAttribute('type') === 'submit' && !b.disabled);
+      if (bySubmit) return bySubmit;
+    }
+    return null;
+  }
+
+  function injectPromptIntoChat(text, autoSend) {
+    if (!text) { console.log('[UEDA] prompt vazio'); return; }
+    const el = findChatTextarea();
     if (!el) { console.log('[UEDA] Chat input não encontrado'); return; }
     el.focus();
 
     if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
-      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')
-        || Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
-      setter && setter.set ? setter.set.call(el, text) : (el.value = text);
+      const proto = el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+      const setter = Object.getOwnPropertyDescriptor(proto, 'value');
+      if (setter && setter.set) setter.set.call(el, text); else el.value = text;
       el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
     } else {
-      // contenteditable
-      el.innerText = text;
-      el.dispatchEvent(new InputEvent('input', { bubbles: true, data: text, inputType: 'insertText' }));
+      // contenteditable — ProseMirror needs a real beforeinput/insertText
+      el.focus();
+      try { document.execCommand('selectAll', false, undefined); } catch(_) {}
+      try { document.execCommand('insertText', false, text); } catch(_) {
+        el.innerText = text;
+        el.dispatchEvent(new InputEvent('input', { bubbles: true, data: text, inputType: 'insertText' }));
+      }
     }
 
-    if (autoSend) {
-      setTimeout(() => {
-        const evInit = { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true };
-        el.dispatchEvent(new KeyboardEvent('keydown', evInit));
-        el.dispatchEvent(new KeyboardEvent('keypress', evInit));
-        el.dispatchEvent(new KeyboardEvent('keyup', evInit));
-      }, 60);
-    }
+    if (!autoSend) return;
+
+    setTimeout(() => {
+      // Preferred: click the send button (React-friendly)
+      const btn = findSendButton(el);
+      if (btn) {
+        btn.click();
+        console.log('[UEDA] Skill enviada via botão de submit');
+        return;
+      }
+      // Fallback: try submitting the enclosing form
+      const form = el.closest && el.closest('form');
+      if (form) {
+        try { form.requestSubmit ? form.requestSubmit() : form.submit(); console.log('[UEDA] Skill enviada via form.submit'); return; } catch(_) {}
+      }
+      // Last resort: dispatch Enter
+      const evInit = { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true };
+      el.dispatchEvent(new KeyboardEvent('keydown', evInit));
+      el.dispatchEvent(new KeyboardEvent('keypress', evInit));
+      el.dispatchEvent(new KeyboardEvent('keyup', evInit));
+      console.log('[UEDA] Skill enviada via Enter simulado');
+    }, 80);
   }
 
   // Delegate skill clicks (parent expand / child execute)
