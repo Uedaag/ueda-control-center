@@ -7,11 +7,10 @@
     if (window.__uedaBootstrapped) return;
     window.__uedaBootstrapped = true;
 
-    // ---- Fonte do runtime: jsDelivr CDN (GitHub → CDN com MIME correto) ----
-    // raw.githubusercontent.com serve como text/plain (bloqueado pelo browser)
-    // jsDelivr serve com application/javascript (funciona corretamente)
-    var RUNTIME_URL = 'https://cdn.jsdelivr.net/gh/Uedaag/ueda-control-center@main/extension/widget-runtime.js';
-    var CONFIG_URL  = 'https://cdn.jsdelivr.net/gh/Uedaag/ueda-control-center@main/extension/config.json';
+    // ---- Fonte do runtime: Lovable Cloud Edge Function (servidor deste projeto) ----
+    // Alterações em supabase/functions/widget-js/runtime.js aparecem aqui automaticamente após F5.
+    var RUNTIME_URL = 'https://keqgzvcahsvseowfowwu.supabase.co/functions/v1/widget-js';
+    var CONFIG_URL  = 'https://keqgzvcahsvseowfowwu.supabase.co/functions/v1/widget-js?config=1';
 
 
     // ---- Info da extensão exposta ao page world via dataset ----
