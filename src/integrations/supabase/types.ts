@@ -145,39 +145,59 @@ export type Database = {
       }
       skills: {
         Row: {
+          action_type: string
+          auto_send: boolean
           created_at: string
           description: string | null
           display_order: number
           icon: string | null
           id: string
           name: string
+          parent_id: string | null
           payload: string
+          prompt_text: string
           status: boolean
           updated_at: string
         }
         Insert: {
+          action_type?: string
+          auto_send?: boolean
           created_at?: string
           description?: string | null
           display_order?: number
           icon?: string | null
           id?: string
           name: string
+          parent_id?: string | null
           payload?: string
+          prompt_text?: string
           status?: boolean
           updated_at?: string
         }
         Update: {
+          action_type?: string
+          auto_send?: boolean
           created_at?: string
           description?: string | null
           display_order?: number
           icon?: string | null
           id?: string
           name?: string
+          parent_id?: string | null
           payload?: string
+          prompt_text?: string
           status?: boolean
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "skills_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
