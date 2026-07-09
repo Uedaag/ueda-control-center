@@ -84,15 +84,15 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     inset 0 0 30px rgba(29, 175, 216, 0.05);
 
-  /* Big rounded pill */
-  border-radius: 40px;
-  padding: 18px 10px;
+  /* Big rounded pill — slim */
+  border-radius: 34px;
+  padding: 12px 6px;
 
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 6px;
-  width: 68px;
+  gap: 4px;
+  width: 54px;
   overflow: hidden;
 
   /* Hidden by default */
@@ -116,9 +116,9 @@
 }
 
 #ueda-widget-container.ueda-open.ueda-expanded .ueda-widget-menu {
-  width: 232px;
-  border-radius: 32px;
-  padding: 18px 14px;
+  width: 210px;
+  border-radius: 28px;
+  padding: 14px 12px;
 }
 
 /* ============================================
