@@ -24,6 +24,22 @@ function json(body: unknown, status = 200) {
   });
 }
 
+function mapPublishedSkill(row: any) {
+  return {
+    id: row.id,
+    name: row.published_name || row.name || "Skill",
+    description: row.published_description ?? row.description ?? "",
+    icon: row.published_icon || row.icon || "Sparkles",
+    payload: row.published_payload ?? row.payload ?? "",
+    display_order: row.published_display_order ?? row.display_order ?? 0,
+    parent_id: row.published_parent_id ?? row.parent_id ?? null,
+    action_type: row.published_action_type || row.action_type || "chat_prompt",
+    auto_send: row.published_auto_send ?? row.auto_send ?? false,
+    prompt_text: row.published_prompt_text ?? row.prompt_text ?? "",
+    status: !!row.published_status,
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
@@ -46,14 +62,14 @@ Deno.serve(async (req) => {
     const settings: Record<string, string> = {};
     (settingsRows || []).forEach((r: any) => (settings[r.key] = r.value));
 
-    // Public updates check — no license required. Extension refreshes brand config + active skills.
+    // Public updates check — no license required. Returns only the published payload.
     const url = new URL(req.url);
     if (url.searchParams.get("check") === "updates") {
       const { data: activeSkills } = await supabase
         .from("skills")
-        .select("id,name,description,icon,payload,display_order,parent_id,action_type,auto_send,prompt_text")
-        .eq("status", true)
-        .order("display_order", { ascending: true });
+        .select("id,name,description,icon,payload,display_order,parent_id,action_type,auto_send,prompt_text,published_name,published_description,published_icon,published_status,published_payload,published_display_order,published_parent_id,published_action_type,published_auto_send,published_prompt_text")
+        .eq("published_status", true)
+        .order("published_display_order", { ascending: true });
 
       const { data: rel } = await supabase
         .from("releases")
@@ -105,7 +121,7 @@ Deno.serve(async (req) => {
             "document.querySelectorAll('a[href*=\"lovable.dev\"], [class*=\"badge\"], [class*=\"watermark\"]').forEach((el)=>{const txt=(el.textContent||'').toLowerCase(); if(txt.includes('lovable')||txt.includes('made with')) el.style.display='none';});",
         },
         core_js: settings.core_js || "",
-        skills: activeSkills || [],
+        skills: (activeSkills || []).map(mapPublishedSkill),
       });
     }
 
@@ -199,11 +215,12 @@ Deno.serve(async (req) => {
 
     const { data: skills } = await supabase
       .from("skills")
-      .select("id,name,description,icon,payload,display_order")
-      .eq("status", true)
-      .order("display_order", { ascending: true });
+      .select("id,name,description,icon,payload,display_order,parent_id,action_type,auto_send,prompt_text,published_name,published_description,published_icon,published_status,published_payload,published_display_order,published_parent_id,published_action_type,published_auto_send,published_prompt_text")
+      .eq("published_status", true)
+      .order("published_display_order", { ascending: true });
 
-    const activeSkill = skills && skills.length ? skills[0] : null;
+    const publishedSkills = (skills || []).map(mapPublishedSkill);
+    const activeSkill = publishedSkills.length ? publishedSkills[0] : null;
 
     return json({
       ok: true,
@@ -215,7 +232,7 @@ Deno.serve(async (req) => {
         widget_subtitle: settings.widget_subtitle || "",
       },
       core_js: "// core payload placeholder",
-      skills: skills || [],
+      skills: publishedSkills,
       active_skill: activeSkill
         ? { name: activeSkill.name, payload: activeSkill.payload }
         : null,

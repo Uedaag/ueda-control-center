@@ -41,6 +41,24 @@ const DEFAULTS = {
 type Vals = Record<string, string>;
 type Skill = ExtensionPreviewSkill;
 
+type DbSkill = Skill & {
+  status: boolean;
+  parent_id: string | null;
+  action_type: string;
+  auto_send: boolean;
+  prompt_text: string;
+  published_name: string | null;
+  published_description: string | null;
+  published_icon: string | null;
+  published_status: boolean;
+  published_payload: string | null;
+  published_display_order: number | null;
+  published_parent_id: string | null;
+  published_action_type: string | null;
+  published_auto_send: boolean | null;
+  published_prompt_text: string | null;
+};
+
 const SETTING_KEYS = Object.keys(DEFAULTS);
 
 function Page() {
@@ -48,6 +66,7 @@ function Page() {
   const [initial, setInitial] = useState<Vals>(DEFAULTS);     // last saved draft
   const [published, setPublished] = useState<Vals>(DEFAULTS); // live on extension
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [skillRows, setSkillRows] = useState<DbSkill[]>([]);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -59,8 +78,7 @@ function Page() {
       supabase.from("settings").select("key,value,draft_value").in("key", [...SETTING_KEYS, "ext_version"]),
       supabase
         .from("skills")
-        .select("id,name,description,icon,payload,display_order")
-        .eq("status", true)
+        .select("*")
         .order("display_order", { ascending: true }),
     ]).then(([settingsResult, skillsResult]) => {
       const draft: Vals = { ...DEFAULTS };
@@ -77,15 +95,33 @@ function Page() {
       const p = curVer.split(".").map((n) => parseInt(n, 10) || 0);
       p[p.length - 1] = (p[p.length - 1] || 0) + 1;
       setVersion(p.join("."));
-      setSkills((skillsResult.data as Skill[]) || []);
+      const rows = (skillsResult.data as DbSkill[]) || [];
+      setSkillRows(rows);
+      setSkills(rows.filter((skill) => skill.status));
     });
   }, []);
 
   const set = (k: string, v: string) => setVals((s) => ({ ...s, [k]: v }));
 
+  const hasSkillDraftChanges = useMemo(
+    () => skillRows.some((skill) => (
+      skill.name !== (skill.published_name ?? skill.name) ||
+      (skill.description ?? "") !== (skill.published_description ?? skill.description ?? "") ||
+      (skill.icon ?? "") !== (skill.published_icon ?? skill.icon ?? "") ||
+      skill.status !== skill.published_status ||
+      (skill.payload ?? "") !== (skill.published_payload ?? skill.payload ?? "") ||
+      (skill.display_order ?? 0) !== (skill.published_display_order ?? skill.display_order ?? 0) ||
+      (skill.parent_id ?? null) !== (skill.published_parent_id ?? skill.parent_id ?? null) ||
+      skill.action_type !== (skill.published_action_type ?? skill.action_type) ||
+      skill.auto_send !== (skill.published_auto_send ?? skill.auto_send) ||
+      (skill.prompt_text ?? "") !== (skill.published_prompt_text ?? skill.prompt_text ?? "")
+    )),
+    [skillRows]
+  );
+
   const hasDraftChanges = useMemo(
-    () => SETTING_KEYS.some((k) => (vals[k] ?? "") !== (published[k] ?? "")),
-    [vals, published]
+    () => SETTING_KEYS.some((k) => (vals[k] ?? "") !== (published[k] ?? "")) || hasSkillDraftChanges,
+    [vals, published, hasSkillDraftChanges]
   );
 
   const saveDraft = async (showToast = true) => {
@@ -107,13 +143,35 @@ function Page() {
     const rows = Object.entries(vals).map(([key, value]) => ({ key, value, draft_value: value }));
     const { error: upErr } = await supabase.from("settings").upsert(rows, { onConflict: "key" });
     if (upErr) { setPublishing(false); return toast.error(upErr.message); }
-    // 2) desativa releases antigas + cria nova
+    // 2) publica o rascunho atual das skills
+    const { data: latestSkills, error: skillsLoadErr } = await supabase.from("skills").select("*");
+    if (skillsLoadErr) { setPublishing(false); return toast.error(skillsLoadErr.message); }
+    const skillPublishes = ((latestSkills as DbSkill[]) || []).map((skill) =>
+      supabase.from("skills").update({
+        published_name: skill.name,
+        published_description: skill.description ?? "",
+        published_icon: skill.icon ?? "Sparkles",
+        published_status: skill.status,
+        published_payload: skill.payload ?? "",
+        published_display_order: skill.display_order ?? 0,
+        published_parent_id: skill.parent_id ?? null,
+        published_action_type: skill.action_type ?? "chat_prompt",
+        published_auto_send: skill.auto_send ?? false,
+        published_prompt_text: skill.prompt_text ?? "",
+        published_at: new Date().toISOString(),
+      }).eq("id", skill.id)
+    );
+    const skillResults = await Promise.all(skillPublishes);
+    const skillError = skillResults.find((result) => result.error)?.error;
+    if (skillError) { setPublishing(false); return toast.error(skillError.message); }
+
+    // 3) desativa releases antigas + cria nova
     await supabase.from("releases").update({ is_active: false }).neq("id", "00000000-0000-0000-0000-000000000000");
     const { error: relErr } = await supabase.from("releases").insert({
       version: v, min_version: v, download_url: "", changelog, force_update: false, is_active: true,
     });
     if (relErr) { setPublishing(false); return toast.error(relErr.message); }
-    // 3) bump da versão + flag de notificação
+    // 4) bump da versão + flag de notificação
     await supabase.from("settings").upsert(
       [
         { key: "ext_version", value: v, draft_value: v },
@@ -123,12 +181,27 @@ function Page() {
       { onConflict: "key" },
     );
     setPublished({ ...vals });
+    const publishedSkillRows = ((latestSkills as DbSkill[]) || []).map((skill) => ({
+      ...skill,
+      published_name: skill.name,
+      published_description: skill.description ?? "",
+      published_icon: skill.icon ?? "Sparkles",
+      published_status: skill.status,
+      published_payload: skill.payload ?? "",
+      published_display_order: skill.display_order ?? 0,
+      published_parent_id: skill.parent_id ?? null,
+      published_action_type: skill.action_type ?? "chat_prompt",
+      published_auto_send: skill.auto_send ?? false,
+      published_prompt_text: skill.prompt_text ?? "",
+    }));
+    setSkillRows(publishedSkillRows);
+    setSkills(publishedSkillRows.filter((skill) => skill.status));
     setChangelog("");
     const p = v.split(".").map((n) => parseInt(n, 10) || 0);
     p[p.length - 1] = (p[p.length - 1] || 0) + 1;
     setVersion(p.join("."));
     setPublishing(false);
-    toast.success(`Versão ${v} liberada — extensão será atualizada`);
+    toast.success(`Versão ${v} liberada — clientes atualizam pelo botão da extensão`);
   };
 
   const reset = () => { setVals(published); toast("Rascunho descartado — voltou ao publicado"); };

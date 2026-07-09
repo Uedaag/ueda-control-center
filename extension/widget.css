@@ -217,6 +217,40 @@
 }
 .ueda-menu-item.is-active svg { stroke: var(--ueda-accent); }
 
+.ueda-menu-item.ueda-update-pending {
+  color: #ffffff;
+  background: color-mix(in oklab, var(--ueda-accent) 24%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ueda-accent) 45%, transparent);
+}
+.ueda-menu-item.ueda-update-pending svg { stroke: var(--ueda-accent); }
+
+#ueda-update-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translate(-50%, 10px);
+  z-index: 2147483647;
+  min-width: 176px;
+  max-width: min(86vw, 320px);
+  padding: 11px 16px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklab, var(--ueda-accent) 45%, transparent);
+  background: rgba(14, 18, 28, 0.92);
+  color: #ffffff;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.34);
+  font-family: 'Montserrat', 'Inter', -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease;
+}
+#ueda-update-toast.ueda-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
 .ueda-menu-item svg {
   width: 18px; height: 18px;
   stroke: currentColor; stroke-width: 1.85; fill: none;

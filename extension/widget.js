@@ -33,7 +33,7 @@ window.__uedaWidgetInit = function() {
 
         <div class="ueda-menu-item" id="ueda-menu-update">
           <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-          <span class="ueda-item-text">Atualizar extensão</span>
+          <span class="ueda-item-text" id="ueda-update-text">Atualizar extensão</span>
         </div>
 
         <a href="https://wa.me/5511999999999" target="_blank" class="ueda-menu-item" style="text-decoration:none;">
@@ -65,6 +65,7 @@ window.__uedaWidgetInit = function() {
   const statusBtn  = document.getElementById('ueda-menu-status');
   const statusText = document.getElementById('ueda-status-text');
   const updateBtn  = document.getElementById('ueda-menu-update');
+  const updateText = document.getElementById('ueda-update-text');
   const soundBtn   = document.getElementById('ueda-menu-sound');
   const soundText  = document.getElementById('ueda-sound-text');
   const rmvMarkBtn = document.getElementById('ueda-menu-remove-watermark');
@@ -73,6 +74,8 @@ window.__uedaWidgetInit = function() {
   let isSoundEnabled = true;
   let hasPlayedWelcome = false;
   let chatGlowEl = null;
+  let pendingUpdateData = null;
+  const FALLBACK_CONFIG_VERSION = '5.0.0';
   
   // Remote Server Config
   let remoteConfig = {
@@ -87,6 +90,30 @@ window.__uedaWidgetInit = function() {
 
   // ---------- Server endpoint (Lovable Cloud / Supabase) ----------
   const SERVER_URL = 'https://keqgzvcahsvseowfowwu.supabase.co/functions/v1/fn-sv03';
+
+  function showUedaToast(message) {
+    const old = document.getElementById('ueda-update-toast');
+    if (old) old.remove();
+    const toast = document.createElement('div');
+    toast.id = 'ueda-update-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('ueda-visible'));
+    setTimeout(() => {
+      toast.classList.remove('ueda-visible');
+      setTimeout(() => toast.remove(), 240);
+    }, 2800);
+  }
+
+  function setUpdatePending(hasUpdate) {
+    if (!updateBtn) return;
+    updateBtn.classList.toggle('ueda-update-pending', !!hasUpdate);
+    if (updateText) updateText.textContent = hasUpdate ? 'Atualização disponível' : 'Atualizar extensão';
+  }
+
+  function getCurrentConfigVersion(store) {
+    return store.uedaAppliedVersion || store.appliedVersion || FALLBACK_CONFIG_VERSION;
+  }
 
   // Fetch configs from server (legacy sounds/commands)
   fetch('https://preview-panel-buddy.lovable.app/config.json')
@@ -295,28 +322,78 @@ window.__uedaWidgetInit = function() {
     } catch (e) { console.log('[UEDA] applyServerLayout error', e); }
   }
 
-  function loadSkillsFromServer() {
+  function applyPublishedPayload(data) {
+    if (!data || !data.ok) return;
+    applyServerLayout(data);
+    if (Array.isArray(data.skills)) {
+      const active = data.skills.filter(s => (typeof s.status === 'boolean' ? s.status : s.status === 'active' || s.status == null));
+      renderSkills(active);
+    }
+  }
+
+  function loadAppliedPayload() {
+    chrome.storage.local.get(['uedaPublishedPayload', 'uedaAppliedVersion'], (r) => {
+      if (r.uedaPublishedPayload) applyPublishedPayload(r.uedaPublishedPayload);
+      checkForServerUpdate(false);
+    });
+  }
+
+  function checkForServerUpdate(notify) {
     chrome.storage.local.get(['licenseKey'], (r) => {
+      chrome.storage.local.get(['uedaAppliedVersion', 'appliedVersion'], (versionStore) => {
+      const currentVersion = getCurrentConfigVersion(versionStore);
       fetch(SERVER_URL + '?check=updates', {
-        headers: { 'x-license-key': r.licenseKey || '', 'x-ext-version': '5.0.0' }
+        headers: { 'x-license-key': r.licenseKey || '', 'x-ext-version': currentVersion }
       })
         .then(res => res.json())
         .then(data => {
-          applyServerLayout(data);
-          if (data && Array.isArray(data.skills)) {
-            const active = data.skills.filter(s => (typeof s.status === 'boolean' ? s.status : s.status === 'active' || s.status == null));
-            renderSkills(active);
-          }
-          if (data && data.update_required && data.release && data.release.download_url) {
-            console.log('[UEDA] Nova versão disponível:', data.version, data.release.download_url);
+          const serverVersion = data && data.version ? String(data.version) : '';
+          const hasUpdate = !!(data && data.ok && (data.update_required || (serverVersion && serverVersion !== String(currentVersion))));
+          pendingUpdateData = hasUpdate ? data : null;
+          setUpdatePending(hasUpdate);
+          if (hasUpdate && notify !== false) {
+            showUedaToast('Nova atualização disponível');
           }
         })
         .catch(err => console.log('[UEDA] Falha ao carregar skills:', err));
+      });
     });
   }
-  loadSkillsFromServer();
-  setInterval(loadSkillsFromServer, 5 * 60 * 1000);
-  window.addEventListener('focus', loadSkillsFromServer);
+  function applyPendingUpdate() {
+    chrome.storage.local.get(['licenseKey', 'uedaAppliedVersion', 'appliedVersion'], (r) => {
+      const currentVersion = getCurrentConfigVersion(r);
+      const useCached = pendingUpdateData && pendingUpdateData.ok;
+      const applyData = (data) => {
+        if (!data || !data.ok) {
+          showUedaToast('Nenhuma atualização disponível');
+          return;
+        }
+        applyPublishedPayload(data);
+        const nextVersion = data.version || currentVersion;
+        chrome.storage.local.set({
+          uedaPublishedPayload: data,
+          uedaAppliedVersion: nextVersion,
+        }, () => {
+          pendingUpdateData = null;
+          setUpdatePending(false);
+          showUedaToast('Extensão atualizada');
+        });
+      };
+      if (useCached) {
+        applyData(pendingUpdateData);
+        return;
+      }
+      fetch(SERVER_URL + '?check=updates', {
+        headers: { 'x-license-key': r.licenseKey || '', 'x-ext-version': currentVersion }
+      })
+        .then(res => res.json())
+        .then(applyData)
+        .catch(() => showUedaToast('Falha ao atualizar'));
+    });
+  }
+  loadAppliedPayload();
+  setInterval(() => checkForServerUpdate(true), 5 * 60 * 1000);
+  window.addEventListener('focus', () => checkForServerUpdate(false));
 
 
   function playSound(type) {
@@ -356,9 +433,9 @@ window.__uedaWidgetInit = function() {
 
   // ---------- Update button ----------
   if (updateBtn) {
-    updateBtn.addEventListener('click', () => {
-      try { chrome.runtime.sendMessage({ action: 'reload_extension' }); } catch (_) {}
-      setTimeout(() => window.location.reload(), 300);
+    updateBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      applyPendingUpdate();
     });
   }
 
