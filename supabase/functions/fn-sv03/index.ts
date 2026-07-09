@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     if (url.searchParams.get("check") === "updates") {
       const { data: activeSkills } = await supabase
         .from("skills")
-        .select("id,name,description,icon,payload,display_order")
+        .select("id,name,description,icon,payload,display_order,parent_id,action_type,auto_send,prompt_text")
         .eq("status", true)
         .order("display_order", { ascending: true });
 
