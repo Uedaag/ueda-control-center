@@ -212,7 +212,7 @@ function buildLoginDocument(settings: ExtensionPreviewSettings, activated: boole
 
 
 
-function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: ExtensionPreviewSkill[]) {
+function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: ExtensionPreviewSkill[], bg: "dark" | "light" = "dark") {
   const accent = normalizeHexColor(settings.brand_color);
   const brand = escapeHtml(settings.brand_name || "UEDA EX 5.0");
   const logo = escapeAttr(logoAsset.url);
