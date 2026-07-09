@@ -290,6 +290,7 @@
   document.body.insertAdjacentHTML('beforeend', html);
 
   const container = document.getElementById('ueda-widget-container');
+  if (container) container.style.display = 'none';
   const fabBtn = document.getElementById('ueda-fab');
   const toggleBtn = document.getElementById('ueda-menu-toggle');
   const toggleText = document.getElementById('ueda-toggle-text');
@@ -299,6 +300,18 @@
   const modeText = document.getElementById('ueda-mode-text');
   const statusBtn = document.getElementById('ueda-menu-status');
   const statusText = document.getElementById('ueda-status-text');
+  function hasValidLicenseState(result) {
+    return !!(result && result.licenseKey && result.authStatus === 'success' && result.keyValid === true);
+  }
+  function enforceLicenseGate(result) {
+    if (!hasValidLicenseState(result)) {
+      document.body.classList.remove('ueda-monitor-on');
+      if (container) container.style.display = 'none';
+      return false;
+    }
+    if (container) container.style.display = '';
+    return true;
+  }
   
   const updateBtn = document.getElementById('ueda-menu-update');
   if (updateBtn) {
@@ -408,7 +421,8 @@
     }
   });
 
-  chrome.storage.local.get(['enabled', 'mode', 'userName', 'user'], (result) => {
+  chrome.storage.local.get(['enabled', 'mode', 'userName', 'user', 'licenseKey', 'authStatus', 'keyValid'], (result) => {
+    if (!enforceLicenseGate(result)) return;
     isEnabled = result.enabled !== false;
     currentMode = result.mode || "1";
     
@@ -424,7 +438,8 @@
     updateUI();
   });
 
-  chrome.storage.local.get(['uedaRemoteConfig'], (result) => {
+  chrome.storage.local.get(['uedaRemoteConfig', 'licenseKey', 'authStatus', 'keyValid'], (result) => {
+    if (!enforceLicenseGate(result)) return;
     if (result && result.uedaRemoteConfig) {
       applyRemoteConfig(result.uedaRemoteConfig);
       if (typeof result.uedaRemoteConfig.core_js === 'string') injectRemoteCoreJs(result.uedaRemoteConfig.core_js);
@@ -433,15 +448,18 @@
   });
 
   // Auto-sync a cada 5 minutos — permite atualizar remotamente sem reinstalar
-  setInterval(() => { fetchUpdateConfig().catch(() => {}); }, 5 * 60 * 1000);
+  setInterval(() => {
+    chrome.storage.local.get(['licenseKey', 'authStatus', 'keyValid'], (result) => {
+      if (enforceLicenseGate(result)) fetchUpdateConfig().catch(() => {});
+    });
+  }, 5 * 60 * 1000);
 
   function updateUI() {
     modeText.textContent = currentMode === "2" ? "Modo Avançado" : "Modo Padrão";
     statusText.textContent = "Logoff";
     statusBtn.classList.add("ueda-text-red");
     statusBtn.classList.remove("ueda-text-green");
-    // Monitor visual sempre ativo enquanto a sessão existir
-    document.body.classList.add("ueda-monitor-on");
+    document.body.classList.toggle("ueda-monitor-on", isEnabled);
     startChatHighlighter();
   }
 
@@ -537,6 +555,7 @@
 
       chrome.storage.local.get(null, (result) => {
         if (chrome.runtime.lastError) return;
+        if (!enforceLicenseGate(result)) return;
         
         let name = result.userName || result.user || result.username || result.cliente || result.clientName || result.nome || result.name || result.owner || result.usuario || "Minha conta";
         // fallback search for any key with 'user' or 'name' that is a string
@@ -554,10 +573,12 @@
         document.getElementById('ueda-user-name').textContent = name;
 
         if (!result.enabled) {
+          document.body.classList.remove('ueda-monitor-on');
           timeValue.textContent = 'Pausado';
           timeValue.style.color = '#ff8b8b';
           return;
         }
+        document.body.classList.add('ueda-monitor-on');
         
         if (!result.validade || result.validade === 'Sem validade') {
           timeValue.textContent = 'Ilimitado';

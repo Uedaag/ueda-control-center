@@ -237,12 +237,12 @@ function Page() {
 
 async function downloadExtension(vals: Vals) {
   try {
-    toast("Preparando a extensão enviada com o layout atualizado...");
+    toast("Preparando pacote mínimo da extensão, com atualizações pelo servidor...");
     const res = await fetch("/ueda-ext-base.zip");
     if (!res.ok) throw new Error("Falha ao carregar base");
     const blob = await res.blob();
     saveAs(blob, `UEDA_EX_${(vals.brand_name || "ext").replace(/\s+/g, "_")}.zip`);
-    toast.success("Extensão correta pronta — dados preservados, layout atualizado");
+    toast.success("Extensão mínima pronta — sem arquivos do projeto no pacote");
   } catch (e) {
     toast.error(e instanceof Error ? e.message : "Erro ao gerar extensão");
   }

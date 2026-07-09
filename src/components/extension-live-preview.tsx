@@ -256,7 +256,7 @@ function widgetMenu({ brand, skills }: { brand: string; skills: ExtensionPreview
       ${menuItem(iconBell(), "Notificações", "Notificações")}
       ${menuItem(iconVolume(), "Som", "Som")}
       ${skillRows || menuItem(iconSparkles(), "Skills", "Skills")}
-      ${menuItem(iconFolder(), "Baixar projeto", "Baixar projeto")}
+      ${menuItem(iconFolder(), "Baixar extensão", "Baixar extensão")}
       ${menuItem(iconPencil(), "Remover marca", "Remover marca")}
       ${menuItem(iconRefresh(), "Atualizar extensão", "Atualizar extensão")}
       ${menuItem(iconHelp(), "Ajuda & Suporte", "Ajuda & Suporte")}
