@@ -58,23 +58,18 @@
 
     html, body {
       width: 320px;
-      min-height: 100vh;
       background: transparent;
       font-family: 'Montserrat', -apple-system, sans-serif;
       -webkit-font-smoothing: antialiased;
       overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
-    body { padding: 8px; }
 
     /* ══════════════════════════════════════════
        CARD — the only visible element
     ══════════════════════════════════════════ */
     .card {
       background: var(--bg);
-      border-radius: 32px;
+      border-radius: 22px;
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
       padding: 28px 22px 22px;
@@ -141,7 +136,7 @@
       padding: 11px 14px;
       background: var(--input-bg);
       border: 1px solid var(--input-border);
-      border-radius: 16px;
+      border-radius: 11px;
       color: var(--text);
       font-size: 13px;
       font-family: inherit;
@@ -164,7 +159,7 @@
       padding: 12px;
       background: var(--accent);
       border: none;
-      border-radius: 16px;
+      border-radius: 11px;
       color: var(--btn-text);
       font-size: 13px;
       font-weight: 700;
@@ -191,7 +186,7 @@
       padding: 10px;
       background: var(--support-bg);
       border: 1px solid var(--support-border);
-      border-radius: 16px;
+      border-radius: 11px;
       color: var(--support-text);
       font-size: 12px;
       font-family: inherit;
@@ -432,7 +427,96 @@
   <script src="popup.js"></script>
 
   <!-- Theme & home-view enhancer script -->
-  <script src="popup-enhance.js"></script>
+  <script>
+    (function () {
+      'use strict';
 
+      /* ── Theme ────────────────────────────────── */
+      const THEME_KEY = 'ueda_theme';
+      const root = document.documentElement;
+
+      function applyTheme(t) {
+        root.setAttribute('data-theme', t);
+        const isDark = t === 'dark';
+        ['iconMoon','iconMoonHome'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = isDark ? 'block' : 'none';
+        });
+        ['iconSun','iconSunHome'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = isDark ? 'none' : 'block';
+        });
+        localStorage.setItem(THEME_KEY, t);
+      }
+
+      function toggleTheme() {
+        const current = root.getAttribute('data-theme') || 'dark';
+        applyTheme(current === 'dark' ? 'light' : 'dark');
+      }
+
+      // Load saved theme (or system preference)
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved) {
+        applyTheme(saved);
+      } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(prefersDark ? 'dark' : 'light');
+      }
+
+      document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+      document.getElementById('themeBtnHome').addEventListener('click', toggleTheme);
+
+      /* ── Monitor toggle ────────────────────────── */
+      const monitorPill = document.getElementById('monitorToggle');
+      const enabledCb   = document.getElementById('enabled');
+
+      function syncPill() {
+        monitorPill.classList.toggle('on', !!enabledCb.checked);
+      }
+
+      monitorPill.addEventListener('click', () => {
+        enabledCb.checked = !enabledCb.checked;
+        enabledCb.dispatchEvent(new Event('change'));
+        syncPill();
+      });
+      enabledCb.addEventListener('change', syncPill);
+      syncPill();
+
+      /* ── Home view: name & validity ─────────────── */
+      try {
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.get(null, (r) => {
+            const nameKeys = ['userName','user','username','cliente','nome','name'];
+            let name = 'Minha conta';
+            for (const k of nameKeys) {
+              if (r[k] && typeof r[k] === 'string' && r[k].length < 50) { name = r[k]; break; }
+            }
+            const nameEl = document.getElementById('userName');
+            if (nameEl) nameEl.textContent = name;
+
+            const valEl = document.getElementById('userValidity');
+            if (valEl) {
+              const v = r.validade;
+              if (!v || v === 'Sem validade') {
+                valEl.textContent = 'Ilimitado ✓';
+                valEl.style.color = '#22e5a0';
+              } else {
+                const ms = typeof v === 'string' ? new Date(v).getTime() : Number(v);
+                const days = Math.max(0, Math.floor((ms - Date.now()) / 86400000));
+                if (days <= 0) {
+                  valEl.textContent = 'Expirado';
+                  valEl.style.color = '#ff6b6b';
+                } else {
+                  valEl.textContent = `${days} dias restantes`;
+                  valEl.style.color = days <= 5 ? '#f59e0b' : 'var(--accent)';
+                }
+              }
+            }
+            syncPill();
+          });
+        }
+      } catch (_) {}
+    })();
+  </script>
 </body>
 </html>

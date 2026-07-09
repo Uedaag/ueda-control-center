@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "UEDA EX",
-  "version": "5.1",
+  "version": "5.1.1",
   "description": "ilimitado",
   "permissions": [
     "storage",
@@ -11,10 +11,7 @@
   ],
   "host_permissions": [
     "https://api.lovable.dev/*",
-    "https://*.lovable.dev/*",
-    "https://*.lovable.app/*",
-    "https://*.lovableproject.com/*",
-    "https://*.supabase.co/*",
+    "https://uedaagency.lovable.app/*",
     "https://api.mistral.ai/*"
   ],
   "background": {
@@ -44,10 +41,11 @@
       "matches": [
         "https://lovable.dev/*",
         "https://*.lovable.dev/*",
-        "https://*.lovable.app/*",
-        "https://*.lovableproject.com/*"
+        "https://uedaagency.lovable.app/*"
       ],
-      "js": ["content.js"],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_start",
       "all_frames": true
     },
@@ -55,23 +53,28 @@
       "matches": [
         "https://lovable.dev/*",
         "https://*.lovable.dev/*",
-        "https://*.lovable.app/*",
-        "https://*.lovableproject.com/*"
+        "https://uedaagency.lovable.app/*"
       ],
-      "css": ["widget.css"],
-      "js": ["widget.js"],
+      "css": [
+        "widget.css"
+      ],
+      "js": [
+        "widget.js"
+      ],
       "run_at": "document_end",
-      "all_frames": false
+      "all_frames": true
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["inject.js", "logo.png"],
+      "resources": [
+        "inject.js",
+        "logo.png"
+      ],
       "matches": [
         "https://lovable.dev/*",
         "https://*.lovable.dev/*",
-        "https://*.lovable.app/*",
-        "https://*.lovableproject.com/*"
+        "https://uedaagency.lovable.app/*"
       ]
     }
   ]
