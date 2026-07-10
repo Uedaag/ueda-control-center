@@ -8,10 +8,14 @@ export type ExtensionPreviewState = "collapsed" | "login" | "labels" | "account"
 export type ExtensionPreviewSettings = {
   brand_name: string;
   brand_color: string;
+  accent_color?: string;
+  bg_color?: string;
+  text_color?: string;
   welcome_message: string;
   footer_signature: string;
   chat_custom_css?: string;
 };
+
 
 export type ExtensionPreviewSkill = {
   id: string;
@@ -347,6 +351,9 @@ function buildLoginDocument(settings: ExtensionPreviewSettings, activated: boole
 
 function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: ExtensionPreviewSkill[], bg: "dark" | "light" = "dark") {
   const accent = normalizeHexColor(settings.brand_color);
+  const highlight = normalizeHexColor(settings.accent_color || settings.brand_color);
+  const bgColor = normalizeHexColor(settings.bg_color || "#0f1713");
+  const textColor = normalizeHexColor(settings.text_color || "#e2ffd6");
   const brand = escapeHtml(settings.brand_name || "UEDA EX 5.0");
   const logo = escapeAttr(logoAsset.url);
 
@@ -377,9 +384,9 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
 
   const bgStyles = bg === "light"
     ? `background: linear-gradient(135deg,#f4f6fb,#e6ebf2); }
-       body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${accent}22, transparent 36%); }`
-    : `background:#0b1220; }
-       body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${accent}30, transparent 32%), linear-gradient(135deg,#0b1220,#141b2e); }`;
+       body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${highlight}22, transparent 36%); }`
+    : `background:${bgColor}; }
+       body::before { content:""; position:fixed; inset:0; background: radial-gradient(circle at 88% 92%, ${highlight}30, transparent 32%), linear-gradient(135deg, ${bgColor}, color-mix(in srgb, ${bgColor} 70%, #000)); }`;
   const hintColor = bg === "light" ? "#475569" : "#94a3b8";
 
   return `<!doctype html>
@@ -387,9 +394,32 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
 <style>
   html,body { margin:0; height:100%; overflow:hidden; ${bgStyles}
   ${widgetCss}
-  #ueda-widget-container { --ueda-accent: ${accent}; --ueda-accent-dim: ${accent}8C; --ueda-border: ${accent}30; --ueda-bg-active: ${accent}2E; }
+  /* ─── Glass overrides (translucent + backdrop blur) ─── */
+  #ueda-widget-container {
+    --ueda-accent: ${accent};
+    --ueda-accent-dim: ${highlight}8C;
+    --ueda-border: ${highlight}4D;
+    --ueda-bg-active: ${highlight}33;
+    --ueda-bg-item: ${highlight}14;
+    --ueda-text: ${textColor};
+    --ueda-text-muted: ${textColor}99;
+    --ueda-bg: color-mix(in srgb, ${bgColor} 62%, transparent);
+    --ueda-shadow: 0 24px 60px rgba(0,0,0,.55), 0 0 0 1px ${highlight}26, 0 0 40px ${highlight}33;
+  }
+  .ueda-sidebar, #ueda-trigger-btn {
+    backdrop-filter: blur(22px) saturate(160%);
+    background: color-mix(in srgb, ${bgColor} 55%, transparent) !important;
+    border: 1px solid ${highlight}59 !important;
+  }
+  .ueda-sidebar::before {
+    content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+    background: linear-gradient(135deg, ${highlight}1F, transparent 55%);
+  }
+  .ueda-sidebar { position: relative; }
+  #ueda-trigger-btn { box-shadow: 0 8px 30px ${highlight}55, 0 0 0 1px ${highlight}40 inset; }
   .preview-hint { position: fixed; left:24px; top:24px; color:${hintColor}; font-size:11px; letter-spacing:.1em; text-transform:uppercase; z-index: 1; }
 </style></head>
+
 <body>
   <div class="preview-hint">Prévia • widget real da extensão</div>
   <div id="ueda-widget-container">
