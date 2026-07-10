@@ -387,58 +387,63 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
 <style>
   html,body { margin:0; height:100%; overflow:hidden; ${bgStyles}
   ${widgetCss}
-  #ueda-widget-container { --ueda-accent: ${accent}; }
+  #ueda-widget-container { --ueda-accent: ${accent}; --ueda-accent-dim: ${accent}8C; --ueda-border: ${accent}30; --ueda-bg-active: ${accent}2E; }
   .preview-hint { position: fixed; left:24px; top:24px; color:${hintColor}; font-size:11px; letter-spacing:.1em; text-transform:uppercase; z-index: 1; }
 </style></head>
 <body>
   <div class="preview-hint">Prévia • widget real da extensão</div>
   <div id="ueda-widget-container">
-    <div class="ueda-widget-menu">
-      <div class="ueda-menu-header" id="ueda-menu-toggle">
-        ${iconChevron()}
-        <span class="ueda-menu-header-text">Recolher menu</span>
-      </div>
 
-      <div class="ueda-menu-item" style="cursor:default;">
-        ${iconUser()}
-        <div class="ueda-account-info">
-          <span style="color:#e2e8f0;font-weight:600;font-size:13px;line-height:1.2;">${brand}</span>
-          <span style="color:${accent};font-size:11px;font-weight:600;margin-top:2px;">28 dias restantes</span>
+    <div class="ueda-sidebar" role="menu">
+      <div class="ueda-sidebar-header">
+        <img src="${logo}" class="ueda-sidebar-logo" alt="${escapeAttr(brand)}"/>
+        <div class="ueda-sidebar-brand">
+          <span class="ueda-brand-name">${brand}</span>
+          <span class="ueda-brand-sub">28 dias restantes</span>
         </div>
       </div>
 
-      <div class="ueda-menu-item ueda-text-green">
-        ${iconVolume()}
-        <span class="ueda-item-text">Som ON</span>
+      <div class="ueda-menu">
+        <div class="ueda-item ueda-active">
+          ${iconVolume()}
+          <span class="ueda-item-label">Som ON</span>
+        </div>
+
+        ${topSkills.map((skill) => `
+          <div class="ueda-item">
+            ${iconByName(skill.icon || "Sparkles")}
+            <span class="ueda-item-label">${escapeHtml(skill.name)}</span>
+          </div>`).join("")}
+
+        <div class="ueda-item">
+          ${iconRefresh()}
+          <span class="ueda-item-label">Atualizar</span>
+        </div>
+        <div class="ueda-item">
+          ${iconHelp()}
+          <span class="ueda-item-label">Suporte</span>
+        </div>
+        <div class="ueda-item ueda-active">
+          ${iconPower()}
+          <span class="ueda-item-label">Monitor ON</span>
+        </div>
       </div>
 
-      ${skillItems}
-
-      <div class="ueda-menu-item">
-        ${iconRefresh()}
-        <span class="ueda-item-text">Atualizar extensão</span>
-      </div>
-
-      <div class="ueda-menu-item">
-        ${iconHelp()}
-        <span class="ueda-item-text">Ajuda &amp; Suporte</span>
-      </div>
-
-      <div class="ueda-menu-item ueda-text-green">
-        ${iconPower()}
-        <span class="ueda-item-text">Monitor ON</span>
-      </div>
+      <button class="ueda-expand-btn" id="ueda-expand-btn" type="button" aria-label="Expandir">
+        ${iconChevronRight()}
+      </button>
+      <div class="ueda-validity-badge">28 dias</div>
     </div>
 
-    <button class="ueda-widget-btn" id="ueda-main-btn" title="${escapeAttr(brand)}">
-      <img src="${logo}" alt="UEDA" class="ueda-widget-logo"/>
+    <button class="ueda-trigger-btn" id="ueda-trigger-btn" title="${escapeAttr(brand)}" style="width:50px;height:50px;border-radius:50%;background:var(--ueda-bg,#1a3a2a);border:1.5px solid var(--ueda-border);box-shadow:var(--ueda-shadow);cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:all;position:relative;">
+      <img src="${logo}" alt="${escapeAttr(brand)}" class="ueda-trigger-logo"/>
     </button>
   </div>
   <script>
     (function(){
       var c = document.getElementById('ueda-widget-container');
-      var btn = document.getElementById('ueda-main-btn');
-      var header = document.getElementById('ueda-menu-toggle');
+      var btn = document.getElementById('ueda-trigger-btn');
+      var exp = document.getElementById('ueda-expand-btn');
       btn.addEventListener('click', function(e){
         e.stopPropagation();
         if (c.classList.contains('ueda-open')) {
@@ -447,7 +452,7 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
           c.classList.add('ueda-open');
         }
       });
-      header.addEventListener('click', function(e){
+      exp.addEventListener('click', function(e){
         e.stopPropagation();
         c.classList.toggle('ueda-expanded');
       });
@@ -459,6 +464,9 @@ function buildPreviewDocument(settings: ExtensionPreviewSettings, skills: Extens
   </script>
 </body></html>`;
 }
+
+function iconChevronRight() { return svg(`<polyline points="9 18 15 12 9 6"></polyline>`); }
+
 
 function iconVolume() { return svg(`<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>`); }
 
