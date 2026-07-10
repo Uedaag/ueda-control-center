@@ -26,6 +26,9 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
 const DEFAULTS = {
   brand_name: "Ueda ex",
   brand_color: "#4fa1c9",
+  accent_color: "#7dd3fc",
+  bg_color: "#0f1713",
+  text_color: "#e2ffd6",
   test_credits: "5",
   default_language: "pt-BR",
   support_url: "",
@@ -37,6 +40,7 @@ const DEFAULTS = {
   widget_title: "Ueda ex",
   chat_custom_css: "",
 };
+
 
 type Vals = Record<string, string>;
 type Skill = ExtensionPreviewSkill;
