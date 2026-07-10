@@ -290,6 +290,31 @@ function Page() {
                   <LightInput value={vals.brand_color} onChange={(e) => set("brand_color", e.target.value)} />
                 </div>
               </Field>
+              <Field label="Cor de Destaque" hint="Realces, badges e estados ativos.">
+                <div className="flex items-center gap-3">
+                  <label className="w-14 h-11 rounded-lg cursor-pointer shrink-0 border border-border shadow-inner relative overflow-hidden" style={{ background: vals.accent_color }}>
+                    <input type="color" value={vals.accent_color} onChange={(e) => set("accent_color", e.target.value)} className="opacity-0 absolute inset-0 cursor-pointer" />
+                  </label>
+                  <LightInput value={vals.accent_color} onChange={(e) => set("accent_color", e.target.value)} />
+                </div>
+              </Field>
+              <Field label="Cor Padrão (Texto)" hint="Cor principal dos textos e ícones.">
+                <div className="flex items-center gap-3">
+                  <label className="w-14 h-11 rounded-lg cursor-pointer shrink-0 border border-border shadow-inner relative overflow-hidden" style={{ background: vals.text_color }}>
+                    <input type="color" value={vals.text_color} onChange={(e) => set("text_color", e.target.value)} className="opacity-0 absolute inset-0 cursor-pointer" />
+                  </label>
+                  <LightInput value={vals.text_color} onChange={(e) => set("text_color", e.target.value)} />
+                </div>
+              </Field>
+              <Field label="Cor de Fundo" hint="Fundo base do widget e cards.">
+                <div className="flex items-center gap-3">
+                  <label className="w-14 h-11 rounded-lg cursor-pointer shrink-0 border border-border shadow-inner relative overflow-hidden" style={{ background: vals.bg_color }}>
+                    <input type="color" value={vals.bg_color} onChange={(e) => set("bg_color", e.target.value)} className="opacity-0 absolute inset-0 cursor-pointer" />
+                  </label>
+                  <LightInput value={vals.bg_color} onChange={(e) => set("bg_color", e.target.value)} />
+                </div>
+              </Field>
+
               <Field label="Créditos de Teste (0-20)" hint="Créditos iniciais das chaves geradas em sua loja.">
                 <LightInput type="number" min={0} max={20} value={vals.test_credits} onChange={(e) => set("test_credits", e.target.value)} />
               </Field>
