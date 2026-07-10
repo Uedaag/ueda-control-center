@@ -8,10 +8,14 @@ export type ExtensionPreviewState = "collapsed" | "login" | "labels" | "account"
 export type ExtensionPreviewSettings = {
   brand_name: string;
   brand_color: string;
+  accent_color?: string;
+  bg_color?: string;
+  text_color?: string;
   welcome_message: string;
   footer_signature: string;
   chat_custom_css?: string;
 };
+
 
 export type ExtensionPreviewSkill = {
   id: string;
